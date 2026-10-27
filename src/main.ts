@@ -1,5 +1,6 @@
 import { createRenderer, resizeToWindow } from './scene/renderer';
-import { loadScene } from './scene/loadScene';
+import { collectNames, loadScene } from './scene/loadScene';
+import { findMissingNames } from './objects/registry';
 import { showFallback } from './ui/fallback';
 import { fallbackReason } from './ui/fallbackReason';
 import { createLoadingScreen } from './ui/loading';
@@ -25,6 +26,9 @@ async function boot(): Promise<void> {
     return showFallback(fallbackReason(true, err) ?? 'load-failed', err);
   }
   const { scene, camera } = loaded;
+  for (const name of findMissingNames(collectNames(loaded.scene))) {
+    console.error(`Missing expected scene object: ${name}`);
+  }
   loading.markSceneResolved();
   await loading.whenReady;
 
