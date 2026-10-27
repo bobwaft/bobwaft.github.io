@@ -52,7 +52,7 @@ The baked `ShaderMaterial` includes `<tonemapping_fragment>` and `<colorspace_fr
 
 ## Open questions
 
-1. **Pull cord target.** The request says the cord turns on "the lightbulb in the desk", but the only switchable light in the bake is the shelf tube light (`Env_ShelfStrip`, driven by `lighting.uLight`; `Ref_Lamp` sits at its centre). Is that the intended light, or is a separate desk bulb expected (would need a new bake pass)?
+1. ~~**Pull cord target.**~~ **Resolved 2026-10-27: the cord toggles the shelf light (`lighting.uLight`); no new bake.** The request says the cord turns on "the lightbulb in the desk", but the only switchable light in the bake is the shelf tube light (`Env_ShelfStrip`, driven by `lighting.uLight`; `Ref_Lamp` sits at its centre). Is that the intended light, or is a separate desk bulb expected (would need a new bake pass)?
 2. **Time of day.** Fixed, follow the visitor's local clock, or user-controllable (e.g. clicking the window)?
 3. **`Click_Calendar` and `Click_Window`.** Exist in the scene but have no behaviour in the spec. Leave inert (no hover), or assign something later?
 4. **Notebook opening.** The notebook is exported as one object with an elastic band — no separate cover or pages. Build a procedural cover in three.js, or re-export with a hinged cover?
