@@ -145,3 +145,17 @@ describe('audio player', () => {
     expect(audios[0].paused).toBe(false);
   });
 });
+
+describe('audio player with an empty playlist', () => {
+  it('warns once, creates no audio and changes no state', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { player, audios, onChange } = setup([]);
+    player.toggle();
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(audios).toHaveLength(0);
+    expect(player.isPlaying()).toBe(false);
+    expect(onChange).not.toHaveBeenCalled();
+    expect(() => player.update(1)).not.toThrow();
+    warn.mockRestore();
+  });
+});

@@ -89,7 +89,10 @@ export function createPlayer(opts: PlayerOptions): Player {
       }
       if (!audio) {
         const track = bag.next();
-        if (track === undefined) return;
+        if (track === undefined) {
+          console.warn('Audio playlist is empty; nothing to play');
+          return;
+        }
         audio = opts.createAudio();
         audio.volume = 0;
         audio.addEventListener('ended', playNext);
