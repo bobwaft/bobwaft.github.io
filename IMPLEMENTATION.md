@@ -111,7 +111,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 ## Phase 5 — Laptop → About
 
 - [ ] Write `src/content/about.md` (owner provides bio, photo, email/LinkedIn/GitHub, city/region; no phone or address)
-- [ ] Content pipeline: Markdown → HTML (`marked`), shared by 3D views and fallback — unit tested
+- [x] Content pipeline: Markdown → HTML (`marked`), shared by 3D views and fallback — unit tested
 - [ ] `CSS3DRenderer` layer; CSS3DObject sized and aligned to `Click_Laptop_Screen`
 - [ ] About page styling: clean single page, contact links prominent, optional thin browser bar; scrollable if long
 - [ ] Idle view: swap `M_Screen` map for a static preview of the about page
