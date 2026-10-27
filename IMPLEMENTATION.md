@@ -56,7 +56,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] `?debug` mode: free orbit camera + on-screen readout of camera position/target (for tuning poses)
 
 ### You test
-- [ ] Moving the mouse pans the view smoothly; it stops at the edges of the allowed range and stays there when the mouse leaves the window
+- [x] Moving the mouse pans the view smoothly; it stops at the edges of the allowed range and stays there when the mouse leaves the window
 - [x] The whole desk is visible and you can't look at the ceiling or floor
 - [x] On a phone in portrait, the whole desk is visible; rotating to landscape switches smoothly to the `Cam_Main` view
 - [x] On touch, dragging looks around and a short tap doesn't move the camera
@@ -173,6 +173,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [ ] Check tone mapping is applied once only with the composer (MEMORY.md ISSUE-2)
 - [ ] Measure against NFR-1/NFR-2; convert textures to KTX2 (Basis) if over 15 MB or under target fps
 - [ ] Adaptive pixel ratio if below target fps
+- [ ] Detect software renderers (`Microsoft Basic Render Driver`, SwiftShader, llvmpipe) via the WebGL renderer string → start at a low pixel ratio or offer the fallback (BUG-001)
 - [ ] Fallback triggers, second part: fps monitor (median < 25 fps over 5 s after load, ignored while hidden) → fallback with "Try 3D anyway" (sessionStorage flag) — unit tested
 - [ ] Decide and implement time-of-day behaviour (MEMORY.md open question 2)
 
