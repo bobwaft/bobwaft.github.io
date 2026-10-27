@@ -1,0 +1,7 @@
+dist/
+coverage/
+public/
+.claude/
+package-lock.json
+*.md
+src/scene/scene-lighting.js
