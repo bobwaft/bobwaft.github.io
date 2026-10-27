@@ -60,3 +60,11 @@ export function transition(state: AppState, event: AppEvent): TransitionResult {
       return event.type === 'arrived' ? { state: { kind: 'idle' } } : { state };
   }
 }
+
+/**
+ * True while a focus view is opening or open: the Back button shows and parallax is small.
+ * Leaving (transitioning-out) counts as out, so the idle look range returns immediately.
+ */
+export function inFocusView(state: AppState): boolean {
+  return state.kind === 'transitioning-in' || state.kind === 'focused';
+}

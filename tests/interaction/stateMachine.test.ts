@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { initialState, transition, type AppState } from '../../src/interaction/stateMachine';
+import {
+  inFocusView,
+  initialState,
+  transition,
+  type AppState,
+} from '../../src/interaction/stateMachine';
 
 const laptop = { id: 'laptop', hasFocus: true };
 const papers = { id: 'papers', hasFocus: true };
@@ -87,5 +92,15 @@ describe('state machine', () => {
   it('ignores arrived when not transitioning', () => {
     expect(transition(idle, { type: 'arrived' })).toEqual({ state: idle });
     expect(transition(focused, { type: 'arrived' })).toEqual({ state: focused });
+  });
+});
+
+describe('inFocusView', () => {
+  it('is true while moving in and while focused only', () => {
+    expect(inFocusView(tIn)).toBe(true);
+    expect(inFocusView(focused)).toBe(true);
+    expect(inFocusView(tOut)).toBe(false);
+    expect(inFocusView(idle)).toBe(false);
+    expect(inFocusView(initialState())).toBe(false);
   });
 });

@@ -7,7 +7,7 @@ import { createPoseTween } from './camera/focusTween';
 import { createClickInput } from './interaction/clickInput';
 import { createFocusPoseResolver } from './interaction/focusPoses';
 import { createPicker } from './interaction/picker';
-import { initialState, transition, type AppEvent } from './interaction/stateMachine';
+import { initialState, transition, inFocusView, type AppEvent } from './interaction/stateMachine';
 import { idlePoseKind, PORTRAIT_IDLE_POSE, poseFromLookAt } from './camera/poses';
 import { createDebugCamera, type DebugCamera } from './ui/debugCamera';
 import { createDebugFps } from './ui/debugFps';
@@ -74,7 +74,11 @@ async function boot(): Promise<void> {
     } else if (action?.type === 'activate') {
       for (const m of registered.values()) if (m.id === action.id) m.onClick?.();
     }
+    applyLookRange();
   };
+  // Slight parallax while a focus view is open (D-3); the full idle range otherwise.
+  const applyLookRange = () =>
+    look.setRange(inFocusView(app) ? settings.focusRange : settings.range);
   const onResize = () => {
     resizeToWindow(renderer, camera);
     if (debugCamera) return;
@@ -91,7 +95,7 @@ async function boot(): Promise<void> {
   const look = createLookControls(canvas, { range: settings.range, damping: settings.damping });
   const onMotionChange = () => {
     settings = lookSettings(reducedMotion.matches);
-    look.setRange(settings.range);
+    applyLookRange();
     look.setDamping(settings.damping);
     // Switching to reduced motion cuts a pose move that is already running.
     if (poseTween.active && settings.poseTweenSeconds === 0) focusCtrl.retarget();
