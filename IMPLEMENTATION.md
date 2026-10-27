@@ -16,7 +16,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] Change `scene-lighting.js` to read decode multipliers from `lightmap_scales.json` (ISSUE-1); unit-test the JSON → multipliers parsing
 - [x] Create the directory layout from ARCHITECTURE.md (empty modules are fine)
 - [x] GitHub Actions workflow: lint → test → build → deploy `dist/` to GitHub Pages on push to `main`
-- [ ] Create the `bobwaft.github.io` repo on GitHub (if it doesn't exist), set Pages source to "GitHub Actions", push
+- [x] Create the `bobwaft.github.io` repo on GitHub (if it doesn't exist), set Pages source to "GitHub Actions", push
 
 ### You test
 - [x] `npm run dev` starts and shows a blank page with no console errors
