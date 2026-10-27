@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { PerspectiveCamera, Quaternion, Vector3, Euler } from 'three';
-import { applyLook, damp, IDLE_RANGE, targetFromInput } from '../../src/camera/lookControls';
+import {
+  applyLook,
+  centreInput,
+  damp,
+  leftWindow,
+  IDLE_RANGE,
+  targetFromInput,
+} from '../../src/camera/lookControls';
 
 const deg = (d: number) => (d * Math.PI) / 180;
 
@@ -54,5 +61,16 @@ describe('applyLook', () => {
     const e = new Euler().setFromQuaternion(camera.quaternion, 'YXZ');
     expect(e.y).toBeCloseTo(0.3);
     expect(e.x).toBeCloseTo(-0.1);
+  });
+});
+
+describe('return to centre', () => {
+  it('centreInput is the neutral input', () => {
+    expect(centreInput()).toEqual({ x: 0, y: 0 });
+  });
+
+  it('leftWindow is true only when mouseout has no relatedTarget', () => {
+    expect(leftWindow(null)).toBe(true);
+    expect(leftWindow({} as EventTarget)).toBe(false);
   });
 });

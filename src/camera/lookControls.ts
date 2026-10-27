@@ -45,6 +45,16 @@ export function applyLook(
   camera.quaternion.setFromEuler(e);
 }
 
+/** The neutral (centred) input. */
+export function centreInput(): { x: number; y: number } {
+  return { x: 0, y: 0 };
+}
+
+/** True when a mouseout's relatedTarget shows the pointer left the window. */
+export function leftWindow(relatedTarget: EventTarget | null): boolean {
+  return relatedTarget === null;
+}
+
 export interface LookControlsOptions {
   range?: LookRange;
 }
@@ -73,7 +83,15 @@ export function createLookControls(
     inputX = (e.clientX / window.innerWidth) * 2 - 1;
     inputY = 1 - (e.clientY / window.innerHeight) * 2;
   };
+  const recentre = () => {
+    ({ x: inputX, y: inputY } = centreInput());
+  };
+  const onMouseOut = (e: MouseEvent) => {
+    if (leftWindow(e.relatedTarget)) recentre();
+  };
   element.addEventListener('pointermove', onMove);
+  document.addEventListener('mouseout', onMouseOut);
+  window.addEventListener('blur', recentre);
 
   return {
     update(dt) {
@@ -90,6 +108,8 @@ export function createLookControls(
     },
     dispose() {
       element.removeEventListener('pointermove', onMove);
+      document.removeEventListener('mouseout', onMouseOut);
+      window.removeEventListener('blur', recentre);
     },
   };
 }
