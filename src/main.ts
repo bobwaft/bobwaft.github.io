@@ -1,7 +1,12 @@
 import { createRenderer, resizeToWindow } from './scene/renderer';
 import { collectNames, loadScene } from './scene/loadScene';
 import type { InteractableModule } from './objects/types';
-import { collectRegistered, findMissingNames, MAIN_CAMERA_NAME } from './objects/registry';
+import {
+  collectRegistered,
+  findMissingNames,
+  FOCUS_SURFACE_NAMES,
+  MAIN_CAMERA_NAME,
+} from './objects/registry';
 import { applyLook, createLookControls, lookSettings } from './camera/lookControls';
 import { createFocusController } from './camera/focusController';
 import { createPoseTween } from './camera/focusTween';
@@ -33,6 +38,12 @@ import { pullcord } from './objects/pullcord';
 import { speaker } from './objects/speaker';
 import { createPlayer } from './audio/player';
 import playlist from './content/playlist.json';
+import aboutSource from './content/about.md?raw';
+import { parseAbout } from './content/render';
+import { laptop } from './objects/laptop';
+import { createLaptopScreen } from './objects/laptopScreen';
+import type { ScreenLayer } from './ui/screenLayer';
+import type { Mesh } from 'three';
 
 async function boot(): Promise<void> {
   const canvas = document.getElementById('scene') as HTMLCanvasElement;
@@ -107,6 +118,13 @@ async function boot(): Promise<void> {
     isPlaying: () => player.isPlaying(),
     object: speakerObject,
   });
+  let screenLayer: ScreenLayer | null = null;
+  const screenMesh = scene.getObjectByName(FOCUS_SURFACE_NAMES.laptop) as Mesh | undefined;
+  if (screenMesh?.isMesh) {
+    screenLayer = createLaptopScreen(screenMesh, poses.landscape.position, parseAbout(aboutSource));
+    screenLayer.setSize(window.innerWidth, window.innerHeight);
+  }
+  laptop.bind({ setContentVisible: (v) => screenLayer?.setVisible(v) });
   const updatable = [...new Set(registered.values())].filter((m) => m.update);
   let app = initialState();
   const dispatch = (event: AppEvent) => {
@@ -134,6 +152,7 @@ async function boot(): Promise<void> {
     look.setRange(inFocusView(app) ? settings.focusRange : settings.range);
   const onResize = () => {
     resizeToWindow(renderer, camera);
+    screenLayer?.setSize(window.innerWidth, window.innerHeight);
     if (debugCamera) return;
     const kind = idlePoseKind(aspectNow());
     if (kind !== poseKind) {
@@ -209,6 +228,7 @@ async function boot(): Promise<void> {
       for (const m of updatable) m.update?.(dt);
       touchDots.update(app);
       renderer.render(scene, camera);
+      screenLayer?.render(camera);
       debugFps?.();
     });
     showHint(touchSeen);
@@ -223,6 +243,7 @@ async function boot(): Promise<void> {
     player.dispose();
     window.removeEventListener('pointerdown', onPointerType);
     hoverView.dispose();
+    screenLayer?.dispose();
     debugCamera?.dispose();
     renderer.setAnimationLoop(null);
     renderer.dispose();
