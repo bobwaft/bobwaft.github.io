@@ -30,7 +30,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 
 - [x] Renderer: WebGL2, `outputColorSpace = SRGBColorSpace`, `toneMapping = AgXToneMapping`, pixel ratio capped at 2, resize handling
 - [x] Load the scene with `loadDeskScene('/models/desk_scene_draco.glb', '/models/textures/', '/draco/')`
-- [ ] Use `Cam_Main` (FOV, near/far, pose) as the camera; update aspect on resize
+- [x] Use `Cam_Main` (FOV, near/far, pose) as the camera; update aspect on resize
 - [x] Apply a default time of day (`setTimeOfDay`) and **lamp on** (`lighting.uLight = 1`)
 - [ ] Loading screen with progress (GLB + textures via `LoadingManager`), fades out when ready
 - [ ] Fallback triggers, first part: WebGL2 missing or loader rejects → show `#fallback` (placeholder content until Phase 9)
