@@ -38,11 +38,11 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] In-app fps readout under `?debug` (used for NFR-1 checks)
 
 ### You test
-- [ ] The room renders and looks like the Blender preview (lighting, colours, outside view), with the lamp on
-- [ ] Resizing the window keeps the image undistorted
-- [ ] Loading screen appears on a throttled (25 Mbps) reload and disappears when the scene shows; scene is interactive in < 5 s
-- [ ] With WebGL disabled (e.g. `chrome://flags` or a browser setting), the fallback placeholder shows instead
-- [ ] No console errors or warnings
+- [x] The room renders and looks like the Blender preview (lighting, colours, outside view), with the lamp on
+- [x] Resizing the window keeps the image undistorted
+- [x] Loading screen appears on a throttled (25 Mbps) reload and disappears when the scene shows; scene is interactive in < 5 s
+- [x] With WebGL disabled (e.g. `chrome://flags` or a browser setting), the fallback placeholder shows instead
+- [x] No console errors or warnings
 
 ---
 
