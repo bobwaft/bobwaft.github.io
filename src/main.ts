@@ -4,6 +4,7 @@ import { findMissingNames, MAIN_CAMERA_NAME } from './objects/registry';
 import { applyLook, createLookControls, lookSettings } from './camera/lookControls';
 import { createPoseTween } from './camera/focusTween';
 import { idlePoseKind, PORTRAIT_IDLE_POSE, poseFromLookAt } from './camera/poses';
+import { createDebugCamera, type DebugCamera } from './ui/debugCamera';
 import { createDebugFps } from './ui/debugFps';
 import { showFallback } from './ui/fallback';
 import { fallbackReason } from './ui/fallbackReason';
@@ -45,8 +46,10 @@ async function boot(): Promise<void> {
   let poseKind = idlePoseKind(aspectNow());
   const poseTween = createPoseTween(poses[poseKind]);
   const base = poseTween.current;
+  let debugCamera: DebugCamera | null = null;
   const onResize = () => {
     resizeToWindow(renderer, camera);
+    if (debugCamera) return;
     const kind = idlePoseKind(aspectNow());
     if (kind === poseKind) return;
     poseKind = kind;
@@ -64,15 +67,25 @@ async function boot(): Promise<void> {
     onResize();
     window.addEventListener('resize', onResize);
     applyLook(camera, base, 0, 0);
+    debugCamera = createDebugCamera(
+      camera,
+      canvas,
+      () => `aspect: ${camera.aspect.toFixed(3)}, pose: ${poseKind}`,
+    );
+    look.setEnabled(!debugCamera);
     renderer.render(scene, camera); // first frame before the fade
     const debugFps = createDebugFps();
     let last: number | null = null;
     renderer.setAnimationLoop((time: number) => {
       const dt = last === null ? 0 : Math.min((time - last) / 1000, 0.1);
       last = time;
-      poseTween.step(dt);
-      const { yaw, pitch } = look.update(dt);
-      applyLook(camera, base, yaw, pitch);
+      if (debugCamera) {
+        debugCamera.update();
+      } else {
+        poseTween.step(dt);
+        const { yaw, pitch } = look.update(dt);
+        applyLook(camera, base, yaw, pitch);
+      }
       renderer.render(scene, camera);
       debugFps?.();
     });
@@ -81,6 +94,7 @@ async function boot(): Promise<void> {
     window.removeEventListener('resize', onResize);
     reducedMotion.removeEventListener('change', onMotionChange);
     look.dispose();
+    debugCamera?.dispose();
     renderer.setAnimationLoop(null);
     renderer.dispose();
     return showFallback('load-failed', err);

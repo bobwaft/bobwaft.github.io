@@ -53,7 +53,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] Touch: drag-to-look; tap/drag threshold of 10 px — unit tested
 - [x] Portrait idle pose (aspect < 1): tune with `?debug`, store in `poses.ts`; tween between landscape and portrait poses on resize/rotation
 - [x] `prefers-reduced-motion`: reduce range/smoothing per D-13
-- [ ] `?debug` mode: free orbit camera + on-screen readout of camera position/target (for tuning poses)
+- [x] `?debug` mode: free orbit camera + on-screen readout of camera position/target (for tuning poses)
 
 ### You test
 - [ ] Moving the mouse pans the view smoothly; it stops at the edges of the allowed range
