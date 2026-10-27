@@ -13,6 +13,7 @@ import { createDebugCamera, type DebugCamera } from './ui/debugCamera';
 import { createDebugFps } from './ui/debugFps';
 import { showFallback } from './ui/fallback';
 import { fallbackReason } from './ui/fallbackReason';
+import { createBackButton } from './ui/backButton';
 import { createLoadingScreen } from './ui/loading';
 
 async function boot(): Promise<void> {
@@ -62,6 +63,7 @@ async function boot(): Promise<void> {
     seconds: () => settings.focusSeconds,
     onArrived: () => dispatch({ type: 'arrived' }),
   });
+  const backButton = createBackButton(() => dispatch({ type: 'back' }));
   let app = initialState();
   const dispatch = (event: AppEvent) => {
     const result = transition(app, event);
@@ -75,6 +77,7 @@ async function boot(): Promise<void> {
       for (const m of registered.values()) if (m.id === action.id) m.onClick?.();
     }
     applyLookRange();
+    backButton.setVisible(inFocusView(app));
   };
   // Slight parallax while a focus view is open (D-3); the full idle range otherwise.
   const applyLookRange = () =>
@@ -144,6 +147,7 @@ async function boot(): Promise<void> {
     reducedMotion.removeEventListener('change', onMotionChange);
     look.dispose();
     disposeClicks();
+    backButton.dispose();
     debugCamera?.dispose();
     renderer.setAnimationLoop(null);
     renderer.dispose();

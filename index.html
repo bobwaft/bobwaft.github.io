@@ -61,6 +61,26 @@
         height: 100%;
         background: #ccc;
       }
+      #back-button {
+        position: fixed;
+        top: 1rem;
+        left: 1rem;
+        z-index: 5;
+        padding: 0.5rem 0.9rem;
+        border: 1px solid #555;
+        border-radius: 6px;
+        background: rgba(17, 17, 17, 0.75);
+        color: #eee;
+        font:
+          0.9rem system-ui,
+          sans-serif;
+        cursor: pointer;
+      }
+      #back-button:hover,
+      #back-button:focus-visible {
+        background: rgba(40, 40, 40, 0.9);
+        border-color: #aaa;
+      }
       @media (prefers-reduced-motion: reduce) {
         #loading {
           transition: none;

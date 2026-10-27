@@ -73,7 +73,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] Focus tween: position + quaternion slerp to a pose and back, ease-in-out, ~1 s
 - [x] Focus poses: lookAt target + view direction + surface size; distance computed from FOV/aspect to fit the surface — unit tested; then hand-tune laptop, papers (top-down), notebook (top-down)
 - [x] Slight parallax (~1–2°) while focused
-- [ ] Back button, `Esc`, and clicking outside the focused object/content all return to idle
+- [x] Back button, `Esc`, and clicking outside the focused object/content all return to idle
 - [x] Ignore clicks while transitioning
 - [ ] Reduced-motion variant of the focus transition
 - [ ] One-time hint (mouse and touch wording)
@@ -83,7 +83,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [ ] On a phone, dots mark the five interactables and each one's dot disappears after you use it
 - [ ] Clicking laptop / papers / notebook moves the camera to a close-up that fits the object, in both landscape and portrait
 - [ ] While focused, the mouse moves the view only very slightly
-- [ ] Back button, `Esc`, clicking empty space, and clicking another object each return to the idle view smoothly
+- [x] Back button, `Esc`, clicking empty space, and clicking another object each return to the idle view smoothly
 - [ ] Rapid double-clicks or clicking during a move don't break the camera
 
 ---
