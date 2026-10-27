@@ -55,8 +55,32 @@ export function leftWindow(relatedTarget: EventTarget | null): boolean {
   return relatedTarget === null;
 }
 
+/** Max pointer travel (px) for a touch to still count as a tap. */
+export const TAP_THRESHOLD_PX = 10;
+
+/** True when a pointer moved less than the threshold. */
+export function isTap(dxPx: number, dyPx: number, threshold = TAP_THRESHOLD_PX): boolean {
+  return Math.hypot(dxPx, dyPx) < threshold;
+}
+
+/** Input after dragging from startInput; drag right looks left, drag down looks up. */
+export function dragInput(
+  startInput: { x: number; y: number },
+  dxPx: number,
+  dyPx: number,
+  width: number,
+  height: number,
+): { x: number; y: number } {
+  return {
+    x: clamp1(startInput.x - dxPx / (width / 2)),
+    y: clamp1(startInput.y + dyPx / (height / 2)),
+  };
+}
+
 export interface LookControlsOptions {
   range?: LookRange;
+  /** Called for a touch/pen tap (movement under the threshold). */
+  onTap?: (clientX: number, clientY: number) => void;
 }
 
 export interface LookControls {
@@ -89,7 +113,51 @@ export function createLookControls(
   const onMouseOut = (e: MouseEvent) => {
     if (leftWindow(e.relatedTarget)) recentre();
   };
+  let touch: {
+    id: number;
+    x: number;
+    y: number;
+    start: { x: number; y: number };
+    dragging: boolean;
+  } | null = null;
+  const onDown = (e: PointerEvent) => {
+    if (e.pointerType === 'mouse') return;
+    touch = {
+      id: e.pointerId,
+      x: e.clientX,
+      y: e.clientY,
+      start: { x: inputX, y: inputY },
+      dragging: false,
+    };
+  };
+  const onTouchMove = (e: PointerEvent) => {
+    if (!enabled || !touch || e.pointerId !== touch.id) return;
+    const dx = e.clientX - touch.x;
+    const dy = e.clientY - touch.y;
+    if (!touch.dragging && isTap(dx, dy)) return;
+    touch.dragging = true;
+    ({ x: inputX, y: inputY } = dragInput(
+      touch.start,
+      dx,
+      dy,
+      window.innerWidth,
+      window.innerHeight,
+    ));
+  };
+  const onUp = (e: PointerEvent) => {
+    if (!touch || e.pointerId !== touch.id) return;
+    const t = touch;
+    touch = null;
+    if (!t.dragging && isTap(e.clientX - t.x, e.clientY - t.y)) opts.onTap?.(e.clientX, e.clientY);
+  };
+  const onCancel = () => {
+    touch = null;
+  };
   element.addEventListener('pointermove', onMove);
+  element.addEventListener('pointermove', onTouchMove);
+  element.addEventListener('pointerdown', onDown);
+  element.addEventListener('pointerup', onUp);
+  element.addEventListener('pointercancel', onCancel);
   document.addEventListener('mouseout', onMouseOut);
   window.addEventListener('blur', recentre);
 
@@ -108,6 +176,10 @@ export function createLookControls(
     },
     dispose() {
       element.removeEventListener('pointermove', onMove);
+      element.removeEventListener('pointermove', onTouchMove);
+      element.removeEventListener('pointerdown', onDown);
+      element.removeEventListener('pointerup', onUp);
+      element.removeEventListener('pointercancel', onCancel);
       document.removeEventListener('mouseout', onMouseOut);
       window.removeEventListener('blur', recentre);
     },

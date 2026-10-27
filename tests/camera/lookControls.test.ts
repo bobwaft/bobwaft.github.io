@@ -4,6 +4,9 @@ import {
   applyLook,
   centreInput,
   damp,
+  dragInput,
+  isTap,
+  TAP_THRESHOLD_PX,
   leftWindow,
   IDLE_RANGE,
   targetFromInput,
@@ -72,5 +75,45 @@ describe('return to centre', () => {
   it('leftWindow is true only when mouseout has no relatedTarget', () => {
     expect(leftWindow(null)).toBe(true);
     expect(leftWindow({} as EventTarget)).toBe(false);
+  });
+});
+
+describe('isTap', () => {
+  it('threshold is 10 px', () => {
+    expect(TAP_THRESHOLD_PX).toBe(10);
+  });
+
+  it('9.9 px is a tap, 10 px is a drag', () => {
+    expect(isTap(9.9, 0)).toBe(true);
+    expect(isTap(0, -9.9)).toBe(true);
+    expect(isTap(10, 0)).toBe(false);
+  });
+
+  it('uses the diagonal distance', () => {
+    expect(isTap(7, 7)).toBe(true); // 9.899
+    expect(isTap(7.1, 7.1)).toBe(false); // 10.04
+  });
+
+  it('accepts a custom threshold', () => {
+    expect(isTap(5, 0, 4)).toBe(false);
+  });
+});
+
+describe('dragInput', () => {
+  it('drag right moves input left, drag down moves input up', () => {
+    const r = dragInput({ x: 0, y: 0 }, 100, 50, 400, 200);
+    expect(r.x).toBeCloseTo(-0.5);
+    expect(r.y).toBeCloseTo(0.5);
+  });
+
+  it('offsets from the start input', () => {
+    const r = dragInput({ x: 0.5, y: -0.5 }, -100, 0, 400, 200);
+    expect(r.x).toBeCloseTo(1);
+    expect(r.y).toBeCloseTo(-0.5);
+  });
+
+  it('clamps at the edges', () => {
+    expect(dragInput({ x: 0.9, y: 0.9 }, -1000, 1000, 400, 200)).toEqual({ x: 1, y: 1 });
+    expect(dragInput({ x: -0.9, y: -0.9 }, 1000, -1000, 400, 200)).toEqual({ x: -1, y: -1 });
   });
 });
