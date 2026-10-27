@@ -1,6 +1,7 @@
 import { createRenderer, resizeToWindow } from './scene/renderer';
 import { collectNames, loadScene } from './scene/loadScene';
 import { findMissingNames } from './objects/registry';
+import { createDebugFps } from './ui/debugFps';
 import { showFallback } from './ui/fallback';
 import { fallbackReason } from './ui/fallbackReason';
 import { createLoadingScreen } from './ui/loading';
@@ -35,7 +36,11 @@ async function boot(): Promise<void> {
   resizeToWindow(renderer, camera);
   window.addEventListener('resize', () => resizeToWindow(renderer, camera));
   renderer.render(scene, camera); // first frame before the fade
-  renderer.setAnimationLoop(() => renderer.render(scene, camera));
+  const debugFps = createDebugFps();
+  renderer.setAnimationLoop(() => {
+    renderer.render(scene, camera);
+    debugFps?.();
+  });
   loading.fadeOut();
 }
 
