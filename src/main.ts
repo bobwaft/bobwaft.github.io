@@ -1,11 +1,16 @@
 import { createRenderer, resizeToWindow } from './scene/renderer';
 import { collectNames, loadScene } from './scene/loadScene';
 import { findMissingNames, MAIN_CAMERA_NAME } from './objects/registry';
-import { applyLook, createLookControls, type LookPose } from './camera/lookControls';
+import { applyLook, createLookControls } from './camera/lookControls';
+import { createPoseTween } from './camera/focusTween';
+import { idlePoseKind, PORTRAIT_IDLE_POSE, poseFromLookAt } from './camera/poses';
 import { createDebugFps } from './ui/debugFps';
 import { showFallback } from './ui/fallback';
 import { fallbackReason } from './ui/fallbackReason';
 import { createLoadingScreen } from './ui/loading';
+
+/** Duration of the landscape/portrait idle pose tween. */
+const POSE_TWEEN_SECONDS = 0.8;
 
 async function boot(): Promise<void> {
   const canvas = document.getElementById('scene') as HTMLCanvasElement;
@@ -35,10 +40,20 @@ async function boot(): Promise<void> {
   loading.markSceneResolved();
   await loading.whenReady;
 
-  const onResize = () => resizeToWindow(renderer, camera);
-  const base: LookPose = {
-    position: camera.position.clone(),
-    quaternion: camera.quaternion.clone(),
+  const poses = {
+    landscape: { position: camera.position.clone(), quaternion: camera.quaternion.clone() },
+    portrait: poseFromLookAt(PORTRAIT_IDLE_POSE.position, PORTRAIT_IDLE_POSE.target),
+  };
+  const aspectNow = () => window.innerWidth / Math.max(1, window.innerHeight);
+  let poseKind = idlePoseKind(aspectNow());
+  const poseTween = createPoseTween(poses[poseKind]);
+  const base = poseTween.current;
+  const onResize = () => {
+    resizeToWindow(renderer, camera);
+    const kind = idlePoseKind(aspectNow());
+    if (kind === poseKind) return;
+    poseKind = kind;
+    poseTween.start(base, poses[kind], POSE_TWEEN_SECONDS);
   };
   const look = createLookControls(canvas);
   try {
@@ -50,6 +65,7 @@ async function boot(): Promise<void> {
     renderer.setAnimationLoop((time: number) => {
       const dt = last === null ? 0 : Math.min((time - last) / 1000, 0.1);
       last = time;
+      poseTween.step(dt);
       const { yaw, pitch } = look.update(dt);
       applyLook(camera, base, yaw, pitch);
       renderer.render(scene, camera);
