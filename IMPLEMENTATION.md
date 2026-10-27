@@ -48,7 +48,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 
 ## Phase 2 — Look-around camera
 
-- [ ] `lookControls`: input → target yaw/pitch, clamp to range, damp toward target (frame-rate independent) — unit tested
+- [x] `lookControls`: input → target yaw/pitch, clamp to range, damp toward target (frame-rate independent) — unit tested
 - [ ] Return to centre gently when the mouse leaves the window
 - [ ] Touch: drag-to-look; tap/drag threshold of 10 px — unit tested
 - [ ] Portrait idle pose (aspect < 1): tune with `?debug`, store in `poses.ts`; tween between landscape and portrait poses on resize/rotation

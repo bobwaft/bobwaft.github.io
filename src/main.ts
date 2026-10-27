@@ -1,6 +1,7 @@
 import { createRenderer, resizeToWindow } from './scene/renderer';
 import { collectNames, loadScene } from './scene/loadScene';
 import { findMissingNames, MAIN_CAMERA_NAME } from './objects/registry';
+import { applyLook, createLookControls, type LookPose } from './camera/lookControls';
 import { createDebugFps } from './ui/debugFps';
 import { showFallback } from './ui/fallback';
 import { fallbackReason } from './ui/fallbackReason';
@@ -35,18 +36,29 @@ async function boot(): Promise<void> {
   await loading.whenReady;
 
   const onResize = () => resizeToWindow(renderer, camera);
+  const base: LookPose = {
+    position: camera.position.clone(),
+    quaternion: camera.quaternion.clone(),
+  };
+  const look = createLookControls(canvas);
   try {
     onResize();
     window.addEventListener('resize', onResize);
     renderer.render(scene, camera); // first frame before the fade
     const debugFps = createDebugFps();
-    renderer.setAnimationLoop(() => {
+    let last: number | null = null;
+    renderer.setAnimationLoop((time: number) => {
+      const dt = last === null ? 0 : Math.min((time - last) / 1000, 0.1);
+      last = time;
+      const { yaw, pitch } = look.update(dt);
+      applyLook(camera, base, yaw, pitch);
       renderer.render(scene, camera);
       debugFps?.();
     });
     loading.fadeOut();
   } catch (err) {
     window.removeEventListener('resize', onResize);
+    look.dispose();
     renderer.setAnimationLoop(null);
     renderer.dispose();
     return showFallback('load-failed', err);
