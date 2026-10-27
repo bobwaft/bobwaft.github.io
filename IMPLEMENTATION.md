@@ -51,16 +51,16 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] `lookControls`: input → target yaw/pitch, clamp to range, damp toward target (frame-rate independent) — unit tested
 - [x] Return to centre gently when the mouse leaves the window
 - [x] Touch: drag-to-look; tap/drag threshold of 10 px — unit tested
-- [ ] Portrait idle pose (aspect < 1): tune with `?debug`, store in `poses.ts`; tween between landscape and portrait poses on resize/rotation _(tween + ?debug tooling done; pose values are a first guess, still to tune in-browser)_
+- [x] Portrait idle pose (aspect < 1): tune with `?debug`, store in `poses.ts`; tween between landscape and portrait poses on resize/rotation
 - [x] `prefers-reduced-motion`: reduce range/smoothing per D-13
 - [x] `?debug` mode: free orbit camera + on-screen readout of camera position/target (for tuning poses)
 
 ### You test
 - [ ] Moving the mouse pans the view smoothly; it stops at the edges of the allowed range
-- [ ] The whole desk is visible and you can't look at the ceiling or floor
-- [ ] On a phone in portrait, the whole desk is visible; rotating to landscape switches smoothly to the `Cam_Main` view
-- [ ] On touch, dragging looks around and a short tap doesn't move the camera
-- [ ] `?debug` lets you orbit freely and shows camera coordinates
+- [x] The whole desk is visible and you can't look at the ceiling or floor
+- [x] On a phone in portrait, the whole desk is visible; rotating to landscape switches smoothly to the `Cam_Main` view
+- [x] On touch, dragging looks around and a short tap doesn't move the camera
+- [x] `?debug` lets you orbit freely and shows camera coordinates
 
 ---
 
