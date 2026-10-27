@@ -28,6 +28,17 @@ Running log of facts, gotchas, and open questions for this project. Newest entri
 - `scene-lighting.js` leaves `M_Screen` (laptop) and `M_Glass` (window) as exported — swap the screen map for content.
 - `scene-lighting.js` defaults the Draco decoder to the gstatic CDN; we pass `/draco/` (self-hosted) instead.
 
+## Local changes to `src/scene/scene-lighting.js`
+
+Re-apply these when dropping in a new Blender export (the file is excluded from Prettier to keep diffs against the export small):
+- 2026-10-27: hard-coded `DECODE` replaced by `parseDecodeMultipliers(json)`; `loadDeskScene` fetches `${texDir}lightmap_scales.json` alongside the GLB and builds the shader from it (ISSUE-1). A malformed JSON rejects the load.
+
+## Gotchas
+
+- `public/draco/` is a copy of `three/examples/jsm/libs/draco/gltf/` (glTF-only decoder, smaller). Re-copy it whenever `three` is upgraded.
+- TypeScript is pinned to 6.0.x: typescript-eslint 8.x only supports TS < 6.1 (TS 7 is out but unsupported as of 2026-10-27).
+- `core.autocrlf` is on for this machine; `.gitattributes` forces LF so `prettier --check` passes on Windows and CI alike.
+
 ## Known issues
 
 ### ISSUE-1. Lightmap decode multipliers disagree (resolved 2026-10-27: read `lightmap_scales.json` at runtime, see ARCHITECTURE A-2)

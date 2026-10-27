@@ -16,7 +16,18 @@ import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 
 // Decode multipliers written at bake time (export/textures/lightmap_scales.json).
 // The PNGs are normalised; multiply by these to get back the true baked intensity.
-const DECODE = { sun: 1.3069, night: 5.285, shelf: 3.7393 };
+// [local change] Read from the JSON at load time instead of hard-coded, so they can't drift from the bake.
+export function parseDecodeMultipliers(json) {
+  const m = json?.decode_multipliers;
+  const pick = (pass) => {
+    const v = m?.[pass];
+    if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) {
+      throw new Error(`lightmap_scales.json: decode_multipliers.${pass} must be a positive number, got ${JSON.stringify(v)}`);
+    }
+    return v;
+  };
+  return { sun: pick('Sun'), night: pick('Night'), shelf: pick('Shelf') };
+}
 
 // Shared uniforms: change .value anywhere and every baked material updates.
 export const lighting = {
@@ -42,7 +53,7 @@ const vert = /* glsl */`
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
   }`;
 
-const frag = /* glsl */`
+const makeFrag = (DECODE) => /* glsl */`
   uniform sampler2D tBase, tAO, tSun, tNight, tShelf;
   uniform float uDay, uNight, uLight, kSun, kNight, kShelf, aoStrength;
   uniform vec3 uEmissive;
@@ -66,7 +77,7 @@ function loadTex(loader, url, srgb) {
   return t;
 }
 
-function bakedMaterial(set, baseMap, texDir, texLoader, emissive = null) {
+function bakedMaterial(set, baseMap, texDir, texLoader, decode, emissive = null) {
   const lm = (pass, srgb = true) => loadTex(texLoader, `${texDir}LM_${pass}_${set}.png`, srgb);
   return new THREE.ShaderMaterial({
     uniforms: {
@@ -79,13 +90,16 @@ function bakedMaterial(set, baseMap, texDir, texLoader, emissive = null) {
       uEmissive: { value: emissive ?? new THREE.Color(0, 0, 0) },
     },
     vertexShader: vert,
-    fragmentShader: frag,
+    fragmentShader: makeFrag(decode),
   });
 }
 
 export async function loadDeskScene(glbUrl, texDir, dracoPath = 'https://www.gstatic.com/draco/versioned/decoders/1.5.7/') {
   const draco = new DRACOLoader().setDecoderPath(dracoPath);
-  const gltf = await new GLTFLoader().setDRACOLoader(draco).loadAsync(glbUrl);
+  const [gltf, decode] = await Promise.all([
+    new GLTFLoader().setDRACOLoader(draco).loadAsync(glbUrl),
+    new THREE.FileLoader().setResponseType('json').loadAsync(`${texDir}lightmap_scales.json`).then(parseDecodeMultipliers),
+  ]);
   const texLoader = new THREE.TextureLoader();
   const cache = {};
 
@@ -94,11 +108,11 @@ export async function loadDeskScene(glbUrl, texDir, dracoPath = 'https://www.gst
     const m = o.material;
     if (m.name === 'M_Env_Baked' || m.name === 'M_Env_ShelfBulb') {
       const key = m.name;
-      cache[key] ??= bakedMaterial('Env', m.map, texDir, texLoader,
+      cache[key] ??= bakedMaterial('Env', m.map, texDir, texLoader, decode,
         m.name === 'M_Env_ShelfBulb' ? new THREE.Color(3.0, 1.6, 0.6) : null);   // bulb glow fades with uLight
       o.material = cache[key];
     } else if (m.name === 'M_Click_Baked') {
-      cache.click ??= bakedMaterial('Click', m.map, texDir, texLoader);
+      cache.click ??= bakedMaterial('Click', m.map, texDir, texLoader, decode);
       o.material = cache.click;
     } else if (m.name === 'M_Out_CityLights') {
       // Skyline window grid: additive, so black = invisible. Fades in with uNight.
