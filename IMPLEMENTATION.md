@@ -95,7 +95,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] Confirm which light the cord controls (MEMORY.md open question 1) and adjust if needed
 - [x] Shuffle-bag playlist (no repeats until all played, no immediate repeat across reshuffles) — unit tested
 - [x] Audio player: on/off toggle with volume fade, next track on `ended`, pause on tab hidden / resume on visible
-- [ ] Speaker pulse while playing
+- [x] Speaker pulse while playing
 - [x] Empty-playlist handling: warning in console, no visible change, no errors
 - [ ] Add the owner's tracks to `public/audio/` and `playlist.json` once provided (licence confirmed)
 

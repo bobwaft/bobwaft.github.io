@@ -101,7 +101,12 @@ async function boot(): Promise<void> {
     createAudio: () => new Audio(),
     doc: document,
   });
-  speaker.bind({ toggle: () => player.toggle() });
+  const speakerObject = [...registered].find(([, m]) => m === speaker)?.[0];
+  speaker.bind({
+    toggle: () => player.toggle(),
+    isPlaying: () => player.isPlaying(),
+    object: speakerObject,
+  });
   const updatable = [...new Set(registered.values())].filter((m) => m.update);
   let app = initialState();
   const dispatch = (event: AppEvent) => {
