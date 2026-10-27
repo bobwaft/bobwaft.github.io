@@ -28,7 +28,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 
 ## Phase 1 — Render the scene
 
-- [ ] Renderer: WebGL2, `outputColorSpace = SRGBColorSpace`, `toneMapping = AgXToneMapping`, pixel ratio capped at 2, resize handling
+- [x] Renderer: WebGL2, `outputColorSpace = SRGBColorSpace`, `toneMapping = AgXToneMapping`, pixel ratio capped at 2, resize handling
 - [ ] Load the scene with `loadDeskScene('/models/desk_scene_draco.glb', '/models/textures/', '/draco/')`
 - [ ] Use `Cam_Main` (FOV, near/far, pose) as the camera; update aspect on resize
 - [ ] Apply a default time of day (`setTimeOfDay`) and **lamp on** (`lighting.uLight = 1`)
