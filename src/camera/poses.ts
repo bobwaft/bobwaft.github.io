@@ -1,4 +1,5 @@
 import { Matrix4, Quaternion, Vector3 } from 'three';
+import type { FocusSpec } from '../objects/types';
 
 export type IdlePoseKind = 'portrait' | 'landscape';
 export type Vec3 = [number, number, number];
@@ -28,3 +29,16 @@ export function poseFromLookAt(
   const m = new Matrix4().lookAt(eye, at, new Vector3(0, 1, 0));
   return { position: eye, quaternion: new Quaternion().setFromRotationMatrix(m) };
 }
+
+// Focus views (D-3). First guesses: to be hand-tuned with ?debug.
+
+/** Set to a world-space direction (camera looks along it) to override the laptop screen normal. */
+export const LAPTOP_VIEW_OVERRIDE: Vec3 | null = null;
+
+export const LAPTOP_FOCUS: FocusSpec = {
+  viewDirection: LAPTOP_VIEW_OVERRIDE ?? 'surface-normal',
+  margin: 1.05,
+};
+// Top-down: lookAt with up = +Y degenerates, so the up hint points away from the user (-Z).
+export const PAPERS_FOCUS: FocusSpec = { viewDirection: [0, -1, 0], up: [0, 0, -1], margin: 1.1 };
+export const NOTEBOOK_FOCUS: FocusSpec = { viewDirection: [0, -1, 0], up: [0, 0, -1], margin: 1.1 };

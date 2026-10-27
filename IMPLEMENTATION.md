@@ -67,7 +67,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 ## Phase 3 — Interaction framework
 
 - [x] App state machine (`loading → idle ⇄ transitioning → focused`) with guards, including outside-click and other-interactable-click → exit — unit tested
-- [ ] Object registry + raycast picker against registered objects only (child → registered ancestor)
+- [x] Object registry + raycast picker against registered objects only (child → registered ancestor)
 - [ ] Mouse hover feedback: pointer cursor + label + slight brighten on interactables
 - [ ] Touch discoverability: pulsing dots on each interactable, each fading once that object has been used (session only)
 - [ ] Focus tween: position + quaternion slerp to a pose and back, ease-in-out, ~1 s
