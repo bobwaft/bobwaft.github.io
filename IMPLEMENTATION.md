@@ -79,12 +79,12 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] One-time hint (mouse and touch wording)
 
 ### You test
-- [ ] Hovering laptop, papers, notebook, speaker, and pull cord shows a pointer and label; other objects don't
-- [ ] On a phone, dots mark the five interactables and each one's dot disappears after you use it
-- [ ] Clicking laptop / papers / notebook moves the camera to a close-up that fits the object, in both landscape and portrait
-- [ ] While focused, the mouse moves the view only very slightly
+- [x] Hovering laptop, papers, notebook, speaker, and pull cord shows a pointer and label; other objects don't
+- [x] On a phone, dots mark the five interactables and each one's dot disappears after you use it
+- [x] Clicking laptop / papers / notebook moves the camera to a close-up that fits the object, in both landscape and portrait
+- [x] While focused, the mouse moves the view only very slightly
 - [x] Back button, `Esc`, clicking empty space, and clicking another object each return to the idle view smoothly
-- [ ] Rapid double-clicks or clicking during a move don't break the camera
+- [x] Rapid double-clicks or clicking during a move don't break the camera
 
 ---
 
