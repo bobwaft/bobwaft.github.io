@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createFpsCounter, fpsFromFrames, isDebug } from '../../src/ui/fpsCalc';
+import { createFpsCounter, formatPerfReadout, fpsFromFrames, isDebug } from '../../src/ui/fpsCalc';
 
 describe('isDebug', () => {
   it('detects the debug param', () => {
@@ -38,5 +38,35 @@ describe('createFpsCounter', () => {
     const tick = createFpsCounter(500);
     expect(tick(0)).toBeNull();
     expect(tick(16)).toBeNull();
+  });
+});
+
+describe('formatPerfReadout', () => {
+  it('shows fps, pixel ratio, buffer size, draw calls, triangles and GPU', () => {
+    expect(
+      formatPerfReadout({
+        fps: 23.6,
+        pixelRatio: 2,
+        width: 3840,
+        height: 2160,
+        calls: 142,
+        triangles: 512345,
+        gpu: 'ANGLE (Intel, Iris Xe)',
+      }),
+    ).toBe('24 fps · dpr 2 · 3840×2160 · 142 calls · 512k tris\nGPU: ANGLE (Intel, Iris Xe)');
+  });
+
+  it('omits the GPU line when unknown', () => {
+    expect(
+      formatPerfReadout({
+        fps: 60,
+        pixelRatio: 1.25,
+        width: 1600,
+        height: 900,
+        calls: 10,
+        triangles: 900,
+        gpu: null,
+      }),
+    ).toBe('60 fps · dpr 1.25 · 1600×900 · 10 calls · 1k tris');
   });
 });

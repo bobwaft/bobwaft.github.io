@@ -1,5 +1,10 @@
 import { AgXToneMapping, SRGBColorSpace, WebGLRenderer } from 'three';
-import { cappedPixelRatio } from './pixelRatio';
+import { cappedPixelRatio, pixelRatioOverride } from './pixelRatio';
+
+/** Device pixel ratio (capped), unless `?dpr=` forces one. */
+function pixelRatio(): number {
+  return pixelRatioOverride(window.location.search) ?? cappedPixelRatio(window.devicePixelRatio);
+}
 
 /** Creates the WebGL2 renderer. Throws if a WebGL2 context cannot be created. */
 export function createRenderer(canvas: HTMLCanvasElement): WebGLRenderer {
@@ -8,7 +13,7 @@ export function createRenderer(canvas: HTMLCanvasElement): WebGLRenderer {
   const renderer = new WebGLRenderer({ canvas, context });
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = AgXToneMapping;
-  renderer.setPixelRatio(cappedPixelRatio(window.devicePixelRatio));
+  renderer.setPixelRatio(pixelRatio());
   resizeToWindow(renderer);
   return renderer;
 }
@@ -24,7 +29,7 @@ export function resizeToWindow(
 ): void {
   const w = Math.max(renderer.domElement.clientWidth, 1);
   const h = Math.max(renderer.domElement.clientHeight, 1);
-  renderer.setPixelRatio(cappedPixelRatio(window.devicePixelRatio));
+  renderer.setPixelRatio(pixelRatio());
   renderer.setSize(w, h, false);
   if (camera) {
     camera.aspect = w / h;

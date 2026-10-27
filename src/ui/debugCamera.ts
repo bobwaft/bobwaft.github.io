@@ -40,7 +40,7 @@ export function createDebugCamera(
   const el = document.createElement('div');
   el.id = 'debug-camera';
   el.style.cssText =
-    'position:fixed;top:28px;left:8px;padding:2px 6px;background:rgba(0,0,0,.6);' +
+    'position:fixed;top:8px;left:8px;padding:2px 6px;background:rgba(0,0,0,.6);' +
     'color:#9f9;font:12px monospace;z-index:20;pointer-events:none;white-space:pre';
   document.body.appendChild(el);
 

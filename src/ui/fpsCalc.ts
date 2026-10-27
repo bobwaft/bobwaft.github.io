@@ -29,3 +29,21 @@ export function createFpsCounter(windowMs = FPS_WINDOW_MS): (nowMs: number) => n
     return fps;
   };
 }
+
+export interface PerfInfo {
+  fps: number;
+  pixelRatio: number;
+  width: number;
+  height: number;
+  calls: number;
+  triangles: number;
+  gpu: string | null;
+}
+
+/** Debug overlay text: fps, pixel ratio, drawing-buffer size, draw calls, triangles, GPU. */
+export function formatPerfReadout(p: PerfInfo): string {
+  const line =
+    `${p.fps.toFixed(0)} fps · dpr ${p.pixelRatio} · ${p.width}×${p.height} · ` +
+    `${p.calls} calls · ${Math.round(p.triangles / 1000)}k tris`;
+  return p.gpu ? `${line}\nGPU: ${p.gpu}` : line;
+}

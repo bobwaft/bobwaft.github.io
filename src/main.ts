@@ -79,7 +79,7 @@ async function boot(): Promise<void> {
     );
     look.setEnabled(!debugCamera);
     renderer.render(scene, camera); // first frame before the fade
-    const debugFps = createDebugFps();
+    const debugFps = createDebugFps(renderer);
     let last: number | null = null;
     renderer.setAnimationLoop((time: number) => {
       const dt = last === null ? 0 : Math.min((time - last) / 1000, 0.1);
