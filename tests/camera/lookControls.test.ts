@@ -9,6 +9,7 @@ import {
   TAP_THRESHOLD_PX,
   leftWindow,
   lookSettings,
+  DAMPING,
   IDLE_RANGE,
   targetFromInput,
 } from '../../src/camera/lookControls';
@@ -121,7 +122,11 @@ describe('dragInput', () => {
 
 describe('lookSettings', () => {
   it('normal motion uses the full range and 0.8 s tween', () => {
-    expect(lookSettings(false)).toEqual({ range: IDLE_RANGE, poseTweenSeconds: 0.8 });
+    expect(lookSettings(false)).toEqual({
+      range: IDLE_RANGE,
+      damping: DAMPING,
+      poseTweenSeconds: 0.8,
+    });
   });
 
   it('reduced motion scales the range by 0.4 and cuts instantly', () => {
@@ -129,5 +134,9 @@ describe('lookSettings', () => {
     expect(s.range.yaw).toBeCloseTo(IDLE_RANGE.yaw * 0.4);
     expect(s.range.pitch).toBeCloseTo(IDLE_RANGE.pitch * 0.4);
     expect(s.poseTweenSeconds).toBe(0);
+  });
+
+  it('reduced motion damps faster (less smoothing lag)', () => {
+    expect(lookSettings(true).damping).toBeGreaterThan(DAMPING);
   });
 });

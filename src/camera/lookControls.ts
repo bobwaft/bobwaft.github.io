@@ -55,11 +55,18 @@ export function leftWindow(relatedTarget: EventTarget | null): boolean {
   return relatedTarget === null;
 }
 
-/** Look range and pose-tween duration for the user's motion preference (D-13). */
-export function lookSettings(reduced: boolean): { range: LookRange; poseTweenSeconds: number } {
-  if (!reduced) return { range: IDLE_RANGE, poseTweenSeconds: 0.8 };
+export interface LookSettings {
+  range: LookRange;
+  damping: number;
+  poseTweenSeconds: number;
+}
+
+/** Look range, damping and pose-tween duration for the user's motion preference (D-13). */
+export function lookSettings(reduced: boolean): LookSettings {
+  if (!reduced) return { range: IDLE_RANGE, damping: DAMPING, poseTweenSeconds: 0.8 };
   return {
     range: { yaw: IDLE_RANGE.yaw * 0.4, pitch: IDLE_RANGE.pitch * 0.4 },
+    damping: DAMPING * 2.5,
     poseTweenSeconds: 0,
   };
 }
@@ -88,6 +95,7 @@ export function dragInput(
 
 export interface LookControlsOptions {
   range?: LookRange;
+  damping?: number;
   /** Called for a touch/pen tap (movement under the threshold). */
   onTap?: (clientX: number, clientY: number) => void;
 }
@@ -96,6 +104,7 @@ export interface LookControls {
   /** Advances damping by dt seconds and returns the current yaw/pitch. */
   update(dt: number): LookRange;
   setRange(range: LookRange): void;
+  setDamping(lambda: number): void;
   setEnabled(enabled: boolean): void;
   dispose(): void;
 }
@@ -106,6 +115,7 @@ export function createLookControls(
   opts: LookControlsOptions = {},
 ): LookControls {
   let range = opts.range ?? IDLE_RANGE;
+  let damping = opts.damping ?? DAMPING;
   let enabled = true;
   let inputX = 0;
   let inputY = 0;
@@ -130,7 +140,16 @@ export function createLookControls(
     dragging: boolean;
   } | null = null;
   const onDown = (e: PointerEvent) => {
-    if (e.pointerType === 'mouse') return;
+    // Only the first finger looks; extra fingers (pinch) are ignored until it lifts.
+    if (e.pointerType === 'mouse' || touch) return;
+    // Keep receiving moves/up if a pen drag leaves the canvas.
+    if (element.hasPointerCapture && !element.hasPointerCapture(e.pointerId)) {
+      try {
+        element.setPointerCapture(e.pointerId);
+      } catch {
+        // Capture is best-effort.
+      }
+    }
     touch = {
       id: e.pointerId,
       x: e.clientX,
@@ -159,10 +178,11 @@ export function createLookControls(
     touch = null;
     if (!t.dragging && isTap(e.clientX - t.x, e.clientY - t.y)) opts.onTap?.(e.clientX, e.clientY);
   };
-  const onCancel = () => {
-    touch = null;
+  const onCancel = (e: PointerEvent) => {
+    if (touch && e.pointerId === touch.id) touch = null;
   };
-  element.addEventListener('pointermove', onMove);
+  // Mouse look listens on window so later HTML overlays (back button, labels) don't block it.
+  window.addEventListener('pointermove', onMove);
   element.addEventListener('pointermove', onTouchMove);
   element.addEventListener('pointerdown', onDown);
   element.addEventListener('pointerup', onUp);
@@ -173,18 +193,21 @@ export function createLookControls(
   return {
     update(dt) {
       const t = targetFromInput(inputX, inputY, range);
-      current.yaw = damp(current.yaw, t.yaw, DAMPING, dt);
-      current.pitch = damp(current.pitch, t.pitch, DAMPING, dt);
+      current.yaw = damp(current.yaw, t.yaw, damping, dt);
+      current.pitch = damp(current.pitch, t.pitch, damping, dt);
       return current;
     },
     setRange(r) {
       range = r;
     },
+    setDamping(lambda) {
+      damping = lambda;
+    },
     setEnabled(v) {
       enabled = v;
     },
     dispose() {
-      element.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointermove', onMove);
       element.removeEventListener('pointermove', onTouchMove);
       element.removeEventListener('pointerdown', onDown);
       element.removeEventListener('pointerup', onUp);

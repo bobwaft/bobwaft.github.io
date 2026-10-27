@@ -22,6 +22,8 @@ export interface DebugCamera {
 }
 
 /** Free-orbit camera plus pose readout overlay, or null unless `?debug` is set. */
+const ORBIT_TARGET_DISTANCE = 0.7;
+
 export function createDebugCamera(
   camera: PerspectiveCamera,
   canvas: HTMLCanvasElement,
@@ -29,7 +31,10 @@ export function createDebugCamera(
 ): DebugCamera | null {
   if (!isDebug(window.location.search)) return null;
   const controls = new OrbitControls(camera, canvas);
-  controls.target.copy(camera.position).add(camera.getWorldDirection(new Vector3()));
+  // Pivot roughly at the desk (~0.7 m ahead) rather than just in front of the eye.
+  controls.target
+    .copy(camera.position)
+    .add(camera.getWorldDirection(new Vector3()).multiplyScalar(ORBIT_TARGET_DISTANCE));
   controls.update();
 
   const el = document.createElement('div');

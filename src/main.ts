@@ -57,10 +57,15 @@ async function boot(): Promise<void> {
   };
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let settings = lookSettings(reducedMotion.matches);
-  const look = createLookControls(canvas, { range: settings.range });
+  const look = createLookControls(canvas, { range: settings.range, damping: settings.damping });
   const onMotionChange = () => {
     settings = lookSettings(reducedMotion.matches);
     look.setRange(settings.range);
+    look.setDamping(settings.damping);
+    // Switching to reduced motion cuts a pose move that is already running.
+    if (poseTween.active && settings.poseTweenSeconds === 0) {
+      poseTween.start(base, poses[poseKind], 0);
+    }
   };
   reducedMotion.addEventListener('change', onMotionChange);
   try {
