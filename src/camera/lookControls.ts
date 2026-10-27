@@ -50,11 +50,6 @@ export function centreInput(): { x: number; y: number } {
   return { x: 0, y: 0 };
 }
 
-/** True when a mouseout's relatedTarget shows the pointer left the window. */
-export function leftWindow(relatedTarget: EventTarget | null): boolean {
-  return relatedTarget === null;
-}
-
 export interface LookSettings {
   range: LookRange;
   damping: number;
@@ -129,9 +124,6 @@ export function createLookControls(
   const recentre = () => {
     ({ x: inputX, y: inputY } = centreInput());
   };
-  const onMouseOut = (e: MouseEvent) => {
-    if (leftWindow(e.relatedTarget)) recentre();
-  };
   let touch: {
     id: number;
     x: number;
@@ -187,7 +179,7 @@ export function createLookControls(
   element.addEventListener('pointerdown', onDown);
   element.addEventListener('pointerup', onUp);
   element.addEventListener('pointercancel', onCancel);
-  document.addEventListener('mouseout', onMouseOut);
+  // Leaving the window keeps the view where it was (BUG-002); losing focus recentres.
   window.addEventListener('blur', recentre);
 
   return {
@@ -212,7 +204,6 @@ export function createLookControls(
       element.removeEventListener('pointerdown', onDown);
       element.removeEventListener('pointerup', onUp);
       element.removeEventListener('pointercancel', onCancel);
-      document.removeEventListener('mouseout', onMouseOut);
       window.removeEventListener('blur', recentre);
     },
   };

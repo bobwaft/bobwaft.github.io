@@ -32,4 +32,4 @@ Number bugs sequentially and never reuse a number.
 - Expected (user decision 2026-10-27, replaces the "return to centre on mouse leave" TODO / D-2): hold the current view when the mouse leaves; recentre gently only on window/tab blur
 - Actual: view drifts back to centre on mouse leave
 - Severity: med
-- Status: open
+- Status: fixed 2026-10-27, awaiting re-test

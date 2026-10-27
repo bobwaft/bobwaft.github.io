@@ -20,6 +20,7 @@ The camera rotates toward the cursor position (cursor at screen edge = max yaw/p
 **Details:**
 - Small range (starting point: yaw ±25°, pitch ±12°, tuned in-browser), eased with damping so motion feels weighty, not twitchy.
 - Touch devices use drag-to-look; a touch that moves < 10 px is a tap.
+- When the mouse leaves the window the view stays where it was; it recentres gently only when the window or tab loses focus (decided 2026-10-27, BUG-002).
 
 ### D-2a. Portrait screens get their own idle pose
 On portrait screens (aspect < 1), the idle camera uses a separate hand-tuned pose, pulled back/up so the whole desk fits. Landscape uses `Cam_Main`.

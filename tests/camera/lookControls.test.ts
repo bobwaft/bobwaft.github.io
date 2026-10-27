@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PerspectiveCamera, Quaternion, Vector3, Euler } from 'three';
 import {
   applyLook,
@@ -7,7 +7,7 @@ import {
   dragInput,
   isTap,
   TAP_THRESHOLD_PX,
-  leftWindow,
+  createLookControls,
   lookSettings,
   DAMPING,
   IDLE_RANGE,
@@ -69,14 +69,44 @@ describe('applyLook', () => {
   });
 });
 
-describe('return to centre', () => {
+describe('mouse leave and blur (BUG-002)', () => {
+  // Minimal DOM stand-ins: the controller only needs EventTargets and the window size.
+  const setup = () => {
+    const win = Object.assign(new EventTarget(), { innerWidth: 1000, innerHeight: 500 });
+    const doc = new EventTarget();
+    vi.stubGlobal('window', win);
+    vi.stubGlobal('document', doc);
+    const look = createLookControls(new EventTarget() as unknown as HTMLElement);
+    const fire = (target: EventTarget, type: string, props: object = {}) =>
+      target.dispatchEvent(Object.assign(new Event(type), props));
+    const settle = () => {
+      for (let i = 0; i < 100; i++) look.update(0.1);
+      return look.update(0.1);
+    };
+    return { win, doc, look, fire, settle };
+  };
+  afterEach(() => vi.unstubAllGlobals());
+
   it('centreInput is the neutral input', () => {
     expect(centreInput()).toEqual({ x: 0, y: 0 });
   });
 
-  it('leftWindow is true only when mouseout has no relatedTarget', () => {
-    expect(leftWindow(null)).toBe(true);
-    expect(leftWindow({} as EventTarget)).toBe(false);
+  it('holds the view when the mouse leaves the window', () => {
+    const { win, doc, fire, settle } = setup();
+    fire(win, 'pointermove', { pointerType: 'mouse', clientX: 1000, clientY: 250 });
+    expect(settle().yaw).toBeCloseTo(-IDLE_RANGE.yaw);
+    fire(doc, 'mouseout', { relatedTarget: null });
+    expect(settle().yaw).toBeCloseTo(-IDLE_RANGE.yaw);
+  });
+
+  it('recentres when the window loses focus', () => {
+    const { win, fire, settle } = setup();
+    fire(win, 'pointermove', { pointerType: 'mouse', clientX: 1000, clientY: 0 });
+    settle();
+    fire(win, 'blur');
+    const { yaw, pitch } = settle();
+    expect(yaw).toBeCloseTo(0);
+    expect(pitch).toBeCloseTo(0);
   });
 });
 

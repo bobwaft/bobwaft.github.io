@@ -49,14 +49,14 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 ## Phase 2 — Look-around camera
 
 - [x] `lookControls`: input → target yaw/pitch, clamp to range, damp toward target (frame-rate independent) — unit tested
-- [x] Return to centre gently when the mouse leaves the window
+- [x] Hold the view when the mouse leaves the window; return to centre gently when the window loses focus (BUG-002)
 - [x] Touch: drag-to-look; tap/drag threshold of 10 px — unit tested
 - [x] Portrait idle pose (aspect < 1): tune with `?debug`, store in `poses.ts`; tween between landscape and portrait poses on resize/rotation
 - [x] `prefers-reduced-motion`: reduce range/smoothing per D-13
 - [x] `?debug` mode: free orbit camera + on-screen readout of camera position/target (for tuning poses)
 
 ### You test
-- [ ] Moving the mouse pans the view smoothly; it stops at the edges of the allowed range
+- [ ] Moving the mouse pans the view smoothly; it stops at the edges of the allowed range and stays there when the mouse leaves the window
 - [x] The whole desk is visible and you can't look at the ceiling or floor
 - [x] On a phone in portrait, the whole desk is visible; rotating to landscape switches smoothly to the `Cam_Main` view
 - [x] On touch, dragging looks around and a short tap doesn't move the camera
