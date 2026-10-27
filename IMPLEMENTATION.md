@@ -19,8 +19,8 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [ ] Create the `bobwaft.github.io` repo on GitHub (if it doesn't exist), set Pages source to "GitHub Actions", push
 
 ### You test
-- [ ] `npm run dev` starts and shows a blank page with no console errors
-- [ ] `npm run build`, `npm test`, and `npm run lint` all succeed
+- [x] `npm run dev` starts and shows a blank page with no console errors
+- [x] `npm run build`, `npm test`, and `npm run lint` all succeed
 - [ ] Pushing to `main` runs the workflow and deploys to https://bobwaft.github.io
 - [ ] A deliberately failing test blocks the deploy (then revert it)
 
