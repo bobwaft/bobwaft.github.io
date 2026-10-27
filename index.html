@@ -81,6 +81,21 @@
         background: rgba(40, 40, 40, 0.9);
         border-color: #aaa;
       }
+      #hover-label {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 4;
+        padding: 0.2rem 0.55rem;
+        border-radius: 4px;
+        background: rgba(17, 17, 17, 0.8);
+        color: #eee;
+        font:
+          0.8rem system-ui,
+          sans-serif;
+        pointer-events: none;
+        white-space: nowrap;
+      }
       @media (prefers-reduced-motion: reduce) {
         #loading {
           transition: none;

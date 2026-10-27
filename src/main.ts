@@ -6,6 +6,8 @@ import { createFocusController } from './camera/focusController';
 import { createPoseTween } from './camera/focusTween';
 import { createClickInput } from './interaction/clickInput';
 import { createFocusPoseResolver } from './interaction/focusPoses';
+import { hoverTarget } from './interaction/hover';
+import { createHoverView } from './interaction/hoverView';
 import { createPicker } from './interaction/picker';
 import { initialState, transition, inFocusView, type AppEvent } from './interaction/stateMachine';
 import { idlePoseKind, PORTRAIT_IDLE_POSE, poseFromLookAt } from './camera/poses';
@@ -63,6 +65,7 @@ async function boot(): Promise<void> {
     seconds: () => settings.focusSeconds,
     onArrived: () => dispatch({ type: 'arrived' }),
   });
+  const hoverView = createHoverView(canvas, registered);
   const backButton = createBackButton(() => dispatch({ type: 'back' }));
   let app = initialState();
   const dispatch = (event: AppEvent) => {
@@ -76,6 +79,7 @@ async function boot(): Promise<void> {
     } else if (action?.type === 'activate') {
       for (const m of registered.values()) if (m.id === action.id) m.onClick?.();
     }
+    hoverView.show(null); // hover only exists in idle; a state change clears it
     applyLookRange();
     backButton.setVisible(inFocusView(app));
   };
@@ -124,6 +128,22 @@ async function boot(): Promise<void> {
         });
       });
     }
+    if (!debugCamera) {
+      const onHover = (e: PointerEvent) => {
+        const module = picker.pick(e.clientX, e.clientY);
+        const id = hoverTarget(app, e.pointerType, module?.id ?? null);
+        hoverView.show(id ? module : null, e.clientX, e.clientY);
+      };
+      const onLeave = () => hoverView.show(null);
+      canvas.addEventListener('pointermove', onHover);
+      canvas.addEventListener('pointerleave', onLeave);
+      const prev = disposeClicks;
+      disposeClicks = () => {
+        prev();
+        canvas.removeEventListener('pointermove', onHover);
+        canvas.removeEventListener('pointerleave', onLeave);
+      };
+    }
     dispatch({ type: 'loaded' });
     renderer.render(scene, camera); // first frame before the fade
     const debugFps = createDebugFps(renderer);
@@ -148,6 +168,7 @@ async function boot(): Promise<void> {
     look.dispose();
     disposeClicks();
     backButton.dispose();
+    hoverView.dispose();
     debugCamera?.dispose();
     renderer.setAnimationLoop(null);
     renderer.dispose();
