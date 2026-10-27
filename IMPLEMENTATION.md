@@ -66,7 +66,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 
 ## Phase 3 — Interaction framework
 
-- [ ] App state machine (`loading → idle ⇄ transitioning → focused`) with guards, including outside-click and other-interactable-click → exit — unit tested
+- [x] App state machine (`loading → idle ⇄ transitioning → focused`) with guards, including outside-click and other-interactable-click → exit — unit tested
 - [ ] Object registry + raycast picker against registered objects only (child → registered ancestor)
 - [ ] Mouse hover feedback: pointer cursor + label + slight brighten on interactables
 - [ ] Touch discoverability: pulsing dots on each interactable, each fading once that object has been used (session only)
@@ -74,7 +74,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [ ] Focus poses: lookAt target + view direction + surface size; distance computed from FOV/aspect to fit the surface — unit tested; then hand-tune laptop, papers (top-down), notebook (top-down)
 - [ ] Slight parallax (~1–2°) while focused
 - [ ] Back button, `Esc`, and clicking outside the focused object/content all return to idle
-- [ ] Ignore clicks while transitioning
+- [x] Ignore clicks while transitioning
 - [ ] Reduced-motion variant of the focus transition
 - [ ] One-time hint (mouse and touch wording)
 
