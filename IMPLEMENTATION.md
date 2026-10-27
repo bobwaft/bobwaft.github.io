@@ -75,7 +75,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] Slight parallax (~1–2°) while focused
 - [x] Back button, `Esc`, and clicking outside the focused object/content all return to idle
 - [x] Ignore clicks while transitioning
-- [ ] Reduced-motion variant of the focus transition
+- [x] Reduced-motion variant of the focus transition
 - [ ] One-time hint (mouse and touch wording)
 
 ### You test
