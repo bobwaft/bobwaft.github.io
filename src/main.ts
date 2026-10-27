@@ -17,6 +17,7 @@ import { showFallback } from './ui/fallback';
 import { fallbackReason } from './ui/fallbackReason';
 import { createBackButton } from './ui/backButton';
 import { createTouchDots, isTouchPointerType } from './ui/touchDots';
+import { showHint } from './ui/hint';
 import { createLoadingScreen } from './ui/loading';
 
 async function boot(): Promise<void> {
@@ -171,6 +172,7 @@ async function boot(): Promise<void> {
       renderer.render(scene, camera);
       debugFps?.();
     });
+    showHint(touchSeen);
     loading.fadeOut();
   } catch (err) {
     window.removeEventListener('resize', onResize);

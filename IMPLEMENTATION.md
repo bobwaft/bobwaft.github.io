@@ -76,7 +76,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] Back button, `Esc`, and clicking outside the focused object/content all return to idle
 - [x] Ignore clicks while transitioning
 - [x] Reduced-motion variant of the focus transition
-- [ ] One-time hint (mouse and touch wording)
+- [x] One-time hint (mouse and touch wording)
 
 ### You test
 - [ ] Hovering laptop, papers, notebook, speaker, and pull cord shows a pointer and label; other objects don't

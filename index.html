@@ -115,7 +115,32 @@
           box-shadow: 0 0 0 16px rgba(255, 255, 255, 0);
         }
       }
+      #hint {
+        position: fixed;
+        left: 50%;
+        bottom: 1.5rem;
+        z-index: 4;
+        transform: translateX(-50%);
+        max-width: 90vw;
+        padding: 0.45rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(17, 17, 17, 0.7);
+        color: #ddd;
+        font:
+          0.85rem system-ui,
+          sans-serif;
+        text-align: center;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.8s ease;
+      }
+      #hint.show {
+        opacity: 1;
+      }
       @media (prefers-reduced-motion: reduce) {
+        #hint {
+          transition: none;
+        }
         .touch-dot {
           animation: none;
           transition: none;
