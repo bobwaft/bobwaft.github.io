@@ -50,6 +50,8 @@ export function createPlayer(opts: PlayerOptions): Player {
     opts.onChange?.(on);
   };
   const fail = (err: unknown) => {
+    // pause() rejects a pending play() with AbortError; that's not a failure.
+    if (err instanceof Error && err.name === 'AbortError') return;
     console.warn('Audio playback failed', err);
     sounding = false;
     setOn(false);
@@ -68,7 +70,8 @@ export function createPlayer(opts: PlayerOptions): Player {
     const track = bag.next();
     if (track === undefined) return;
     audio.src = track;
-    play();
+    if (on && !opts.doc.hidden) play();
+    else sounding = false;
   };
   const onVisibility = () => {
     if (!audio) return;

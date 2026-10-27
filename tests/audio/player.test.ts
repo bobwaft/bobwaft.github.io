@@ -137,6 +137,36 @@ describe('audio player', () => {
     warn.mockRestore();
   });
 
+  it('ignores AbortError (play interrupted by pause) and resumes on visible', async () => {
+    const { player, audios, doc } = setup();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    player.toggle();
+    audios[0].playResult = Promise.reject(new DOMException('interrupted', 'AbortError'));
+    audios[0].emitEnded();
+    doc.set(true);
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(player.isPlaying()).toBe(true);
+    expect(warn).not.toHaveBeenCalled();
+    audios[0].playResult = Promise.resolve();
+    doc.set(false);
+    expect(audios[0].paused).toBe(false);
+    warn.mockRestore();
+  });
+
+  it('does not start a track on ended while off or hidden', () => {
+    const { player, audios, doc } = setup();
+    player.toggle();
+    doc.set(true);
+    audios[0].emitEnded();
+    expect(audios[0].playCalls).toBe(1);
+    doc.set(false);
+    player.toggle();
+    const calls = audios[0].playCalls;
+    audios[0].emitEnded();
+    expect(audios[0].playCalls).toBe(calls);
+  });
+
   it('stops listening after dispose', () => {
     const { player, audios, doc } = setup();
     player.toggle();
