@@ -22,7 +22,8 @@ Number bugs sequentially and never reuse a number.
 - Phase: 2 (perf target is NFR-1 / Phase 8)
 - Steps: `npm run dev`, open `/?debug`, normal window size, move the mouse around
 - Expected: ~60 fps; look-around follows smoothly (NFR-1)
-- Actual: fps readout shows 15–25; camera motion feels laggy. GPU not recorded yet
+- Actual: `?debug` shows 13 fps · dpr 1.5 · 1918×1038 · 44 calls · 50k tris; 22 fps with `?dpr=1`. GPU: `ANGLE (Microsoft, Microsoft Basic Render Driver … D3D11)`
+- Root cause (2026-10-27): the browser is using Windows' software renderer (WARP), not the GPU — hardware acceleration off/blocked or no GPU driver. Scene cost is small (44 calls, 50k tris), so not a code bug. Fix on the machine: enable Chrome "Use graphics acceleration when available", check `chrome://gpu`, update the GPU driver. Follow-up for Phase 8: treat software renderers (Basic Render Driver / SwiftShader / llvmpipe) as a fallback trigger or start at a lower pixel ratio, since real visitors can hit this too
 - Severity: high
 - Status: open
 
@@ -32,4 +33,4 @@ Number bugs sequentially and never reuse a number.
 - Expected (user decision 2026-10-27, replaces the "return to centre on mouse leave" TODO / D-2): hold the current view when the mouse leaves; recentre gently only on window/tab blur
 - Actual: view drifts back to centre on mouse leave
 - Severity: med
-- Status: fixed 2026-10-27, awaiting re-test
+- Status: closed (re-tested 2026-10-27: pass)
