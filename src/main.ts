@@ -27,6 +27,9 @@ import { createBackButton } from './ui/backButton';
 import { createTouchDots, isTouchPointerType } from './ui/touchDots';
 import { showHint } from './ui/hint';
 import { createLoadingScreen } from './ui/loading';
+import { lighting } from './scene/scene-lighting.js';
+import { createLamp } from './objects/lamp';
+import { pullcord } from './objects/pullcord';
 
 async function boot(): Promise<void> {
   const canvas = document.getElementById('scene') as HTMLCanvasElement;
@@ -87,6 +90,8 @@ async function boot(): Promise<void> {
   const forModule = (id: string, fn: (m: InteractableModule) => void) => {
     for (const m of registered.values()) if (m.id === id) fn(m);
   };
+  const lamp = createLamp(lighting.uLight, () => (settings.poseTweenSeconds === 0 ? 0 : 0.4));
+  pullcord.bind(lamp);
   const updatable = [...new Set(registered.values())].filter((m) => m.update);
   let app = initialState();
   const dispatch = (event: AppEvent) => {
@@ -184,6 +189,7 @@ async function boot(): Promise<void> {
         const { yaw, pitch } = look.update(dt);
         applyLook(camera, base, yaw, pitch);
       }
+      lamp.update(dt);
       for (const m of updatable) m.update?.(dt);
       touchDots.update(app);
       renderer.render(scene, camera);
