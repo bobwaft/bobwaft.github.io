@@ -1,0 +1,9 @@
+{
+  "decode_multipliers": {
+    "Sun": 1.3508,
+    "Night": 5.2192,
+    "Shelf": 3.7482
+  },
+  "decode": "lightmap_linear = sRGB_to_linear(LM_*.png) * decode_multipliers[pass]  (same multiplier for _Env and _Click)",
+  "AO": "LM_AO_*.png are linear (NoColorSpace)"
+}

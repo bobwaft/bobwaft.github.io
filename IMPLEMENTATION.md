@@ -11,7 +11,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] `git init`, add `.gitignore` (node_modules, dist), first commit with the docs
 - [x] Scaffold Vite (`vanilla-ts` template), TypeScript strict + `allowJs`; install an exact three.js version ≥ r160, `@types/three`, and Vitest
 - [x] ESLint (typescript-eslint) + Prettier; add the npm scripts from ARCHITECTURE A-13
-- [ ] Copy `desk_scene_draco.glb` → `public/models/`, `textures/*.png` + `lightmap_scales.json` → `public/models/textures/`, `scene-lighting.js` → `src/scene/`
+- [x] Copy `desk_scene_draco.glb` → `public/models/`, `textures/*.png` + `lightmap_scales.json` → `public/models/textures/`, `scene-lighting.js` → `src/scene/`
 - [ ] Copy the Draco decoder from `three/examples/jsm/libs/draco/` → `public/draco/`
 - [ ] Change `scene-lighting.js` to read decode multipliers from `lightmap_scales.json` (ISSUE-1); unit-test the JSON → multipliers parsing
 - [ ] Create the directory layout from ARCHITECTURE.md (empty modules are fine)
