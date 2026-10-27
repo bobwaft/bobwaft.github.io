@@ -18,8 +18,11 @@ export interface FocusController {
   enter(id: string): boolean;
   /** Starts the move back to the idle pose. */
   exit(): void;
-  /** Re-aims at the current destination (resize, motion preference); animated or cut. */
-  retarget(animated?: boolean): void;
+  /**
+   * Re-aims at the current destination (resize, motion preference). Cuts unless a move is
+   * running (which keeps its duration) or `seconds` asks for a short animated move.
+   */
+  retarget(seconds?: number): void;
   step(dt: number): void;
 }
 
@@ -43,9 +46,9 @@ export function createFocusController(opts: FocusControllerOptions): FocusContro
       mode = 'out';
       tween.start(tween.current, opts.idlePose(), opts.seconds());
     },
-    retarget(animated = false) {
+    retarget(seconds = 0) {
       const moving = mode === 'in' || mode === 'out';
-      tween.start(tween.current, destination(), moving || animated ? opts.seconds() : 0);
+      tween.start(tween.current, destination(), moving ? opts.seconds() : seconds);
     },
     step(dt) {
       const was = tween.active;

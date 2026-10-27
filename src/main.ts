@@ -1,8 +1,13 @@
 import { createRenderer, resizeToWindow } from './scene/renderer';
 import { collectNames, loadScene } from './scene/loadScene';
-import { findMissingNames, MAIN_CAMERA_NAME } from './objects/registry';
+import { collectRegistered, findMissingNames, MAIN_CAMERA_NAME } from './objects/registry';
 import { applyLook, createLookControls, lookSettings } from './camera/lookControls';
+import { createFocusController } from './camera/focusController';
 import { createPoseTween } from './camera/focusTween';
+import { createClickInput } from './interaction/clickInput';
+import { createFocusPoseResolver } from './interaction/focusPoses';
+import { createPicker } from './interaction/picker';
+import { initialState, transition, type AppEvent } from './interaction/stateMachine';
 import { idlePoseKind, PORTRAIT_IDLE_POSE, poseFromLookAt } from './camera/poses';
 import { createDebugCamera, type DebugCamera } from './ui/debugCamera';
 import { createDebugFps } from './ui/debugFps';
@@ -47,13 +52,39 @@ async function boot(): Promise<void> {
   const poseTween = createPoseTween(poses[poseKind]);
   const base = poseTween.current;
   let debugCamera: DebugCamera | null = null;
+  const registered = collectRegistered(scene);
+  const picker = createPicker(camera, canvas, registered);
+  const focusPose = createFocusPoseResolver(scene, camera, () => poses.landscape.position);
+  const focusCtrl = createFocusController({
+    tween: poseTween,
+    idlePose: () => poses[poseKind],
+    focusPose,
+    seconds: () => settings.focusSeconds,
+    onArrived: () => dispatch({ type: 'arrived' }),
+  });
+  let app = initialState();
+  const dispatch = (event: AppEvent) => {
+    const result = transition(app, event);
+    app = result.state;
+    const action = result.action;
+    if (action?.type === 'focus') {
+      if (!focusCtrl.enter(action.id)) app = { kind: 'idle' };
+    } else if (action?.type === 'exit') {
+      focusCtrl.exit();
+    } else if (action?.type === 'activate') {
+      for (const m of registered.values()) if (m.id === action.id) m.onClick?.();
+    }
+  };
   const onResize = () => {
     resizeToWindow(renderer, camera);
     if (debugCamera) return;
     const kind = idlePoseKind(aspectNow());
-    if (kind === poseKind) return;
-    poseKind = kind;
-    poseTween.start(base, poses[kind], settings.poseTweenSeconds);
+    if (kind !== poseKind) {
+      poseKind = kind;
+      focusCtrl.retarget(settings.poseTweenSeconds);
+    } else if (app.kind !== 'idle') {
+      focusCtrl.retarget(); // refit the focus pose to the new aspect
+    }
   };
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let settings = lookSettings(reducedMotion.matches);
@@ -63,11 +94,10 @@ async function boot(): Promise<void> {
     look.setRange(settings.range);
     look.setDamping(settings.damping);
     // Switching to reduced motion cuts a pose move that is already running.
-    if (poseTween.active && settings.poseTweenSeconds === 0) {
-      poseTween.start(base, poses[poseKind], 0);
-    }
+    if (poseTween.active && settings.poseTweenSeconds === 0) focusCtrl.retarget();
   };
   reducedMotion.addEventListener('change', onMotionChange);
+  let disposeClicks = () => {};
   try {
     onResize();
     window.addEventListener('resize', onResize);
@@ -78,6 +108,16 @@ async function boot(): Promise<void> {
       () => `aspect: ${camera.aspect.toFixed(3)}, pose: ${poseKind}`,
     );
     look.setEnabled(!debugCamera);
+    if (!debugCamera) {
+      disposeClicks = createClickInput(canvas, (x, y) => {
+        const module = picker.pick(x, y);
+        dispatch({
+          type: 'click',
+          hit: module ? { id: module.id, hasFocus: !!module.focus } : null,
+        });
+      });
+    }
+    dispatch({ type: 'loaded' });
     renderer.render(scene, camera); // first frame before the fade
     const debugFps = createDebugFps(renderer);
     let last: number | null = null;
@@ -87,7 +127,7 @@ async function boot(): Promise<void> {
       if (debugCamera) {
         debugCamera.update();
       } else {
-        poseTween.step(dt);
+        focusCtrl.step(dt);
         const { yaw, pitch } = look.update(dt);
         applyLook(camera, base, yaw, pitch);
       }
@@ -99,6 +139,7 @@ async function boot(): Promise<void> {
     window.removeEventListener('resize', onResize);
     reducedMotion.removeEventListener('change', onMotionChange);
     look.dispose();
+    disposeClicks();
     debugCamera?.dispose();
     renderer.setAnimationLoop(null);
     renderer.dispose();

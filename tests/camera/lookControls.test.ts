@@ -152,11 +152,24 @@ describe('dragInput', () => {
 
 describe('lookSettings', () => {
   it('normal motion uses the full range and 0.8 s tween', () => {
-    expect(lookSettings(false)).toEqual({
+    expect(lookSettings(false)).toMatchObject({
       range: IDLE_RANGE,
       damping: DAMPING,
       poseTweenSeconds: 0.8,
     });
+  });
+
+  it('focus moves take about a second, with a ~1.5 degree parallax range', () => {
+    const s = lookSettings(false);
+    expect(s.focusSeconds).toBeCloseTo(1);
+    expect(s.focusRange.yaw).toBeCloseTo(deg(1.5));
+    expect(s.focusRange.pitch).toBeCloseTo(deg(1.5));
+  });
+
+  it('reduced motion cuts focus moves and drops parallax', () => {
+    const s = lookSettings(true);
+    expect(s.focusSeconds).toBe(0);
+    expect(s.focusRange).toEqual({ yaw: 0, pitch: 0 });
   });
 
   it('reduced motion scales the range by 0.4 and cuts instantly', () => {

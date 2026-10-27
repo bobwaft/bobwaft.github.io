@@ -71,7 +71,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [ ] Mouse hover feedback: pointer cursor + label + slight brighten on interactables
 - [ ] Touch discoverability: pulsing dots on each interactable, each fading once that object has been used (session only)
 - [x] Focus tween: position + quaternion slerp to a pose and back, ease-in-out, ~1 s
-- [ ] Focus poses: lookAt target + view direction + surface size; distance computed from FOV/aspect to fit the surface — unit tested; then hand-tune laptop, papers (top-down), notebook (top-down)
+- [x] Focus poses: lookAt target + view direction + surface size; distance computed from FOV/aspect to fit the surface — unit tested; then hand-tune laptop, papers (top-down), notebook (top-down)
 - [ ] Slight parallax (~1–2°) while focused
 - [ ] Back button, `Esc`, and clicking outside the focused object/content all return to idle
 - [x] Ignore clicks while transitioning

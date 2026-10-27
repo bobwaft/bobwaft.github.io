@@ -12,6 +12,9 @@ export interface LookPose {
 
 const DEG = Math.PI / 180;
 
+/** Focus-view parallax range in radians: +-1.5 deg. */
+export const FOCUS_RANGE: LookRange = { yaw: 1.5 * DEG, pitch: 1.5 * DEG };
+
 /** Idle look range in radians: yaw +-25 deg, pitch +-12 deg. */
 export const IDLE_RANGE: LookRange = { yaw: 25 * DEG, pitch: 12 * DEG };
 
@@ -54,15 +57,29 @@ export interface LookSettings {
   range: LookRange;
   damping: number;
   poseTweenSeconds: number;
+  /** Look range while a focus view is open (slight parallax, D-3). */
+  focusRange: LookRange;
+  /** Duration of the move into and out of a focus view. */
+  focusSeconds: number;
 }
 
 /** Look range, damping and pose-tween duration for the user's motion preference (D-13). */
 export function lookSettings(reduced: boolean): LookSettings {
-  if (!reduced) return { range: IDLE_RANGE, damping: DAMPING, poseTweenSeconds: 0.8 };
+  if (!reduced) {
+    return {
+      range: IDLE_RANGE,
+      damping: DAMPING,
+      poseTweenSeconds: 0.8,
+      focusRange: FOCUS_RANGE,
+      focusSeconds: 1,
+    };
+  }
   return {
     range: { yaw: IDLE_RANGE.yaw * 0.4, pitch: IDLE_RANGE.pitch * 0.4 },
     damping: DAMPING * 2.5,
     poseTweenSeconds: 0,
+    focusRange: { yaw: 0, pitch: 0 },
+    focusSeconds: 0,
   };
 }
 
