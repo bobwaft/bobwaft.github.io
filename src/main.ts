@@ -30,6 +30,9 @@ import { createLoadingScreen } from './ui/loading';
 import { lighting } from './scene/scene-lighting.js';
 import { createLamp } from './objects/lamp';
 import { pullcord } from './objects/pullcord';
+import { speaker } from './objects/speaker';
+import { createPlayer } from './audio/player';
+import playlist from './content/playlist.json';
 
 async function boot(): Promise<void> {
   const canvas = document.getElementById('scene') as HTMLCanvasElement;
@@ -93,6 +96,12 @@ async function boot(): Promise<void> {
   const lamp = createLamp(lighting.uLight, () => (settings.poseTweenSeconds === 0 ? 0 : 0.4));
   const cordObject = [...registered].find(([, m]) => m === pullcord)?.[0];
   pullcord.bind({ toggle: () => lamp.toggle(), object: cordObject });
+  const player = createPlayer({
+    tracks: playlist as string[],
+    createAudio: () => new Audio(),
+    doc: document,
+  });
+  speaker.bind({ toggle: () => player.toggle() });
   const updatable = [...new Set(registered.values())].filter((m) => m.update);
   let app = initialState();
   const dispatch = (event: AppEvent) => {
@@ -191,6 +200,7 @@ async function boot(): Promise<void> {
         applyLook(camera, base, yaw, pitch);
       }
       lamp.update(dt);
+      player.update(dt);
       for (const m of updatable) m.update?.(dt);
       touchDots.update(app);
       renderer.render(scene, camera);
@@ -205,6 +215,7 @@ async function boot(): Promise<void> {
     disposeClicks();
     backButton.dispose();
     touchDots.dispose();
+    player.dispose();
     window.removeEventListener('pointerdown', onPointerType);
     hoverView.dispose();
     debugCamera?.dispose();
