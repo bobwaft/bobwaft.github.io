@@ -16,6 +16,7 @@ import { createDebugFps } from './ui/debugFps';
 import { showFallback } from './ui/fallback';
 import { fallbackReason } from './ui/fallbackReason';
 import { createBackButton } from './ui/backButton';
+import { createTouchDots, isTouchPointerType } from './ui/touchDots';
 import { createLoadingScreen } from './ui/loading';
 
 async function boot(): Promise<void> {
@@ -66,12 +67,20 @@ async function boot(): Promise<void> {
     onArrived: () => dispatch({ type: 'arrived' }),
   });
   const hoverView = createHoverView(canvas, registered);
+  // Touch devices get discoverability dots; so does anything that sends a touch pointer.
+  let touchSeen = window.matchMedia('(pointer: coarse)').matches;
+  const onPointerType = (e: PointerEvent) => {
+    if (isTouchPointerType(e.pointerType)) touchSeen = true;
+  };
+  window.addEventListener('pointerdown', onPointerType);
+  const touchDots = createTouchDots(registered, camera, () => touchSeen);
   const backButton = createBackButton(() => dispatch({ type: 'back' }));
   let app = initialState();
   const dispatch = (event: AppEvent) => {
     const result = transition(app, event);
     app = result.state;
     const action = result.action;
+    if (action?.type === 'focus' || action?.type === 'activate') touchDots.markUsed(action.id);
     if (action?.type === 'focus') {
       if (!focusCtrl.enter(action.id)) app = { kind: 'idle' };
     } else if (action?.type === 'exit') {
@@ -158,6 +167,7 @@ async function boot(): Promise<void> {
         const { yaw, pitch } = look.update(dt);
         applyLook(camera, base, yaw, pitch);
       }
+      touchDots.update(app);
       renderer.render(scene, camera);
       debugFps?.();
     });
@@ -168,6 +178,8 @@ async function boot(): Promise<void> {
     look.dispose();
     disposeClicks();
     backButton.dispose();
+    touchDots.dispose();
+    window.removeEventListener('pointerdown', onPointerType);
     hoverView.dispose();
     debugCamera?.dispose();
     renderer.setAnimationLoop(null);

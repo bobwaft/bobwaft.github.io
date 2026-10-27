@@ -96,7 +96,30 @@
         pointer-events: none;
         white-space: nowrap;
       }
+      .touch-dot {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 3;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.85);
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.6);
+        pointer-events: none;
+        transition: opacity 0.4s ease;
+        animation: dot-pulse 1.8s ease-out infinite;
+      }
+      @keyframes dot-pulse {
+        to {
+          box-shadow: 0 0 0 16px rgba(255, 255, 255, 0);
+        }
+      }
       @media (prefers-reduced-motion: reduce) {
+        .touch-dot {
+          animation: none;
+          transition: none;
+        }
         #loading {
           transition: none;
         }

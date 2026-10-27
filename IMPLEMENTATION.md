@@ -69,7 +69,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] App state machine (`loading → idle ⇄ transitioning → focused`) with guards, including outside-click and other-interactable-click → exit — unit tested
 - [x] Object registry + raycast picker against registered objects only (child → registered ancestor)
 - [x] Mouse hover feedback: pointer cursor + label + slight brighten on interactables
-- [ ] Touch discoverability: pulsing dots on each interactable, each fading once that object has been used (session only)
+- [x] Touch discoverability: pulsing dots on each interactable, each fading once that object has been used (session only)
 - [x] Focus tween: position + quaternion slerp to a pose and back, ease-in-out, ~1 s
 - [x] Focus poses: lookAt target + view direction + surface size; distance computed from FOV/aspect to fit the surface — unit tested; then hand-tune laptop, papers (top-down), notebook (top-down)
 - [x] Slight parallax (~1–2°) while focused
