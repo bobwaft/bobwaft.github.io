@@ -8,6 +8,7 @@ import {
   isTap,
   TAP_THRESHOLD_PX,
   leftWindow,
+  lookSettings,
   IDLE_RANGE,
   targetFromInput,
 } from '../../src/camera/lookControls';
@@ -115,5 +116,18 @@ describe('dragInput', () => {
   it('clamps at the edges', () => {
     expect(dragInput({ x: 0.9, y: 0.9 }, -1000, 1000, 400, 200)).toEqual({ x: 1, y: 1 });
     expect(dragInput({ x: -0.9, y: -0.9 }, 1000, -1000, 400, 200)).toEqual({ x: -1, y: -1 });
+  });
+});
+
+describe('lookSettings', () => {
+  it('normal motion uses the full range and 0.8 s tween', () => {
+    expect(lookSettings(false)).toEqual({ range: IDLE_RANGE, poseTweenSeconds: 0.8 });
+  });
+
+  it('reduced motion scales the range by 0.4 and cuts instantly', () => {
+    const s = lookSettings(true);
+    expect(s.range.yaw).toBeCloseTo(IDLE_RANGE.yaw * 0.4);
+    expect(s.range.pitch).toBeCloseTo(IDLE_RANGE.pitch * 0.4);
+    expect(s.poseTweenSeconds).toBe(0);
   });
 });

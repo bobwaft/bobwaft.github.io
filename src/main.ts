@@ -1,16 +1,13 @@
 import { createRenderer, resizeToWindow } from './scene/renderer';
 import { collectNames, loadScene } from './scene/loadScene';
 import { findMissingNames, MAIN_CAMERA_NAME } from './objects/registry';
-import { applyLook, createLookControls } from './camera/lookControls';
+import { applyLook, createLookControls, lookSettings } from './camera/lookControls';
 import { createPoseTween } from './camera/focusTween';
 import { idlePoseKind, PORTRAIT_IDLE_POSE, poseFromLookAt } from './camera/poses';
 import { createDebugFps } from './ui/debugFps';
 import { showFallback } from './ui/fallback';
 import { fallbackReason } from './ui/fallbackReason';
 import { createLoadingScreen } from './ui/loading';
-
-/** Duration of the landscape/portrait idle pose tween. */
-const POSE_TWEEN_SECONDS = 0.8;
 
 async function boot(): Promise<void> {
   const canvas = document.getElementById('scene') as HTMLCanvasElement;
@@ -53,12 +50,20 @@ async function boot(): Promise<void> {
     const kind = idlePoseKind(aspectNow());
     if (kind === poseKind) return;
     poseKind = kind;
-    poseTween.start(base, poses[kind], POSE_TWEEN_SECONDS);
+    poseTween.start(base, poses[kind], settings.poseTweenSeconds);
   };
-  const look = createLookControls(canvas);
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let settings = lookSettings(reducedMotion.matches);
+  const look = createLookControls(canvas, { range: settings.range });
+  const onMotionChange = () => {
+    settings = lookSettings(reducedMotion.matches);
+    look.setRange(settings.range);
+  };
+  reducedMotion.addEventListener('change', onMotionChange);
   try {
     onResize();
     window.addEventListener('resize', onResize);
+    applyLook(camera, base, 0, 0);
     renderer.render(scene, camera); // first frame before the fade
     const debugFps = createDebugFps();
     let last: number | null = null;
@@ -74,6 +79,7 @@ async function boot(): Promise<void> {
     loading.fadeOut();
   } catch (err) {
     window.removeEventListener('resize', onResize);
+    reducedMotion.removeEventListener('change', onMotionChange);
     look.dispose();
     renderer.setAnimationLoop(null);
     renderer.dispose();

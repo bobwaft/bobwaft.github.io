@@ -55,6 +55,15 @@ export function leftWindow(relatedTarget: EventTarget | null): boolean {
   return relatedTarget === null;
 }
 
+/** Look range and pose-tween duration for the user's motion preference (D-13). */
+export function lookSettings(reduced: boolean): { range: LookRange; poseTweenSeconds: number } {
+  if (!reduced) return { range: IDLE_RANGE, poseTweenSeconds: 0.8 };
+  return {
+    range: { yaw: IDLE_RANGE.yaw * 0.4, pitch: IDLE_RANGE.pitch * 0.4 },
+    poseTweenSeconds: 0,
+  };
+}
+
 /** Max pointer travel (px) for a touch to still count as a tap. */
 export const TAP_THRESHOLD_PX = 10;
 
