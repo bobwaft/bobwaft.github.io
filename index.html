@@ -12,6 +12,16 @@
         background: #111;
         overflow: hidden;
       }
+      [hidden] {
+        display: none !important;
+      }
+      #fallback {
+        padding: 2rem;
+        color: #ddd;
+        font:
+          1rem system-ui,
+          sans-serif;
+      }
       #scene {
         display: block;
         width: 100vw;
@@ -61,6 +71,10 @@
       <div id="loading-bar"><div id="loading-fill"></div></div>
       <div id="loading-pct">0%</div>
     </div>
+    <main id="fallback" hidden>
+      <h1>bobwaft</h1>
+      <p>A simpler version of this site is coming.</p>
+    </main>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
