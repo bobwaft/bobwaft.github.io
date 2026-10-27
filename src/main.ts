@@ -91,7 +91,8 @@ async function boot(): Promise<void> {
     for (const m of registered.values()) if (m.id === id) fn(m);
   };
   const lamp = createLamp(lighting.uLight, () => (settings.poseTweenSeconds === 0 ? 0 : 0.4));
-  pullcord.bind(lamp);
+  const cordObject = [...registered].find(([, m]) => m === pullcord)?.[0];
+  pullcord.bind({ toggle: () => lamp.toggle(), object: cordObject });
   const updatable = [...new Set(registered.values())].filter((m) => m.update);
   let app = initialState();
   const dispatch = (event: AppEvent) => {

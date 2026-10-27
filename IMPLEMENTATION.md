@@ -90,7 +90,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 
 ## Phase 4 — Lamp (pull cord) and speaker
 
-- [ ] Pull cord: click (and optional drag-down) plays a pull-and-spring-back animation
+- [x] Pull cord: click (and optional drag-down) plays a pull-and-spring-back animation
 - [x] Toggle tweens `lighting.uLight` 1 ↔ 0 over ~400 ms (bulb emissive follows via the shader); lamp starts on
 - [x] Confirm which light the cord controls (MEMORY.md open question 1) and adjust if needed
 - [ ] Shuffle-bag playlist (no repeats until all played, no immediate repeat across reshuffles) — unit tested
