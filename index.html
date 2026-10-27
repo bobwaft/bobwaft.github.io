@@ -17,10 +17,50 @@
         width: 100vw;
         height: 100vh;
       }
+      #loading {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        background: #111;
+        color: #bbb;
+        font:
+          0.875rem system-ui,
+          sans-serif;
+        opacity: 1;
+        transition: opacity 0.5s ease;
+        z-index: 10;
+      }
+      #loading.done {
+        opacity: 0;
+        pointer-events: none;
+      }
+      #loading-bar {
+        width: min(240px, 60vw);
+        height: 2px;
+        background: #333;
+      }
+      #loading-fill {
+        width: 0;
+        height: 100%;
+        background: #ccc;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #loading {
+          transition: none;
+        }
+      }
     </style>
   </head>
   <body>
     <div id="app"><canvas id="scene"></canvas></div>
+    <div id="loading" role="status" aria-live="polite">
+      <div id="loading-bar"><div id="loading-fill"></div></div>
+      <div id="loading-pct">0%</div>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
