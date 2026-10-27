@@ -100,7 +100,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [ ] Add the owner's tracks to `public/audio/` and `playlist.json` once provided (licence confirmed)
 
 ### You test
-- [ ] The lamp is on at page load; the pull cord animates and fades it off, then on again
+- [x] The lamp is on at page load; the pull cord animates and fades it off, then on again
 - [ ] Clicking the speaker starts music (once provided) and clicking again fades it out
 - [ ] Tracks play in a shuffled order and move to the next track when one ends
 - [ ] Switching to another tab pauses the music; coming back resumes it
