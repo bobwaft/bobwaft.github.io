@@ -9,21 +9,25 @@ export function createRenderer(canvas: HTMLCanvasElement): WebGLRenderer {
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = AgXToneMapping;
   renderer.setPixelRatio(cappedPixelRatio(window.devicePixelRatio));
-  renderer.setSize(window.innerWidth, window.innerHeight, false);
+  resizeToWindow(renderer);
   return renderer;
 }
 
-/** Resizes the renderer to the window and keeps the camera undistorted. */
+/**
+ * Resizes the drawing buffer to the canvas's CSS size (which fills the window) and keeps the
+ * camera undistorted. Measuring the canvas rather than innerWidth/innerHeight avoids a stretched
+ * image when the two disagree (mobile toolbars, scrollbars).
+ */
 export function resizeToWindow(
   renderer: WebGLRenderer,
   camera?: { aspect: number; updateProjectionMatrix(): void },
 ): void {
-  const w = window.innerWidth;
-  const h = window.innerHeight;
+  const w = Math.max(renderer.domElement.clientWidth, 1);
+  const h = Math.max(renderer.domElement.clientHeight, 1);
   renderer.setPixelRatio(cappedPixelRatio(window.devicePixelRatio));
   renderer.setSize(w, h, false);
   if (camera) {
-    camera.aspect = w / Math.max(h, 1);
+    camera.aspect = w / h;
     camera.updateProjectionMatrix();
   }
 }

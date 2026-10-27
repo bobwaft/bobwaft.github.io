@@ -1,6 +1,8 @@
 // Maps Blender Click_* names to object modules. The only place those names appear.
 // The name -> module mapping arrives in Phase 3; for now this holds the required names.
 
+export const MAIN_CAMERA_NAME = 'Cam_Main';
+
 export const REQUIRED_CLICK_NAMES = [
   'Click_Laptop',
   'Click_Laptop_Screen',
