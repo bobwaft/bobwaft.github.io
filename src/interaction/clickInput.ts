@@ -41,10 +41,16 @@ export function createClickInput(
     if (tracker.up(e.pointerId, e.clientX, e.clientY)) onClick(e.clientX, e.clientY);
   };
   const onCancel = (e: PointerEvent) => tracker.cancel(e.pointerId);
+  // A press released over another element (e.g. the laptop page) must not stay pending.
+  const onUpElsewhere = (e: PointerEvent) => {
+    if (e.target !== element) tracker.cancel(e.pointerId);
+  };
   element.addEventListener('pointerdown', onDown);
   element.addEventListener('pointerup', onUp);
   element.addEventListener('pointercancel', onCancel);
+  window.addEventListener('pointerup', onUpElsewhere);
   return () => {
+    window.removeEventListener('pointerup', onUpElsewhere);
     element.removeEventListener('pointerdown', onDown);
     element.removeEventListener('pointerup', onUp);
     element.removeEventListener('pointercancel', onCancel);

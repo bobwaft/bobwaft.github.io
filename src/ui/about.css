@@ -20,6 +20,7 @@
     'Segoe UI',
     sans-serif;
   pointer-events: auto;
+  user-select: text;
   /* Rasterise crisply under the 3D transform. */
   -webkit-font-smoothing: antialiased;
   backface-visibility: hidden;

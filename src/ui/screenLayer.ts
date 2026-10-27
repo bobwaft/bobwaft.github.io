@@ -26,6 +26,8 @@ export function createScreenLayer(
   const placement = cssPlacement(frame, pxWidth);
   element.style.width = `${pxWidth}px`;
   element.style.height = `${placement.pxHeight}px`;
+  // Hold the parallax while reading: page moves don't reach the window's look listener.
+  element.addEventListener('pointermove', (e) => e.stopPropagation());
   const object = new CSS3DObject(element);
   object.position.copy(placement.position);
   object.quaternion.copy(placement.quaternion);
