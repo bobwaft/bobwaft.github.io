@@ -1,6 +1,6 @@
 // DOM/three glue for hover feedback: pointer cursor, floating label, brightened material.
 import type { Mesh, Material, Object3D, ShaderMaterial } from 'three';
-import { createHoverMaterial } from '../scene/hoverMaterial';
+import { canBrighten, createHoverMaterial } from '../scene/hoverMaterial';
 import type { InteractableModule } from '../objects/types';
 
 export interface HoverView {
@@ -17,7 +17,7 @@ export function createHoverView(
   label.id = 'hover-label';
   label.hidden = true;
   document.body.appendChild(label);
-  let variant: ShaderMaterial | null = null;
+  const variants = new Map<Material, ShaderMaterial>();
   let swapped: { mesh: Mesh; material: Material | Material[] }[] = [];
   let current: string | null = null;
 
@@ -31,9 +31,15 @@ export function createHoverView(
       obj.traverse((o) => {
         const mesh = o as Mesh;
         const mat = mesh.isMesh ? mesh.material : null;
-        if (!mat || Array.isArray(mat) || !(mat as ShaderMaterial).isShaderMaterial) return;
+        if (!mat || Array.isArray(mat)) return;
+        const src = mat as ShaderMaterial;
+        if (!src.isShaderMaterial || !canBrighten(src.fragmentShader)) return;
         if (swapped.some((s) => s.mesh === mesh)) return;
-        variant ??= createHoverMaterial(mat as ShaderMaterial);
+        let variant = variants.get(mat);
+        if (!variant) {
+          variant = createHoverMaterial(src);
+          variants.set(mat, variant);
+        }
         swapped.push({ mesh, material: mat });
         mesh.material = variant;
       });
@@ -60,6 +66,8 @@ export function createHoverView(
     },
     dispose() {
       restore();
+      for (const v of variants.values()) v.dispose();
+      variants.clear();
       label.remove();
       canvas.style.cursor = '';
     },

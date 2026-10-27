@@ -1,10 +1,17 @@
 // A brightened variant of the shared Click_* material, built without touching scene-lighting.js.
 import type { ShaderMaterial } from 'three';
 
+const ASSIGNMENT = /^(\s*gl_FragColor\s*=.*;)\s*$/m;
+
+/** True when the shader has the gl_FragColor assignment the brighten patch hooks onto. */
+export function canBrighten(src: string): boolean {
+  return ASSIGNMENT.test(src);
+}
+
 /** Inserts a colour scale right after the gl_FragColor assignment (before tonemapping). */
 export function brightenFragment(src: string, factor: number): string {
-  const re = /^(\s*gl_FragColor\s*=.*;)\s*$/m;
-  if (!re.test(src)) throw new Error('No gl_FragColor assignment to patch');
+  const re = ASSIGNMENT;
+  if (!canBrighten(src)) throw new Error('No gl_FragColor assignment to patch');
   return src.replace(
     re,
     `$1\n    gl_FragColor.rgb *= ${Number.isInteger(factor) ? factor.toFixed(1) : factor};`,

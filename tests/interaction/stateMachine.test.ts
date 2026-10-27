@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
+  backButtonVisible,
   inFocusView,
+  lifecycleHooks,
   initialState,
   transition,
   type AppState,
@@ -102,5 +104,32 @@ describe('inFocusView', () => {
     expect(inFocusView(tOut)).toBe(false);
     expect(inFocusView(idle)).toBe(false);
     expect(inFocusView(initialState())).toBe(false);
+  });
+});
+
+describe('backButtonVisible', () => {
+  it('is true only when focused', () => {
+    expect(backButtonVisible(focused)).toBe(true);
+    for (const s of [idle, tIn, tOut, initialState()]) expect(backButtonVisible(s)).toBe(false);
+  });
+  it('back and esc are still ignored while transitioning in', () => {
+    expect(transition(tIn, { type: 'back' })).toEqual({ state: tIn });
+    expect(transition(tIn, { type: 'esc' })).toEqual({ state: tIn });
+  });
+});
+
+describe('lifecycleHooks', () => {
+  it('reports enter when focus arrives', () => {
+    const r = transition(tIn, { type: 'arrived' });
+    expect(lifecycleHooks(tIn, r)).toEqual({ enter: 'laptop' });
+  });
+  it('reports exit when the exit starts', () => {
+    const r = transition(focused, { type: 'esc' });
+    expect(lifecycleHooks(focused, r)).toEqual({ exit: 'laptop' });
+  });
+  it('reports nothing otherwise', () => {
+    expect(lifecycleHooks(tOut, transition(tOut, { type: 'arrived' }))).toEqual({});
+    expect(lifecycleHooks(idle, transition(idle, { type: 'click', hit: laptop }))).toEqual({});
+    expect(lifecycleHooks(focused, transition(focused, { type: 'back' })).enter).toBeUndefined();
   });
 });

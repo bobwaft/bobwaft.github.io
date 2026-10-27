@@ -1,5 +1,6 @@
 import { createRenderer, resizeToWindow } from './scene/renderer';
 import { collectNames, loadScene } from './scene/loadScene';
+import type { InteractableModule } from './objects/types';
 import { collectRegistered, findMissingNames, MAIN_CAMERA_NAME } from './objects/registry';
 import { applyLook, createLookControls, lookSettings } from './camera/lookControls';
 import { createFocusController } from './camera/focusController';
@@ -9,7 +10,14 @@ import { createFocusPoseResolver } from './interaction/focusPoses';
 import { hoverTarget } from './interaction/hover';
 import { createHoverView } from './interaction/hoverView';
 import { createPicker } from './interaction/picker';
-import { initialState, transition, inFocusView, type AppEvent } from './interaction/stateMachine';
+import {
+  initialState,
+  transition,
+  inFocusView,
+  backButtonVisible,
+  lifecycleHooks,
+  type AppEvent,
+} from './interaction/stateMachine';
 import { idlePoseKind, PORTRAIT_IDLE_POSE, poseFromLookAt } from './camera/poses';
 import { createDebugCamera, type DebugCamera } from './ui/debugCamera';
 import { createDebugFps } from './ui/debugFps';
@@ -76,22 +84,30 @@ async function boot(): Promise<void> {
   window.addEventListener('pointerdown', onPointerType);
   const touchDots = createTouchDots(registered, camera, () => touchSeen);
   const backButton = createBackButton(() => dispatch({ type: 'back' }));
+  const forModule = (id: string, fn: (m: InteractableModule) => void) => {
+    for (const m of registered.values()) if (m.id === id) fn(m);
+  };
+  const updatable = [...new Set(registered.values())].filter((m) => m.update);
   let app = initialState();
   const dispatch = (event: AppEvent) => {
     const result = transition(app, event);
+    const hooks = lifecycleHooks(app, result);
     app = result.state;
     const action = result.action;
-    if (action?.type === 'focus' || action?.type === 'activate') touchDots.markUsed(action.id);
     if (action?.type === 'focus') {
-      if (!focusCtrl.enter(action.id)) app = { kind: 'idle' };
+      if (focusCtrl.enter(action.id)) touchDots.markUsed(action.id);
+      else app = { kind: 'idle' };
     } else if (action?.type === 'exit') {
       focusCtrl.exit();
     } else if (action?.type === 'activate') {
-      for (const m of registered.values()) if (m.id === action.id) m.onClick?.();
+      touchDots.markUsed(action.id);
+      forModule(action.id, (m) => m.onClick?.());
     }
+    if (hooks.exit) forModule(hooks.exit, (m) => m.onExit?.());
+    if (hooks.enter) forModule(hooks.enter, (m) => m.onEnter?.());
     hoverView.show(null); // hover only exists in idle; a state change clears it
     applyLookRange();
-    backButton.setVisible(inFocusView(app));
+    backButton.setVisible(backButtonVisible(app));
   };
   // Slight parallax while a focus view is open (D-3); the full idle range otherwise.
   const applyLookRange = () =>
@@ -168,6 +184,7 @@ async function boot(): Promise<void> {
         const { yaw, pitch } = look.update(dt);
         applyLook(camera, base, yaw, pitch);
       }
+      for (const m of updatable) m.update?.(dt);
       touchDots.update(app);
       renderer.render(scene, camera);
       debugFps?.();

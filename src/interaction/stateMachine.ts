@@ -68,3 +68,20 @@ export function transition(state: AppState, event: AppEvent): TransitionResult {
 export function inFocusView(state: AppState): boolean {
   return state.kind === 'transitioning-in' || state.kind === 'focused';
 }
+
+/** The Back button shows only when it can act: Back/Esc are ignored while transitioning. */
+export function backButtonVisible(state: AppState): boolean {
+  return state.kind === 'focused';
+}
+
+/** Object lifecycle hooks implied by a transition: enter on arrival at focused, exit on leaving. */
+export function lifecycleHooks(
+  prev: AppState,
+  result: TransitionResult,
+): { enter?: string; exit?: string } {
+  if (prev.kind === 'transitioning-in' && result.state.kind === 'focused') {
+    return { enter: result.state.id };
+  }
+  if (result.action?.type === 'exit' && prev.kind === 'focused') return { exit: prev.id };
+  return {};
+}

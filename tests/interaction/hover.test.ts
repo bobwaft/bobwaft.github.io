@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { hoverTarget } from '../../src/interaction/hover';
-import { brightenFragment } from '../../src/scene/hoverMaterial';
+import { brightenFragment, canBrighten } from '../../src/scene/hoverMaterial';
 
 describe('hoverTarget', () => {
   it('highlights the hit in idle with a mouse', () => {
@@ -34,5 +34,12 @@ describe('brightenFragment', () => {
   });
   it('throws if the shader has no gl_FragColor assignment', () => {
     expect(() => brightenFragment('void main(){}', 1.1)).toThrow();
+  });
+});
+
+describe('canBrighten', () => {
+  it('is true only for shaders with a gl_FragColor assignment', () => {
+    expect(canBrighten('x\n  gl_FragColor = vec4(1.0);\n')).toBe(true);
+    expect(canBrighten('void main(){ gl_FragColor.a = 1.0; }')).toBe(false);
   });
 });
