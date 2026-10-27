@@ -15,7 +15,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] Copy the Draco decoder from `three/examples/jsm/libs/draco/` → `public/draco/`
 - [x] Change `scene-lighting.js` to read decode multipliers from `lightmap_scales.json` (ISSUE-1); unit-test the JSON → multipliers parsing
 - [x] Create the directory layout from ARCHITECTURE.md (empty modules are fine)
-- [ ] GitHub Actions workflow: lint → test → build → deploy `dist/` to GitHub Pages on push to `main`
+- [x] GitHub Actions workflow: lint → test → build → deploy `dist/` to GitHub Pages on push to `main`
 - [ ] Create the `bobwaft.github.io` repo on GitHub (if it doesn't exist), set Pages source to "GitHub Actions", push
 
 ### You test
