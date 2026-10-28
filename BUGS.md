@@ -77,7 +77,7 @@ Number bugs sequentially and never reuse a number.
 - Fix 2026-10-28: the shelf strip's emissive is scaled by 0.35 at load (SHELF_EMISSIVE_SCALE, scene-lighting.js, logged in MEMORY.md), putting its luma (~0.64) under the bloom threshold so it no longer blooms; street lamps and city windows still do. Full-resolution bloom hack reverted. Not verified in a browser
 - Re-test 2026-10-28 (strip emissive ×0.35): no flicker, but the owner wants the strip at its previous brightness, just without the glow (exclude it from bloom instead of dimming it)
 - Root cause / Fix 2026-10-28: dimming was the wrong lever. The strip's emissive is back at the original and it writes alpha 0 (uBloomMask in scene-lighting.js); the bloom high-pass weights luminosity by alpha (postfx.ts), the render pass clears to alpha 1 and the final grain pass forces alpha 1. Single scene render, no extra pass. Not verified in a browser
-- Status: fixed 2026-10-28, awaiting re-test
+- Status: closed (re-tested 2026-10-28: pass)
 
 ### BUG-007 — Notebook spread: green band across the page, left-page text too high
 - Phase: 8
@@ -118,4 +118,5 @@ Number bugs sequentially and never reuse a number.
 - Actual: no preview on the stack until the papers are clicked
 - Severity: med
 - Investigation 2026-10-28 (static, no browser/GPU available, not fixed): the idle path is unchanged since Phase 8 apart from the opaque white page (IDLE_PAPER). With three's premultiplied MultiplyBlending (dst*src + dst*(1-srcAlpha)) a white opaque page and a transparent one both leave blank paper untouched, so the white background alone cannot hide the preview; nothing in main.ts, papersSheet.ts, the sampler (focus only) or setContentVisible (touches only the DOM canvas) hides or disposes the overlay or its texture. Remaining suspects need a real GPU: load() failing silently (check the console for 'Resume failed to render' and that Resume_Overlay.visible becomes true), or the ink-only multiply being too faint at the idle sheet size (1024px texture minified onto a small sheet). Next step: open the site with ?debug and inspect Resume_Overlay
+- Re-test 2026-10-28: still no preview after waiting ~5 s; no console error
 - Status: open

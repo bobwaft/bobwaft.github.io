@@ -85,6 +85,10 @@ async function boot(): Promise<void> {
     return showFallback(fallbackReason(true, err) ?? 'load-failed', err);
   }
   const { scene, camera } = loaded;
+  // `?debug`: the scene graph is reachable from the console as `__scene`.
+  if (new URLSearchParams(window.location.search).has('debug')) {
+    (window as unknown as { __scene: unknown }).__scene = scene;
+  }
   if (camera.name !== MAIN_CAMERA_NAME) {
     console.error(`Missing expected camera ${MAIN_CAMERA_NAME}; using ${camera.name || 'unnamed'}`);
   }
