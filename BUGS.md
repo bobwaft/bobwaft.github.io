@@ -34,3 +34,11 @@ Number bugs sequentially and never reuse a number.
 - Actual: view drifts back to centre on mouse leave
 - Severity: med
 - Status: closed (re-tested 2026-10-27: pass)
+
+### BUG-003 — Can't drag-select resume text; dragging moves the camera
+- Phase: 6
+- Steps: `npm run dev`, click the papers, press on the resume text and drag across it
+- Expected: text highlights and can be copied (FR-14, NFR-5); the view stays put
+- Actual: no selection; the drag moves the camera instead
+- Severity: med
+- Status: open

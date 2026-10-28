@@ -138,12 +138,12 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] **Download PDF** button (`<a download>`) visible only in the papers focus view
 
 ### You test
-- [ ] In the idle view, the top sheet shows the first page of the resume
-- [ ] Clicking the papers moves the camera above the stack and the resume is sharp and readable on the sheet
+- [x] In the idle view, the top sheet shows the first page of the resume
+- [x] Clicking the papers moves the camera above the stack and the resume is sharp and readable on the sheet
 - [ ] You can select and copy text from the resume
-- [ ] Paging works if the PDF has more than one page
-- [ ] **Download PDF** downloads the same file
-- [ ] pdf.js isn't requested until the loading screen has faded (Network tab), and isn't in the initial bundle
+- [x] Paging works if the PDF has more than one page
+- [x] **Download PDF** downloads the same file
+- [x] pdf.js isn't requested until the loading screen has faded (Network tab), and isn't in the initial bundle
 
 ---
 
