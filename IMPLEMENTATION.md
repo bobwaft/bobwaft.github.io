@@ -187,7 +187,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] Colours match the Phase 1 look (no washed-out or double-tone-mapped image)
 - [x] 60 fps at 1080p on an Iris Xe / M1-class laptop; ≥ 30 fps on a mid-range phone
 - [x] First-load transfer ≤ 15 MB; interactive in < 5 s at 25 Mbps
-- [ ] With heavy CPU throttling (DevTools 6× slowdown), the site switches to the fallback, and "Try 3D anyway" brings the 3D back
+- [ ] With `?slow` (each frame busy-waits ~80 ms, about 10 fps; `?slow=<ms>` to change; DevTools CPU throttling does not slow a GPU-bound scene), the site switches to the fallback, and "Try 3D anyway" brings the 3D back
 
 ---
 

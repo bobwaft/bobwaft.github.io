@@ -35,6 +35,7 @@ import {
 import { idlePoseKind, PORTRAIT_IDLE_POSE, poseFromLookAt } from './camera/poses';
 import { createDebugCamera, type DebugCamera } from './ui/debugCamera';
 import { createAdaptivePixelRatio } from './scene/adaptivePixelRatio';
+import { busyWait, slowFrameMs } from './scene/slowFrames';
 import { createFpsMonitor, isForce3d } from './ui/fpsMonitor';
 import { createDebugFps } from './ui/debugFps';
 import { showFallback } from './ui/fallback';
@@ -331,7 +332,10 @@ async function boot(): Promise<void> {
     });
     document.addEventListener('visibilitychange', onVisibility);
     let tintKeyShown = '';
+    const slowMs = slowFrameMs(window.location.search);
     renderer.setAnimationLoop((time: number) => {
+      // ?slow test hook: fake a slow device (BUG-004).
+      if (slowMs !== null) busyWait(slowMs);
       const hidden = document.hidden;
       // A pixel-ratio change clears the drawing buffer, so it is applied before this frame draws.
       if (pendingRatio !== null) {

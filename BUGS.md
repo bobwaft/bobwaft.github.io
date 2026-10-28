@@ -52,7 +52,8 @@ Number bugs sequentially and never reuse a number.
 - Severity: high
 - Root cause (2026-10-28): the monitor treated any frame gap over 1000 ms as a stall and restarted its window, so under heavy CPU throttle (frames 1-2 s apart) it restarted forever; it also demanded 20 samples, unreachable in a 5 s window at <4 fps. Fix: gaps count up to 5 s (hidden tabs handled by the hidden flag and visibilitychange), and a median under 4 fps needs only 3 samples. `?debug` now shows the monitor state and median fps. Not verified in a browser
 - Re-test 2026-10-28: no fallback, but `?debug` showed the median above 25 fps. DevTools CPU throttling slows JavaScript only, and with a real GPU the scene stays above 25 fps, so not falling back is correct. The test step is wrong: add a `?slow` debug flag that forces slow frames, and test with that
-- Status: open (needs the `?slow` test hook, then re-test)
+- Fix 2026-10-28: added the `?slow[=<ms>]` test hook (src/scene/slowFrames.ts; default 80 ms, clamped 1..500; each frame busy-waits, so ~10 fps) and changed the Phase 8 test step to use it. After "Try 3D anyway" the session flag disables the monitor, so 3D stays even with `?slow` (expected). Monitor code unchanged
+- Status: fixed 2026-10-28, awaiting re-test (use `?slow`)
 
 ### BUG-005 — Resume page renders wholly black in the focus view
 - Phase: 8
