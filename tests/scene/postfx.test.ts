@@ -1,5 +1,5 @@
 import { HalfFloatType, PerspectiveCamera, Scene, type WebGLRenderer } from 'three';
-import { readFileSync } from 'node:fs';
+import lightingSource from '../../src/scene/scene-lighting.js?raw';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
@@ -60,7 +60,7 @@ describe('createPostFx', () => {
   });
 
   it('leaves the shelf strip at its original emissive and masks it from bloom', () => {
-    const src = readFileSync('src/scene/scene-lighting.js', 'utf8');
+    const src = lightingSource;
     expect(src).toContain('new THREE.Color(3.0, 1.6, 0.6) : null');
     expect(src).not.toContain('SHELF_EMISSIVE_SCALE');
     expect(src).toContain("'M_Env_ShelfBulb' ? 0 : 1");
