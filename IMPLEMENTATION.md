@@ -97,14 +97,16 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] Audio player: on/off toggle with volume fade, next track on `ended`, pause on tab hidden / resume on visible
 - [x] Speaker pulse while playing
 - [x] Empty-playlist handling: warning in console, no visible change, no errors
-- [ ] Add the owner's tracks to `public/audio/` and `playlist.json` once provided (licence confirmed)
+- [x] Add the owner's tracks to `public/audio/` and `playlist.json` once provided (licence confirmed)
+- [x] Now-playing caption credits the current track (title, artist, source, licence) while music is on — CC BY-NC-SA attribution
 
 ### You test
 - [x] The lamp is on at page load; the pull cord animates and fades it off, then on again
-- [ ] Clicking the speaker starts music (once provided) and clicking again fades it out
-- [ ] Tracks play in a shuffled order and move to the next track when one ends
-- [ ] Switching to another tab pauses the music; coming back resumes it
-- [ ] The speaker pulses only while music plays; neither interaction moves the camera
+- [x] Clicking the speaker starts music (once provided) and clicking again fades it out
+- [x] Tracks play in a shuffled order and move to the next track when one ends
+- [x] Switching to another tab pauses the music; coming back resumes it
+- [x] The speaker pulses only while music plays; neither interaction moves the camera
+- [x] While music plays, a small caption at the bottom-left credits the current track; it changes with the track and fades out when the music stops
 
 ---
 
@@ -118,11 +120,11 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] Show the HTML layer only when focused on the laptop; hide it on exit
 
 ### You test
-- [ ] Clicking the laptop zooms in and the about page sits exactly on the screen (no gaps/overhang), in landscape and portrait
-- [ ] Text is sharp and readable; contact links are visible without scrolling; links open in a new tab
-- [ ] Scrolling works if the content is longer than the screen
-- [ ] Clicking the about page's content doesn't exit the view; clicking outside the laptop does
-- [ ] In the idle view the screen shows the preview, not a blank screen
+- [x] Clicking the laptop zooms in and the about page sits exactly on the screen (no gaps/overhang), in landscape and portrait
+- [x] Text is sharp and readable; contact links are visible without scrolling; links open in a new tab
+- [x] Scrolling works if the content is longer than the screen
+- [x] Clicking the about page's content doesn't exit the view; clicking outside the laptop does
+- [x] In the idle view the screen shows the preview, not a blank screen
 
 ---
 

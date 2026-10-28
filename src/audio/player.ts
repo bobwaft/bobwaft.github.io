@@ -23,6 +23,8 @@ export interface PlayerOptions {
   rng?: () => number;
   /** Called with the new on/off state whenever it changes. */
   onChange?: (playing: boolean) => void;
+  /** Called with a track's src each time it becomes the current track. */
+  onTrack?: (src: string) => void;
 }
 
 export interface Player {
@@ -70,6 +72,7 @@ export function createPlayer(opts: PlayerOptions): Player {
     const track = bag.next();
     if (track === undefined) return;
     audio.src = track;
+    opts.onTrack?.(track);
     if (on && !opts.doc.hidden) play();
     else sounding = false;
   };
@@ -100,6 +103,7 @@ export function createPlayer(opts: PlayerOptions): Player {
         audio.volume = 0;
         audio.addEventListener('ended', playNext);
         audio.src = track;
+        opts.onTrack?.(track);
       }
       setOn(true);
       if (!sounding) {

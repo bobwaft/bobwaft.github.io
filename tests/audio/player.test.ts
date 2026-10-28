@@ -43,6 +43,7 @@ const setup = (tracks = ['/audio/a.mp3', '/audio/b.mp3', '/audio/c.mp3']) => {
   const audios: FakeAudio[] = [];
   const doc = new FakeDoc();
   const onChange = vi.fn();
+  const onTrack = vi.fn();
   const player = createPlayer({
     tracks,
     createAudio: () => {
@@ -53,8 +54,9 @@ const setup = (tracks = ['/audio/a.mp3', '/audio/b.mp3', '/audio/c.mp3']) => {
     doc,
     rng: () => 0.5,
     onChange,
+    onTrack,
   });
-  return { player, audios, doc, onChange };
+  return { player, audios, doc, onChange, onTrack };
 };
 
 describe('audio player', () => {
@@ -173,6 +175,34 @@ describe('audio player', () => {
     player.dispose();
     doc.set(true);
     expect(audios[0].paused).toBe(false);
+  });
+});
+
+describe('audio player track reporting', () => {
+  it('reports the first track on first toggle and each next track on ended', () => {
+    const { player, audios, onTrack } = setup();
+    player.toggle();
+    expect(onTrack).toHaveBeenCalledTimes(1);
+    expect(onTrack).toHaveBeenLastCalledWith(audios[0].src);
+    audios[0].emitEnded();
+    expect(onTrack).toHaveBeenCalledTimes(2);
+    expect(onTrack).toHaveBeenLastCalledWith(audios[0].src);
+  });
+
+  it('does not report again when toggled back on', () => {
+    const { player, onTrack } = setup();
+    player.toggle();
+    player.toggle();
+    player.toggle();
+    expect(onTrack).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports nothing for an empty playlist', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const { player, onTrack } = setup([]);
+    player.toggle();
+    expect(onTrack).not.toHaveBeenCalled();
+    warn.mockRestore();
   });
 });
 

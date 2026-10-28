@@ -1,1 +1,23 @@
-[]
+[
+  {
+    "src": "/audio/track-03.mp3",
+    "title": "sunset bossa",
+    "artist": "Dee Yan-Key",
+    "source": "Free Music Archive",
+    "license": "CC BY-NC-SA"
+  },
+  {
+    "src": "/audio/track-04.mp3",
+    "title": "Bossa Nova Midnight Club Late Bossa",
+    "artist": "Alex Morgan",
+    "source": "Free Music Archive",
+    "license": "CC BY-NC-SA"
+  },
+  {
+    "src": "/audio/track-05.mp3",
+    "title": "You da Bossa",
+    "artist": "Ketsa",
+    "source": "Free Music Archive",
+    "license": "CC BY-NC-SA"
+  }
+]

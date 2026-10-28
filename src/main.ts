@@ -38,6 +38,7 @@ import { pullcord } from './objects/pullcord';
 import { speaker } from './objects/speaker';
 import { createPlayer } from './audio/player';
 import playlist from './content/playlist.json';
+import { createNowPlaying } from './ui/nowPlaying';
 import aboutSource from './content/about.md?raw';
 import { parseAbout } from './content/render';
 import { laptop } from './objects/laptop';
@@ -107,10 +108,13 @@ async function boot(): Promise<void> {
   const lamp = createLamp(lighting.uLight, () => (settings.poseTweenSeconds === 0 ? 0 : 0.4));
   const cordObject = [...registered].find(([, m]) => m === pullcord)?.[0];
   pullcord.bind({ toggle: () => lamp.toggle(), object: cordObject });
+  const nowPlaying = createNowPlaying(playlist);
   const player = createPlayer({
-    tracks: playlist as string[],
+    tracks: playlist.map((t) => t.src),
     createAudio: () => new Audio(),
     doc: document,
+    onChange: (playing) => nowPlaying.setVisible(playing),
+    onTrack: (src) => nowPlaying.setTrack(src),
   });
   const speakerObject = [...registered].find(([, m]) => m === speaker)?.[0];
   speaker.bind({
