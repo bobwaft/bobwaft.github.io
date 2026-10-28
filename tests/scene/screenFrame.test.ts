@@ -1,6 +1,11 @@
-import { Vector2, Vector3 } from 'three';
+import { Matrix4, PerspectiveCamera, Quaternion, Vector2, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { cssPlacement, screenFrame, uvTransform } from '../../src/scene/screenFrame';
+import {
+  cssPlacement,
+  screenFrame,
+  surfaceCameraMatrix,
+  uvTransform,
+} from '../../src/scene/screenFrame';
 
 const close = (a: Vector3, b: Vector3) => expect(a.distanceTo(b)).toBeLessThan(1e-6);
 
@@ -72,5 +77,28 @@ describe('uvTransform', () => {
     // Top-left corner (index 3) must sample the top-left of the image (0, 1).
     expect(apply(uvs[3]).distanceTo(new Vector2(0, 1))).toBeLessThan(1e-6);
     expect(apply(uvs[1]).distanceTo(new Vector2(1, 0))).toBeLessThan(1e-6);
+  });
+});
+
+describe('surfaceCameraMatrix', () => {
+  it('sees a point on the surface where the real camera sees it in the world (BUG-003)', () => {
+    const placement = {
+      position: new Vector3(-0.4, 0.76, -0.98),
+      quaternion: new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), -Math.PI / 2),
+    };
+    const camera = new PerspectiveCamera();
+    camera.position.set(-0.4, 1.3, -0.98);
+    camera.lookAt(placement.position); // straight down: the case that broke hit testing
+    camera.updateMatrixWorld();
+    const local = new Vector3(0.05, -0.1, 0);
+    const world = local.clone().applyQuaternion(placement.quaternion).add(placement.position);
+    const viewInverse = surfaceCameraMatrix(placement, camera.matrixWorld).invert();
+    close(local.clone().applyMatrix4(viewInverse), world.applyMatrix4(camera.matrixWorldInverse));
+  });
+
+  it('is the camera itself for a surface at the origin facing +Z', () => {
+    const placement = { position: new Vector3(), quaternion: new Quaternion() };
+    const m = new Matrix4().makeTranslation(1, 2, 3);
+    expect(surfaceCameraMatrix(placement, m).equals(m)).toBe(true);
   });
 });

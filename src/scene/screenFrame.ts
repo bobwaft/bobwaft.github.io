@@ -88,3 +88,18 @@ export function uvTransform(
   const cy = aty.applyMatrix3(inv);
   return new Matrix3().set(cx.x, cx.y, cx.z, cy.x, cy.y, cy.z, 0, 0, 1);
 }
+
+/**
+ * World matrix of a camera moved into the surface's frame, so the CSS3D element can sit at the
+ * origin facing +Z. Seen through it, the element lands where the real camera sees the surface.
+ * Keeps the CSS camera from looking edge-on at its own plane (top-down views; BUG-003).
+ */
+export function surfaceCameraMatrix(
+  placement: Pick<CssPlacement, 'position' | 'quaternion'>,
+  cameraWorld: Matrix4,
+): Matrix4 {
+  return new Matrix4()
+    .compose(placement.position, placement.quaternion, new Vector3(1, 1, 1))
+    .invert()
+    .multiply(cameraWorld);
+}

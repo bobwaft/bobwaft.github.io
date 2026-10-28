@@ -40,5 +40,6 @@ Number bugs sequentially and never reuse a number.
 - Steps: `npm run dev`, click the papers, press on the resume text and drag across it
 - Expected: text highlights and can be copied (FR-14, NFR-5); the view stays put
 - Actual: no selection; the drag moves the camera instead
+- Root cause (2026-10-28): looking straight down, the CSS3D camera element viewed its own plane edge-on, and Chrome's 3D hit testing then missed the page (elementFromPoint returned the WebGL canvas). Fix: the screen layer puts the element at the origin facing +Z and moves the camera into the surface's frame (`surfaceCameraMatrix`); same picture, working hit testing. Laptop page unaffected
 - Severity: med
-- Status: open
+- Status: fixed 2026-10-28, awaiting re-test
