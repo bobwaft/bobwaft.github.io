@@ -140,7 +140,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 ### You test
 - [x] In the idle view, the top sheet shows the first page of the resume
 - [x] Clicking the papers moves the camera above the stack and the resume is sharp and readable on the sheet
-- [ ] You can select and copy text from the resume
+- [x] You can select and copy text from the resume
 - [x] Paging works if the PDF has more than one page
 - [x] **Download PDF** downloads the same file
 - [x] pdf.js isn't requested until the loading screen has faded (Network tab), and isn't in the initial bundle

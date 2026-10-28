@@ -42,4 +42,4 @@ Number bugs sequentially and never reuse a number.
 - Actual: no selection; the drag moves the camera instead
 - Root cause (2026-10-28): looking straight down, the CSS3D camera element viewed its own plane edge-on, and Chrome's 3D hit testing then missed the page (elementFromPoint returned the WebGL canvas). Fix: the screen layer puts the element at the origin facing +Z and moves the camera into the surface's frame (`surfaceCameraMatrix`); same picture, working hit testing. Laptop page unaffected
 - Severity: med
-- Status: fixed 2026-10-28, awaiting re-test
+- Status: closed (re-tested 2026-10-28: pass)
