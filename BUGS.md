@@ -75,7 +75,8 @@ Number bugs sequentially and never reuse a number.
 - Fix 2026-10-28 (likely cause, unverified in a browser): UnrealBloomPass's high-pass writes to a half-resolution target with a single bilinear tap per output pixel, so it skips every other scene pixel and a 1-2 px HDR strip aliases as it moves vertically by sub-pixel amounts. The bloom pass now gets a doubled size so its high-pass and first blur mip are full resolution (src/scene/postfx.ts; costs a heavier bloom, adaptive pixel ratio covers slow GPUs). MSAA is resolved before bloom, so the geometry itself is not the cause. If it still flickers, next step is lowering the strip's emissive (scene-lighting.js)
 - Re-test 2026-10-28 (after full-res bloom): same flicker. Owner: it didn't exist before Phase 8, so it's the glow added to the tube light; reduce it or remove it entirely from the tube light
 - Fix 2026-10-28: the shelf strip's emissive is scaled by 0.35 at load (SHELF_EMISSIVE_SCALE, scene-lighting.js, logged in MEMORY.md), putting its luma (~0.64) under the bloom threshold so it no longer blooms; street lamps and city windows still do. Full-resolution bloom hack reverted. Not verified in a browser
-- Status: fixed 2026-10-28, awaiting re-test
+- Re-test 2026-10-28 (strip emissive ×0.35): no flicker, but the owner wants the strip at its previous brightness, just without the glow (exclude it from bloom instead of dimming it)
+- Status: open
 
 ### BUG-007 — Notebook spread: green band across the page, left-page text too high
 - Phase: 8
@@ -97,7 +98,7 @@ Number bugs sequentially and never reuse a number.
 - Fix 2026-10-28: rounded corners removed (CSS and canvas clip). Instead a 20px black bezel: `.screen-page` is black with 20px padding around a new `.screen-inner` (browser bar + scroll), so the element still fills the screen mesh exactly; the CRT overlay is inset to the inner area, and the idle texture fills black then draws the page and CRT pass translated and clipped inside it (BEZEL_PX in laptopScreen.ts). Not verified visually
 - Re-test 2026-10-28: bezel passes; make the margins a little thinner
 - Fix 2026-10-28: bezel reduced from 20px to 12px (BEZEL_PX and .screen-page padding/CRT inset). Not verified visually
-- Status: fixed 2026-10-28, awaiting re-test
+- Status: closed (re-tested 2026-10-28: pass)
 
 ### BUG-009 — Resume paper much too bright
 - Phase: 8
@@ -107,4 +108,12 @@ Number bugs sequentially and never reuse a number.
 - Root cause (2026-10-28): the old tint scaled the near-white CSS paper by the raw light level (1.0 in daylight), but the scene paper is lit below 1.0 and then bloom/AgX tone-mapped, so it displays far darker; the CSS layer is not tone-mapped. Fix: surfaceTint now maps light to the displayed paper colour (PAPER_RADIANCE 0.45 through an AgX-like shoulder and sRGB encode, divided by the CSS paper's luma), giving about 0.67 by day, 0.39 at night with the lamp off, and lamp-on night equal to day. The constants are assumptions tuned without the lightmap values, so expect a by-eye tweak. The filter already covers paper and ink (both are in the canvas); the notebook uses the same variables, so it is consistent (its ink only, over baked paper)
 - Re-test 2026-10-28 (owner screenshot): the resume page is a flat, desaturated grey-green (~rgb 167,162,148) while the papers under it are warm peach (~rgb 225,195,165) under the lamp. Too dark and too cold; a computed tint can't match the bake + AgX + bloom result
 - Fix 2026-10-28: the page background is now the SAMPLED displayed colour: right after postfx.render, main.ts reads 6 margin pixels of the top sheet (gl.readPixels, averaged, src/scene/paperSample.ts) when the papers focus view arrives, on lamp/time tint changes and on resize. The PDF canvas renders on white with mix-blend-mode multiply over that background; the brightness/sepia filter is dropped for the resume. The notebook stays on surfaceTint (its pages are ink over the baked paper, so there is no paper colour to match). Not verified in a browser
-- Status: fixed 2026-10-28, awaiting re-test
+- Status: closed (re-tested 2026-10-28: pass; missing idle preview split off as BUG-010)
+
+### BUG-010 — Resume preview no longer shows on the paper stack before clicking
+- Phase: 8 (regression from the BUG-005/BUG-009 fixes)
+- Steps: load the site, look at the papers on the desk without clicking them
+- Expected: page 1 of the resume is visible on the top sheet in the idle view (A-15), as before Phase 8
+- Actual: no preview on the stack until the papers are clicked
+- Severity: med
+- Status: open
