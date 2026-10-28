@@ -32,7 +32,9 @@ export function createResumeControls(
   next.addEventListener('click', () => onStep(1));
   const onKey = (e: KeyboardEvent) => {
     const delta = keyDelta(e.key);
-    if (root.hidden || pager.hidden || !delta) return;
+    const typing =
+      e.target instanceof HTMLElement && e.target.closest('input, textarea, [contenteditable]');
+    if (root.hidden || pager.hidden || !delta || typing) return;
     e.preventDefault();
     onStep(delta);
   };

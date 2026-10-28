@@ -17,7 +17,7 @@ import {
 import { uvTransform } from '../scene/screenFrame';
 import { createScreenLayer } from '../ui/screenLayer';
 import { createResumeControls } from '../ui/resumeControls';
-import { renderWidth, stepPage } from '../resume/layout';
+import { needsRender, renderWidth, stepPage } from '../resume/layout';
 import { sheetFrame, topSheetTriangles } from '../resume/sheet';
 import type { ResumeDocument } from '../resume/pdf';
 import '../ui/resume.css';
@@ -26,8 +26,6 @@ import '../ui/resume.css';
 export const PAGE_PX_WIDTH = 794;
 /** Idle texture width; the sheet is small and oblique in the idle view. */
 const IDLE_PX_WIDTH = 1024;
-/** Re-render the focus page when the size it needs drifts by more than this factor. */
-const RERENDER_RATIO = 1.25;
 const RERENDER_DELAY_MS = 250;
 
 export interface PapersSheet {
@@ -118,19 +116,23 @@ export function createPapersSheet(
   const element = document.createElement('div');
   element.className = 'resume-page';
   element.innerHTML =
-    `<canvas class="resume-canvas"></canvas><div class="textLayer"></div>` +
+    `<canvas class="resume-canvas"></canvas><div class="resume-text"></div>` +
     `<p class="resume-status">Loading resume…</p>`;
   const canvas = element.querySelector('canvas')!;
-  const text = element.querySelector<HTMLElement>('.textLayer')!;
+  const text = element.querySelector<HTMLElement>('.resume-text')!;
   const status = element.querySelector<HTMLElement>('.resume-status')!;
   const layer = createScreenLayer(element, frame, PAGE_PX_WIDTH);
 
   let doc: ResumeDocument | null = null;
+  let texture: CanvasTexture | null = null;
   let visible = false;
   let page = 1;
-  let textPage = 0;
-  let drawn = { page: 0, width: 0 };
-  let wanted = { page: 0, width: 0 };
+  /** What the canvas and text layer show now. */
+  let shown = { page: 0, width: 0 };
+  /** The draw that is scheduled or running; null when none. */
+  let pending: { page: number; width: number } | null = null;
+  /** Bumped by every draw and by hiding; a draw only shows its result if it is still current. */
+  let generation = 0;
   let timer: ReturnType<typeof setTimeout> | undefined;
   const fail = (err: unknown) => {
     console.error('Resume failed to render', err);
@@ -138,22 +140,32 @@ export function createPapersSheet(
     status.hidden = false;
   };
 
-  const drawText = () => {
-    if (!doc || textPage === page) return;
-    textPage = page;
-    doc.renderText(page, text, PAGE_PX_WIDTH).catch(fail);
-  };
-  const drawCanvas = () => {
+  /** Renders canvas and text offscreen, then swaps both in together. */
+  const draw = async (target: { page: number; width: number }) => {
     if (!doc) return;
-    const target = wanted;
-    doc.renderPage(target.page, canvas, target.width).then(() => {
-      if (target === wanted) drawn = target; // else a newer render replaced this one
-    }, fail);
+    const current = ++generation;
+    try {
+      const [bitmap, textLayer] = await Promise.all([
+        doc.renderPage(target.page, target.width),
+        shown.page === target.page ? null : doc.renderText(target.page, PAGE_PX_WIDTH),
+      ]);
+      if (current !== generation) return; // replaced by a newer draw, or hidden
+      canvas.width = bitmap.width;
+      canvas.height = bitmap.height;
+      canvas.getContext('2d')!.drawImage(bitmap, 0, 0);
+      if (textLayer) text.replaceChildren(textLayer);
+      shown = target;
+    } catch (err) {
+      if (current !== generation) return;
+      shown = target; // don't retry every frame; the status points to Download PDF
+      fail(err);
+    } finally {
+      if (pending === target) pending = null;
+    }
   };
   const controls = createResumeControls(pdfUrl, (delta) => {
     page = stepPage(page, delta, doc?.numPages ?? 1);
-    controls.setPage(page, doc?.numPages ?? 1);
-    drawText();
+    controls.setPage(page, doc?.numPages ?? 1); // render() draws the new page next frame
   });
 
   // Edges of the page's horizontal midline, for its on-screen width.
@@ -173,13 +185,17 @@ export function createPapersSheet(
       visible = v;
       layer.setVisible(v);
       controls.setVisible(v);
-      if (v) {
-        drawText();
-      } else {
-        clearTimeout(timer);
-        wanted = { page: 0, width: 0 }; // the cleared render must be scheduled again
-        page = 1; // the idle sheet shows page 1, so the next visit starts there
-        controls.setPage(page, doc?.numPages ?? 1);
+      if (v) return;
+      clearTimeout(timer);
+      pending = null;
+      generation++; // drop any draw still in flight
+      page = 1; // the idle sheet shows page 1, so the next visit starts there
+      controls.setPage(page, doc?.numPages ?? 1);
+      if (shown.page !== page) {
+        // Don't flash the old page on the next visit.
+        canvas.width = 0;
+        text.replaceChildren();
+        shown = { page: 0, width: 0 };
       }
     },
     async load() {
@@ -187,9 +203,7 @@ export function createPapersSheet(
         const { openResume } = await import('../resume/pdf');
         doc = await openResume(pdfUrl);
         controls.setPage(page, doc.numPages);
-        const idle = document.createElement('canvas');
-        await doc.renderPage(1, idle, IDLE_PX_WIDTH);
-        const texture = new CanvasTexture(idle);
+        texture = new CanvasTexture(await doc.renderPage(1, IDLE_PX_WIDTH));
         texture.colorSpace = SRGBColorSpace;
         texture.anisotropy = 8;
         texture.matrixAutoUpdate = false;
@@ -205,7 +219,6 @@ export function createPapersSheet(
         material.needsUpdate = true;
         overlay.visible = true;
         status.hidden = true;
-        if (visible) drawText();
       } catch (err) {
         fail(err);
       }
@@ -214,21 +227,26 @@ export function createPapersSheet(
       layer.render(camera);
       if (!visible || !doc) return;
       const width = renderWidth(onScreenWidth(camera), window.devicePixelRatio, PAGE_PX_WIDTH);
-      const pageChanged = drawn.page !== page;
-      const drift = Math.max(width / drawn.width, drawn.width / width);
-      if (!pageChanged && drift <= RERENDER_RATIO) return;
-      if (wanted.page === page && wanted.width === width) return; // already scheduled
-      wanted = { page, width };
+      if (!needsRender(shown, page, width)) return;
+      if (pending?.page === page && pending.width === width) return; // already on its way
+      const target = { page, width };
+      pending = target;
       clearTimeout(timer);
       // A new page draws at once; a size change waits for resizing/zooming to settle.
-      timer = setTimeout(drawCanvas, pageChanged ? 0 : RERENDER_DELAY_MS);
+      const delay = shown.page !== page ? 0 : RERENDER_DELAY_MS;
+      timer = setTimeout(() => void draw(target), delay);
     },
     setSize: (w, h) => layer.setSize(w, h),
     dispose() {
       clearTimeout(timer);
+      generation++;
       controls.dispose();
       layer.dispose();
       overlay.removeFromParent();
+      overlay.geometry.dispose();
+      overlay.material.dispose();
+      texture?.dispose();
+      doc?.destroy();
     },
   };
 }

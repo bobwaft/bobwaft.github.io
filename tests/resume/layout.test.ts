@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { keyDelta, pageLabel, renderWidth, stepPage } from '../../src/resume/layout';
+import { keyDelta, needsRender, pageLabel, renderWidth, stepPage } from '../../src/resume/layout';
 
 describe('stepPage', () => {
   it('moves forward and back within the document', () => {
@@ -49,5 +49,27 @@ describe('renderWidth', () => {
 
   it('caps the canvas size', () => {
     expect(renderWidth(3000, 3)).toBe(4096);
+  });
+});
+
+describe('needsRender', () => {
+  const shown = { page: 1, width: 1000 };
+
+  it('redraws when the page changes', () => {
+    expect(needsRender(shown, 2, 1000)).toBe(true);
+  });
+
+  it('redraws when the needed size drifts past the ratio either way', () => {
+    expect(needsRender(shown, 1, 1300)).toBe(true);
+    expect(needsRender(shown, 1, 700)).toBe(true);
+  });
+
+  it('keeps the current render for small size changes', () => {
+    expect(needsRender(shown, 1, 1200)).toBe(false);
+    expect(needsRender(shown, 1, 850)).toBe(false);
+  });
+
+  it('always draws when nothing is shown yet', () => {
+    expect(needsRender({ page: 0, width: 0 }, 1, 1000)).toBe(true);
   });
 });

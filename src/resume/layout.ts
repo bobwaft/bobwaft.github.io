@@ -26,3 +26,17 @@ export function pageLabel(page: number, count: number): string {
 export function renderWidth(onScreenWidth: number, dpr: number, cssWidth = 0): number {
   return Math.min(MAX_RENDER_PX, Math.round(Math.max(onScreenWidth * dpr, cssWidth)));
 }
+
+/** Re-render when the needed width drifts from the shown one by more than this factor. */
+export const RERENDER_RATIO = 1.25;
+
+/** True when the page on screen is the wrong page, or too far from the size it needs. */
+export function needsRender(
+  shown: { page: number; width: number },
+  page: number,
+  width: number,
+  ratio = RERENDER_RATIO,
+): boolean {
+  if (shown.page !== page || shown.width <= 0) return true;
+  return Math.max(width / shown.width, shown.width / width) > ratio;
+}
