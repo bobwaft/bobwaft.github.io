@@ -68,7 +68,8 @@ Number bugs sequentially and never reuse a number.
 - Expected: steady light and glow
 - Actual: the tube light flickers slightly whenever the camera moves. Likely bloom on the thin bright strip shimmering between pixels (threshold/resolution), or adaptive pixel-ratio steps
 - Severity: med
-- Status: open
+- Root cause (2026-10-28): likely (unverified in a browser): UnrealBloom's high-pass had a near-hard cutoff (smoothWidth 0.01 at threshold 1.05), so the thin HDR tube's edge pixels flip across it as the camera moves and its coverage changes, producing shimmer; adaptive pixel-ratio steps need 2 s of sustained <50 fps so are unlikely the cause, and MSAA does apply (the composer clones the 4-sample target). Fix: soft knee smoothWidth 1 and radius 0.5 to 0.65
+- Status: fixed 2026-10-28, awaiting re-test
 
 ### BUG-007 — Notebook spread: green band across the page, left-page text too high
 - Phase: 8

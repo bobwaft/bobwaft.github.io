@@ -14,7 +14,7 @@ import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
 /** Bloom is modest and only catches HDR values (bulb, street lamps, city windows exceed 1.0). */
-export const BLOOM = { strength: 0.35, radius: 0.5, threshold: 1.05 } as const;
+export const BLOOM = { strength: 0.35, radius: 0.65, threshold: 1.05, smoothWidth: 1 } as const;
 /** Grain amplitude and vignette darkening at the corners; both are subtle. */
 export const GRAIN_VIGNETTE = { grain: 0.04, vignette: 0.3 } as const;
 /** MSAA samples for the composer's render targets (the canvas's own antialias does not apply). */
@@ -82,6 +82,11 @@ export function createPostFx(renderer: WebGLRenderer, scene: Object3D, camera: C
     BLOOM.radius,
     BLOOM.threshold,
   );
+  // The default knee (0.01) is a hard cutoff: a thin HDR strip (the shelf tube) changes pixel
+  // coverage as the camera moves, so its edge pixels flip across the threshold and shimmer
+  // (BUG-006). A wide knee makes the bloom contribution vary smoothly with coverage.
+  (bloom.highPassUniforms as Record<string, { value: number }>).smoothWidth.value =
+    BLOOM.smoothWidth;
   const grain = new ShaderPass(GrainVignetteShader);
   composer.addPass(new RenderPass(scene as Scene, camera));
   composer.addPass(bloom);

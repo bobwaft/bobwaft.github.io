@@ -44,6 +44,13 @@ describe('createPostFx', () => {
     expect(GRAIN_VIGNETTE.vignette).toBeLessThanOrEqual(0.4);
   });
 
+  it('uses a wide soft knee so thin bright strips do not shimmer (BUG-006)', () => {
+    const bloom = make().composer.passes[1] as UnrealBloomPass;
+    expect(
+      (bloom.highPassUniforms as Record<string, { value: number }>).smoothWidth.value,
+    ).toBeGreaterThanOrEqual(0.5);
+  });
+
   it('resizes with the pixel ratio and counts one frame in renderer.info', () => {
     const renderer = fakeRenderer();
     const fx = createPostFx(renderer, new Scene(), new PerspectiveCamera());
