@@ -1,5 +1,6 @@
 import { createPostFx } from './scene/postfx';
 import { surfaceTint, tintKey } from './scene/surfaceTint';
+import { sampleDisplayedColor } from './scene/paperSample';
 import {
   adaptiveRatioAllowed,
   createRenderer,
@@ -332,6 +333,10 @@ async function boot(): Promise<void> {
     });
     document.addEventListener('visibilitychange', onVisibility);
     let tintKeyShown = '';
+    // The resume page takes the displayed colour of the paper, sampled from the frame (BUG-009).
+    let paperDirty = true;
+    let paperShown = false;
+    window.addEventListener('resize', () => (paperDirty = true));
     const slowMs = slowFrameMs(window.location.search);
     renderer.setAnimationLoop((time: number) => {
       // ?slow test hook: fake a slow device (BUG-004).
@@ -366,12 +371,29 @@ async function boot(): Promise<void> {
         const root = document.documentElement.style;
         root.setProperty('--surface-light', tint.brightness.toFixed(3));
         root.setProperty('--surface-warm', tint.warmth.toFixed(3));
+        paperDirty = true; // the lit paper changed (lamp, time of day)
       }
       player.update(dt);
       for (const m of updatable) m.update?.(dt);
       notebookBook?.update(dt);
       touchDots.update(app);
       postfx.render(dt);
+      const onPapers = app.kind === 'focused' && app.id === 'papers';
+      if (onPapers && papersSheet && (paperDirty || !paperShown)) {
+        // Same task as the render, so the default framebuffer still holds the frame.
+        const css = sampleDisplayedColor(
+          renderer.getContext(),
+          camera,
+          papersSheet.samplePoints,
+          window.innerWidth,
+          window.innerHeight,
+        );
+        if (css) papersSheet.setPaperColor(css);
+        paperDirty = false;
+        paperShown = true;
+      } else if (!onPapers) {
+        paperShown = false; // sample again on the next arrival
+      }
       screenLayer?.render(camera);
       papersSheet?.render(camera);
       notebookBook?.render(camera);

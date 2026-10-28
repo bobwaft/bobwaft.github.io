@@ -1,13 +1,14 @@
 /* Resume on the top sheet (A-15) and its controls. The page element sits in a screen layer
    (screenLayer.ts); .textLayer holds pdf.js's transparent, selectable text over the canvas.
-   The canvas is drawn opaque on a paper colour (layout.ts FOCUS_PAPER): a transparent page
-   would show the mesh, whose resume overlay multiplies transparent texels to black (BUG-005).
-   --surface-light and --surface-warm (surfaceTint.ts, set per frame in main.ts) tint the paper
-   and ink with the scene. */
+   The canvas is drawn opaque on white (layout.ts FOCUS_PAPER): a transparent page would show the
+   mesh, whose resume overlay multiplies transparent texels to black (BUG-005). It is multiplied
+   over --paper-color, the displayed colour of the lit paper sampled from the rendered frame
+   (paperSample.ts, set from main.ts), so paper and ink match the scene (BUG-009). */
 .resume-page {
   position: relative;
   overflow: hidden;
-  background: none;
+  background: var(--paper-color, #c9b9a3);
+  isolation: isolate; /* the canvas multiplies against this background only */
   pointer-events: auto;
   user-select: text;
   backface-visibility: hidden;
@@ -17,7 +18,7 @@
 }
 
 .resume-canvas {
-  filter: brightness(var(--surface-light, 1)) sepia(var(--surface-warm, 0));
+  mix-blend-mode: multiply;
   position: absolute;
   inset: 0;
   width: 100%;

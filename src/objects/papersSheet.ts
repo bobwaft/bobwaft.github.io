@@ -14,6 +14,7 @@ import {
   type Camera,
   type Object3D,
 } from 'three';
+import { marginPoints } from '../scene/paperSample';
 import { uvTransform } from '../scene/screenFrame';
 import { createScreenLayer } from '../ui/screenLayer';
 import { createResumeControls } from '../ui/resumeControls';
@@ -32,6 +33,10 @@ export interface PapersSheet {
   /** Camera up for the focus view: the page's own up, so it reads upright. */
   up: Vector3;
   setContentVisible(visible: boolean): void;
+  /** World points on the sheet's blank margins, to sample the displayed paper colour from. */
+  samplePoints: Vector3[];
+  /** CSS colour of the page background, sampled from the lit paper (BUG-009). */
+  setPaperColor(css: string): void;
   /** Loads pdf.js and the PDF, then draws page 1 on the sheet. Call once the scene is up. */
   load(): Promise<void>;
   render(camera: Camera): void;
@@ -181,6 +186,8 @@ export function createPapersSheet(
 
   return {
     up: frame.up.clone(),
+    samplePoints: marginPoints(frame),
+    setPaperColor: (css) => element.style.setProperty('--paper-color', css),
     setContentVisible(v) {
       visible = v;
       layer.setVisible(v);

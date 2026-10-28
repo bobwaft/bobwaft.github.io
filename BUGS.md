@@ -74,7 +74,8 @@ Number bugs sequentially and never reuse a number.
 - Re-test 2026-10-28: still flickers. Owner's observation: it happens when panning up and down, as if how much of the light is on screen changes the glow (likely the bloom mip chain aliasing the thin strip as it moves vertically by sub-pixel amounts)
 - Fix 2026-10-28 (likely cause, unverified in a browser): UnrealBloomPass's high-pass writes to a half-resolution target with a single bilinear tap per output pixel, so it skips every other scene pixel and a 1-2 px HDR strip aliases as it moves vertically by sub-pixel amounts. The bloom pass now gets a doubled size so its high-pass and first blur mip are full resolution (src/scene/postfx.ts; costs a heavier bloom, adaptive pixel ratio covers slow GPUs). MSAA is resolved before bloom, so the geometry itself is not the cause. If it still flickers, next step is lowering the strip's emissive (scene-lighting.js)
 - Re-test 2026-10-28 (after full-res bloom): same flicker. Owner: it didn't exist before Phase 8, so it's the glow added to the tube light; reduce it or remove it entirely from the tube light
-- Status: open
+- Fix 2026-10-28: the shelf strip's emissive is scaled by 0.35 at load (SHELF_EMISSIVE_SCALE, scene-lighting.js, logged in MEMORY.md), putting its luma (~0.64) under the bloom threshold so it no longer blooms; street lamps and city windows still do. Full-resolution bloom hack reverted. Not verified in a browser
+- Status: fixed 2026-10-28, awaiting re-test
 
 ### BUG-007 — Notebook spread: green band across the page, left-page text too high
 - Phase: 8
@@ -95,7 +96,8 @@ Number bugs sequentially and never reuse a number.
 - Re-test 2026-10-28: the window part passes. The owner changed their mind on the corners: undo the rounded corners and instead shrink the laptop screen content slightly so a thin black border (bezel) shows around it, on both the DOM page and the idle texture
 - Fix 2026-10-28: rounded corners removed (CSS and canvas clip). Instead a 20px black bezel: `.screen-page` is black with 20px padding around a new `.screen-inner` (browser bar + scroll), so the element still fills the screen mesh exactly; the CRT overlay is inset to the inner area, and the idle texture fills black then draws the page and CRT pass translated and clipped inside it (BEZEL_PX in laptopScreen.ts). Not verified visually
 - Re-test 2026-10-28: bezel passes; make the margins a little thinner
-- Status: open (thinner bezel)
+- Fix 2026-10-28: bezel reduced from 20px to 12px (BEZEL_PX and .screen-page padding/CRT inset). Not verified visually
+- Status: fixed 2026-10-28, awaiting re-test
 
 ### BUG-009 — Resume paper much too bright
 - Phase: 8

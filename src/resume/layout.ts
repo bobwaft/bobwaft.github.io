@@ -43,9 +43,9 @@ export function needsRender(
 
 /**
  * Page backgrounds. The idle overlay multiplies the page over the baked paper, so its paper is
- * white (a no-op). The focus view shows the canvas itself in the CSS layer, so it carries a warm
- * paper colour close to the mesh paper, then the brightness/sepia tint matches it to the scene.
+ * white (a no-op). The focus view's canvas is white too: it is multiplied (CSS mix-blend-mode)
+ * over a page background set to the colour sampled from the lit paper (paperSample.ts, BUG-009).
  * Both are opaque: transparent texels multiply to black.
  */
 export const IDLE_PAPER = '#ffffff';
-export const FOCUS_PAPER = '#f1ece0';
+export const FOCUS_PAPER = '#ffffff';
