@@ -55,8 +55,8 @@ The baked `ShaderMaterial` includes `<tonemapping_fragment>` and `<colorspace_fr
 ## Open questions
 
 1. ~~**Pull cord target.**~~ **Resolved 2026-10-27: the cord toggles the shelf light (`lighting.uLight`); no new bake.** The request says the cord turns on "the lightbulb in the desk", but the only switchable light in the bake is the shelf tube light (`Env_ShelfStrip`, driven by `lighting.uLight`; `Ref_Lamp` sits at its centre). Is that the intended light, or is a separate desk bulb expected (would need a new bake pass)?
-2. **Time of day.** Fixed, follow the visitor's local clock, or user-controllable (e.g. clicking the window)?
-3. **`Click_Calendar` and `Click_Window`.** Exist in the scene but have no behaviour in the spec. Leave inert (no hover), or assign something later?
+2. ~~**Time of day.**~~ **Resolved 2026-10-28: the scene starts at the visitor's local clock; clicking the window cycles day, dusk, night. Nothing is persisted.**
+3. **`Click_Calendar` and `Click_Window`.** Partly resolved 2026-10-28: the window cycles time of day (question 2); `Click_Calendar` stays inert. Exist in the scene but have no behaviour in the spec. Leave inert (no hover), or assign something later?
 4. ~~**Notebook opening.**~~ Resolved 2026-10-28: re-exported with a hinged `Notebook_Cover` and separate `Notebook_Band` (see Scene facts). The notebook is exported as one object with an elastic band — no separate cover or pages. Build a procedural cover in three.js, or re-export with a hinged cover?
 5. ~~**Music.**~~ Resolved 2026-10-28: three MP3s from Free Music Archive (re-encoded to 128 kbps, ~10 MB total), all CC BY-NC-SA, listed with credits in `src/content/playlist.json`. Attribution is shown by the now-playing caption (`src/ui/nowPlaying.ts`). NC: the site must stay non-commercial (no ads/paid content) while these tracks are used.
 6. **Content.** About text/photo/links, resume source + PDF, and the project list — owner to provide.

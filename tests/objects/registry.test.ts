@@ -42,6 +42,7 @@ describe('CLICK_REGISTRY', () => {
       notebook: 'Projects',
       speaker: 'Music',
       pullcord: 'Lamp',
+      window: 'Time of day',
     });
   });
   it('only laptop, papers and notebook have focus views', () => {
@@ -52,9 +53,9 @@ describe('CLICK_REGISTRY', () => {
     );
     expect(focus).toEqual(new Set(['laptop', 'papers', 'notebook']));
   });
-  it('leaves Calendar and Window inert', () => {
+  it('leaves Calendar inert and registers the window', () => {
     expect(CLICK_REGISTRY.Click_Calendar).toBeUndefined();
-    expect(CLICK_REGISTRY.Click_Window).toBeUndefined();
+    expect(CLICK_REGISTRY.Click_Window?.id).toBe('window');
   });
   it('collectRegistered finds named objects and skips unregistered ones', () => {
     const root = new Object3D();

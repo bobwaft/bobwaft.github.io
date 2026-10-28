@@ -6,6 +6,7 @@ import { papers } from './papers';
 import { pullcord } from './pullcord';
 import { speaker } from './speaker';
 import type { InteractableModule } from './types';
+import { windowModule } from './window';
 
 export const MAIN_CAMERA_NAME = 'Cam_Main';
 
@@ -16,6 +17,7 @@ export const REQUIRED_CLICK_NAMES = [
   'Click_Notebook',
   'Click_Speaker',
   'Click_PullCord',
+  'Click_Window',
   'Notebook_Cover',
   'Notebook_Band',
 ] as const;
@@ -24,7 +26,7 @@ export const REQUIRED_CLICK_NAMES = [
 export const NOTEBOOK_COVER_NAME = 'Notebook_Cover';
 export const NOTEBOOK_BAND_NAME = 'Notebook_Band';
 
-/** Click_* name -> module. Click_Calendar and Click_Window are deliberately absent (inert). */
+/** Click_* name -> module. Click_Calendar is deliberately absent (inert). */
 export const CLICK_REGISTRY: Readonly<Record<string, InteractableModule>> = {
   Click_Laptop: laptop,
   Click_Laptop_Screen: laptop,
@@ -32,6 +34,7 @@ export const CLICK_REGISTRY: Readonly<Record<string, InteractableModule>> = {
   Click_Notebook: notebook,
   Click_Speaker: speaker,
   Click_PullCord: pullcord,
+  Click_Window: windowModule,
 };
 
 /** Object whose geometry a focus view frames, by module id. */

@@ -24,7 +24,7 @@ A personal website presented as an explorable 3D room. Visitors see a desk from 
 - **URL routing / deep links.** The URL never changes; there are no links straight into a focus view, and the browser Back button leaves the site.
 - Remembering lamp/music state between visits.
 - Languages other than English.
-- Interactions for `Click_Calendar` and `Click_Window` (they exist in the scene but have no assigned behaviour yet; see [MEMORY.md](MEMORY.md)).
+- An interaction for `Click_Calendar` (it exists in the scene but has no assigned behaviour yet; see [MEMORY.md](MEMORY.md)).
 
 ## 4. Content
 
@@ -125,4 +125,4 @@ A personal website presented as an explorable 3D room. Visitors see a desk from 
 
 ## 8. Open questions
 
-See **Open questions** in [MEMORY.md](MEMORY.md): which light the pull cord controls, time-of-day behaviour, `Click_Calendar`/`Click_Window`, how the notebook opening is modelled, and the owner-provided content (about text, resume PDF, projects, music).
+See **Open questions** in [MEMORY.md](MEMORY.md): `Click_Calendar`, how the notebook opening is modelled, and the owner-provided content (about text, resume PDF, projects, music).

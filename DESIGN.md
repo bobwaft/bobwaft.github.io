@@ -108,8 +108,11 @@ All content (about, projects, resume download link) is pre-rendered into `index.
 ### D-13. Reduced motion
 With `prefers-reduced-motion`, camera moves become short cross-fades or quick cuts, and idle look-around and parallax are reduced.
 
+### D-18. Time of day follows the clock; the window cycles it
+The scene starts at the visitor's local time (12:00 = full day, 00:00 = full night, linear between). Clicking the window cycles day, dusk, night, day with a ~1.2 s ease (instant under reduced motion). A clock time first snaps to its nearest phase, then advances. Nothing is persisted. `Click_Calendar` stays inert.
+**Why:** a living room that matches the visitor's hour, with a cheap, discoverable way to see the other looks.
+
 ## Open design questions
 
 - Hover affordance: outline shader vs. emissive brighten vs. label only. (Start with label + slight brighten; outlines need an extra pass.)
 - Exact fonts for the laptop page, notebook, and UI chrome.
-- Time-of-day behaviour (see [MEMORY.md](MEMORY.md) open questions).
