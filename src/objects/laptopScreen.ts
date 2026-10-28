@@ -16,8 +16,8 @@ import '../ui/about.css';
 
 /** CSS width of the page; the screen fills most of the viewport when focused, so ~1:1. */
 export const SCREEN_PX_WIDTH = 960;
-/** Corner radius of the CRT page in CSS px; keep in step with .screen-page in about.css. */
-export const CRT_RADIUS_PX = 28;
+/** Black bezel around the page in CSS px; keep in step with .screen-page padding in about.css. */
+export const BEZEL_PX = 20;
 /** Emissive strength of the idle preview; tune by eye against the room lighting. */
 const PREVIEW_BRIGHTNESS = 0.9;
 const ADDRESS = 'bobwaft.github.io/about';
@@ -27,9 +27,10 @@ export function createAboutElement(about: AboutContent): HTMLElement {
   const root = document.createElement('div');
   root.className = 'screen-page';
   root.innerHTML =
+    `<div class="screen-inner">` +
     `<div class="screen-bar" aria-hidden="true"><span></span><span></span><span></span>` +
     `<div class="screen-address">${ADDRESS}</div></div>` +
-    `<div class="screen-scroll">${aboutHtml(about)}</div>`;
+    `<div class="screen-scroll">${aboutHtml(about)}</div></div>`;
   return root;
 }
 
@@ -63,15 +64,20 @@ function drawPreview(
   canvas.height = Math.round(canvas.width / aspect);
   const ctx = canvas.getContext('2d')!;
   ctx.scale(k, k);
-  const w = SCREEN_PX_WIDTH;
+  // Black bezel (BUG-008): the page is drawn inside it, clipped to the inner area.
+  const fullW = SCREEN_PX_WIDTH;
+  const fullH = canvas.height / k;
+  ctx.fillStyle = '#000000';
+  ctx.fillRect(0, 0, fullW, fullH);
+  ctx.translate(BEZEL_PX, BEZEL_PX);
+  const w = fullW - 2 * BEZEL_PX;
+  const h = fullH - 2 * BEZEL_PX;
   const font = 'system-ui, -apple-system, "Segoe UI", sans-serif';
-  // CRT-style rounded corners, matching .screen-page in about.css (BUG-008); the CRT pass below
-  // is drawn inside this clip too.
   ctx.beginPath();
-  ctx.roundRect(0, 0, w, canvas.height / k, CRT_RADIUS_PX);
+  ctx.rect(0, 0, w, h);
   ctx.clip();
   ctx.fillStyle = '#f6f4ef';
-  ctx.fillRect(0, 0, w, canvas.height / k);
+  ctx.fillRect(0, 0, w, h);
   // Browser bar.
   ctx.fillStyle = '#e3dfd6';
   ctx.fillRect(0, 0, w, 36);
@@ -137,7 +143,7 @@ function drawPreview(
     }
     y += 16;
   }
-  drawCrt(ctx, w, canvas.height / k);
+  drawCrt(ctx, w, h);
 }
 
 /** The about.css CRT overlay for the still: scanlines, faint glow, vignette. */

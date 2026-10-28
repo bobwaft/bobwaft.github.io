@@ -10,12 +10,14 @@
 
 .screen-page {
   position: relative;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  /* CRT-style rounded corners; keep in step with CRT_RADIUS_PX in laptopScreen.ts. */
-  border-radius: 28px;
-  background: #f6f4ef;
+  /* Black bezel around the page (BUG-008); keep in step with BEZEL_PX in laptopScreen.ts. The
+     element still fills the screen mesh exactly. */
+  padding: 20px;
+  background: #000;
   color: #2b2925;
   font:
     18px/1.6 system-ui,
@@ -27,6 +29,15 @@
   /* Rasterise crisply under the 3D transform. */
   -webkit-font-smoothing: antialiased;
   backface-visibility: hidden;
+}
+
+.screen-inner {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background: #f6f4ef;
 }
 
 .screen-bar {
@@ -139,8 +150,7 @@
 .screen-page::after {
   content: '';
   position: absolute;
-  inset: 0;
-  border-radius: inherit;
+  inset: 20px; /* inside the bezel */
   z-index: 2;
   pointer-events: none;
   background:
