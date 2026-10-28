@@ -1,4 +1,5 @@
 import { createPostFx } from './scene/postfx';
+import { surfaceTint, tintKey } from './scene/surfaceTint';
 import {
   adaptiveRatioAllowed,
   createRenderer,
@@ -318,6 +319,7 @@ async function boot(): Promise<void> {
         showFallback('slow');
       },
     });
+    let tintKeyShown = '';
     renderer.setAnimationLoop((time: number) => {
       const hidden = document.hidden;
       const dt = last === null ? 0 : Math.min((time - last) / 1000, 0.1);
@@ -330,6 +332,18 @@ async function boot(): Promise<void> {
         applyLook(camera, base, yaw, pitch);
       }
       lamp.update(dt);
+      const tint = surfaceTint({
+        uDay: lighting.uDay.value,
+        uNight: lighting.uNight.value,
+        uLight: lighting.uLight.value,
+      });
+      const key = tintKey(tint);
+      if (key !== tintKeyShown) {
+        tintKeyShown = key;
+        const root = document.documentElement.style;
+        root.setProperty('--surface-light', tint.brightness.toFixed(3));
+        root.setProperty('--surface-warm', tint.warmth.toFixed(3));
+      }
       player.update(dt);
       for (const m of updatable) m.update?.(dt);
       notebookBook?.update(dt);

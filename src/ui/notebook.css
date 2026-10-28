@@ -1,11 +1,12 @@
 /* Projects on the open notebook (A-8). Each .nb-page sits in a screen layer (screenLayer.ts)
-   over one page of the spread; a light wash keeps ink readable in any lighting while the baked
-   paper still shows through. */
+   over one page of the spread. No background or frames: the baked paper shows through and the
+   content is ink on it, tinted by --surface-light / --surface-warm (surfaceTint.ts, set per
+   frame in main.ts) so it darkens and warms with the lamp and time of day. */
 .nb-page {
   position: relative;
   box-sizing: border-box;
   overflow: hidden;
-  background: rgba(250, 247, 238, 0.82);
+  background: none;
   color: #2b2a33;
   pointer-events: auto;
   user-select: text;
@@ -19,6 +20,7 @@
 .nb-content {
   position: absolute;
   inset: 0;
+  filter: brightness(var(--surface-light, 1)) sepia(var(--surface-warm, 0));
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -84,8 +86,6 @@
   width: 100%;
   max-height: 55%;
   object-fit: contain;
-  border-radius: 4px;
-  background: #ddd8cc;
 }
 
 .nb-summary {
@@ -107,9 +107,8 @@
     sans-serif;
 }
 .nb-tags li {
-  padding: 2px 10px;
-  border: 1px solid rgba(43, 42, 51, 0.35);
-  border-radius: 999px;
+  padding: 0 2px;
+  border-bottom: 1px solid rgba(43, 42, 51, 0.45);
 }
 .nb-links {
   display: flex;
@@ -160,11 +159,8 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.15rem;
-  border: 1px solid #555;
-  border-radius: 6px;
-  background: rgba(17, 17, 17, 0.75);
   color: #eee;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
   font:
     0.9rem system-ui,
     sans-serif;
@@ -176,15 +172,15 @@
   width: 2rem;
   height: 2rem;
   border: 0;
-  border-radius: 4px;
   background: transparent;
   color: inherit;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
+  text-shadow: inherit;
   cursor: pointer;
 }
 #notebook-controls button:hover:not(:disabled),
 #notebook-controls button:focus-visible {
-  background: rgba(255, 255, 255, 0.12);
+  text-decoration: underline;
 }
 #notebook-controls button:disabled {
   opacity: 0.35;

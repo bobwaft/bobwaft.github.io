@@ -26,7 +26,7 @@ export async function openResume(url: string): Promise<ResumeDocument> {
       const canvas = document.createElement('canvas');
       canvas.width = Math.round(viewport.width);
       canvas.height = Math.round(viewport.height);
-      await page.render({ canvas, viewport }).promise;
+      await page.render({ canvas, viewport, background: 'rgba(0,0,0,0)' }).promise;
       return canvas;
     },
     async renderText(n, cssWidth) {

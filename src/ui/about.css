@@ -9,6 +9,7 @@
 }
 
 .screen-page {
+  position: relative;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -127,4 +128,38 @@
 }
 .about-body p {
   margin: 0 0 16px;
+}
+
+/* CRT look over the page: scanlines, a slight vignette with a faint glow, a faint flicker. Purely
+   visual (pointer-events: none), so the text underneath stays crisp and selectable. The screen
+   is self-lit, so it does not take --surface-light. The idle texture in laptopScreen.ts draws
+   a matching scanline/vignette pass. */
+.screen-page::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(to bottom, rgba(0, 0, 0, 0.07) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at center, rgba(255, 244, 214, 0.06) 0%, transparent 55%),
+    radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.28) 100%);
+  box-shadow: inset 0 0 60px rgba(120, 190, 255, 0.08);
+  animation: crt-flicker 0.14s steps(2, end) infinite;
+}
+@keyframes crt-flicker {
+  0% {
+    opacity: 0.92;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.96;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .screen-page::after {
+    animation: none;
+  }
 }

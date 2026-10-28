@@ -1,9 +1,12 @@
 /* Resume on the top sheet (A-15) and its controls. The page element sits in a screen layer
-   (screenLayer.ts); .textLayer holds pdf.js's transparent, selectable text over the canvas. */
+   (screenLayer.ts); .textLayer holds pdf.js's transparent, selectable text over the canvas.
+   The page has no background of its own and the canvas is drawn with a transparent background
+   (pdf.ts), so only ink is drawn and the lit paper of the mesh shows through. --surface-light
+   and --surface-warm (surfaceTint.ts, set per frame in main.ts) tint the ink with the scene. */
 .resume-page {
   position: relative;
   overflow: hidden;
-  background: #fff;
+  background: none;
   pointer-events: auto;
   user-select: text;
   backface-visibility: hidden;
@@ -13,6 +16,7 @@
 }
 
 .resume-canvas {
+  filter: brightness(var(--surface-light, 1)) sepia(var(--surface-warm, 0));
   position: absolute;
   inset: 0;
   width: 100%;
@@ -108,25 +112,21 @@
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.15rem;
-  border: 1px solid #555;
-  border-radius: 6px;
-  background: rgba(17, 17, 17, 0.75);
   color: #eee;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 .resume-pager button {
   width: 2rem;
   height: 2rem;
   border: 0;
-  border-radius: 4px;
   background: transparent;
   color: inherit;
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   cursor: pointer;
 }
 .resume-pager button:hover:not(:disabled),
 .resume-pager button:focus-visible {
-  background: rgba(255, 255, 255, 0.12);
+  text-decoration: underline;
 }
 .resume-pager button:disabled {
   opacity: 0.35;
@@ -137,15 +137,14 @@
   white-space: nowrap;
 }
 .resume-download {
-  padding: 0.5rem 0.9rem;
-  border: 1px solid #555;
-  border-radius: 6px;
-  background: rgba(17, 17, 17, 0.75);
   color: #eee;
-  text-decoration: none;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 .resume-download:hover,
 .resume-download:focus-visible {
-  background: rgba(40, 40, 40, 0.9);
-  border-color: #aaa;
+  color: #fff;
+  text-decoration-thickness: 2px;
 }

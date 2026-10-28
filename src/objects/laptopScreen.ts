@@ -130,6 +130,29 @@ function drawPreview(
     }
     y += 16;
   }
+  drawCrt(ctx, w, canvas.height / k);
+}
+
+/** The about.css CRT overlay for the still: scanlines, faint glow, vignette. */
+function drawCrt(ctx: CanvasRenderingContext2D, w: number, h: number): void {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.07)';
+  for (let sy = 0; sy < h; sy += 3) ctx.fillRect(0, sy, w, 1);
+  const cx = w / 2;
+  const cy = h / 2;
+  const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(w, h) * 0.55);
+  glow.addColorStop(0, 'rgba(255, 244, 214, 0.06)');
+  glow.addColorStop(1, 'rgba(255, 244, 214, 0)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, 0, w, h);
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(1, h / w);
+  const vig = ctx.createRadialGradient(0, 0, w * 0.35, 0, 0, w * 0.72);
+  vig.addColorStop(0, 'rgba(0, 0, 0, 0)');
+  vig.addColorStop(1, 'rgba(0, 0, 0, 0.28)');
+  ctx.fillStyle = vig;
+  ctx.fillRect(-cx, -cx, w, w);
+  ctx.restore();
 }
 
 function screenUvs(mesh: Mesh): { points: Vector3[]; uvs: Vector2[] } {
