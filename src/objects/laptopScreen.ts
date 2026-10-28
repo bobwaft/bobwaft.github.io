@@ -17,7 +17,7 @@ import '../ui/about.css';
 /** CSS width of the page; the screen fills most of the viewport when focused, so ~1:1. */
 export const SCREEN_PX_WIDTH = 960;
 /** Black bezel around the page in CSS px; keep in step with .screen-page padding in about.css. */
-export const BEZEL_PX = 20;
+export const BEZEL_PX = 12;
 /** Emissive strength of the idle preview; tune by eye against the room lighting. */
 const PREVIEW_BRIGHTNESS = 0.9;
 const ADDRESS = 'bobwaft.github.io/about';

@@ -16,7 +16,7 @@
   overflow: hidden;
   /* Black bezel around the page (BUG-008); keep in step with BEZEL_PX in laptopScreen.ts. The
      element still fills the screen mesh exactly. */
-  padding: 20px;
+  padding: 12px;
   background: #000;
   color: #2b2925;
   font:
@@ -150,7 +150,7 @@
 .screen-page::after {
   content: '';
   position: absolute;
-  inset: 20px; /* inside the bezel */
+  inset: 12px; /* inside the bezel */
   z-index: 2;
   pointer-events: none;
   background:
