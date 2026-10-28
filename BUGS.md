@@ -51,7 +51,8 @@ Number bugs sequentially and never reuse a number.
 - Actual: no fallback, even at 20× slowdown
 - Severity: high
 - Root cause (2026-10-28): the monitor treated any frame gap over 1000 ms as a stall and restarted its window, so under heavy CPU throttle (frames 1-2 s apart) it restarted forever; it also demanded 20 samples, unreachable in a 5 s window at <4 fps. Fix: gaps count up to 5 s (hidden tabs handled by the hidden flag and visibilitychange), and a median under 4 fps needs only 3 samples. `?debug` now shows the monitor state and median fps. Not verified in a browser
-- Status: fixed 2026-10-28, awaiting re-test
+- Re-test 2026-10-28: no fallback, but `?debug` showed the median above 25 fps. DevTools CPU throttling slows JavaScript only, and with a real GPU the scene stays above 25 fps, so not falling back is correct. The test step is wrong: add a `?slow` debug flag that forces slow frames, and test with that
+- Status: open (needs the `?slow` test hook, then re-test)
 
 ### BUG-005 — Resume page renders wholly black in the focus view
 - Phase: 8
@@ -60,7 +61,7 @@ Number bugs sequentially and never reuse a number.
 - Actual: the page is entirely black. Likely the transparent pdf.js canvas (`background: 'rgba(0,0,0,0)'`) plus the brightness/sepia filter, or the idle overlay texture
 - Severity: high
 - Root cause (2026-10-28): the idle overlay multiplies the canvas texture over the baked paper, and the transparent pdf.js background gives transparent texels with rgb 0, which multiply to black; that black overlay mesh sits under the CSS layer in the focus view, whose canvas was also transparent. Fix: pages render opaque (white for the idle multiply, warm paper colour #f1ece0 for the focus canvas) with the tint filter kept. Not verified in a browser
-- Status: fixed 2026-10-28, awaiting re-test
+- Status: closed (re-tested 2026-10-28: pass; paper brightness split off as BUG-009)
 
 ### BUG-006 — Shelf tube light flickers while the camera moves
 - Phase: 8
@@ -69,7 +70,8 @@ Number bugs sequentially and never reuse a number.
 - Actual: the tube light flickers slightly whenever the camera moves. Likely bloom on the thin bright strip shimmering between pixels (threshold/resolution), or adaptive pixel-ratio steps
 - Severity: med
 - Root cause (2026-10-28): likely (unverified in a browser): UnrealBloom's high-pass had a near-hard cutoff (smoothWidth 0.01 at threshold 1.05), so the thin HDR tube's edge pixels flip across it as the camera moves and its coverage changes, producing shimmer; adaptive pixel-ratio steps need 2 s of sustained <50 fps so are unlikely the cause, and MSAA does apply (the composer clones the 4-sample target). Fix: soft knee smoothWidth 1 and radius 0.5 to 0.65
-- Status: fixed 2026-10-28, awaiting re-test
+- Re-test 2026-10-28: still flickers. Owner's observation: it happens when panning up and down, as if how much of the light is on screen changes the glow (likely the bloom mip chain aliasing the thin strip as it moves vertically by sub-pixel amounts)
+- Status: open
 
 ### BUG-007 — Notebook spread: green band across the page, left-page text too high
 - Phase: 8
@@ -78,7 +80,7 @@ Number bugs sequentially and never reuse a number.
 - Actual: a green band runs across the middle of the page (remove it); left-page text floats slightly off the page's top corner (move it down)
 - Severity: low
 - Root cause (2026-10-28): left text: the content padding (56px) left it at the page's top corner; top padding on the left page is now 104px (CSS, unverified visually). Green band: not from code. Notebook_Band is looked up by name and hidden on open (notebookBook.open), and nothing in notebook.css draws a band, so it is most likely baked into the page texture (the band's colour or shadow, now visible since .nb-page is transparent); it needs a re-bake, or an opaque paper-coloured background on .nb-content (the tint filter would still apply) as a workaround, not applied
-- Status: fixed 2026-10-28, awaiting re-test
+- Status: closed (re-tested 2026-10-28: pass; the green band is baked into the page texture, needs a re-bake or an opaque page background)
 
 ### BUG-008 — Changes requested after the Phase 8 review: no window cycling, rounded CRT corners
 - Phase: 8
@@ -87,4 +89,13 @@ Number bugs sequentially and never reuse a number.
 - Actual: clicking the window cycles day/dusk/night; the CRT page has square corners
 - Severity: low
 - Root cause (2026-10-28): design change, not a defect: the window was registered as an interactable that cycled the time. Fix: Click_Window is no longer registered or required, src/objects/window.ts and the cycle code/tests are removed (timeFromClock kept; main.ts sets the clock time once at load); D-18 and MEMORY.md updated. The CRT page gets 28px rounded corners (CSS border-radius with the overlay inheriting it; the idle texture clips to the same radius), not verified visually
-- Status: fixed 2026-10-28, awaiting re-test
+- Re-test 2026-10-28: the window part passes. The owner changed their mind on the corners: undo the rounded corners and instead shrink the laptop screen content slightly so a thin black border (bezel) shows around it, on both the DOM page and the idle texture
+- Status: open (corners → bezel)
+
+### BUG-009 — Resume paper much too bright
+- Phase: 8
+- Steps: click the papers, with the lamp on and off, day and night
+- Expected: the paper in the focus view matches the brightness of the lit paper in the scene around it
+- Actual: the paper is much too bright compared with how it should look (after the BUG-005 fix rendered it opaque on #f1ece0 / white)
+- Severity: med
+- Status: open
