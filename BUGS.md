@@ -117,4 +117,5 @@ Number bugs sequentially and never reuse a number.
 - Expected: page 1 of the resume is visible on the top sheet in the idle view (A-15), as before Phase 8
 - Actual: no preview on the stack until the papers are clicked
 - Severity: med
+- Investigation 2026-10-28 (static, no browser/GPU available, not fixed): the idle path is unchanged since Phase 8 apart from the opaque white page (IDLE_PAPER). With three's premultiplied MultiplyBlending (dst*src + dst*(1-srcAlpha)) a white opaque page and a transparent one both leave blank paper untouched, so the white background alone cannot hide the preview; nothing in main.ts, papersSheet.ts, the sampler (focus only) or setContentVisible (touches only the DOM canvas) hides or disposes the overlay or its texture. Remaining suspects need a real GPU: load() failing silently (check the console for 'Resume failed to render' and that Resume_Overlay.visible becomes true), or the ink-only multiply being too faint at the idle sheet size (1024px texture minified onto a small sheet). Next step: open the site with ?debug and inspect Resume_Overlay
 - Status: open
