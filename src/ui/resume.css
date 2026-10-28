@@ -1,8 +1,9 @@
 /* Resume on the top sheet (A-15) and its controls. The page element sits in a screen layer
    (screenLayer.ts); .textLayer holds pdf.js's transparent, selectable text over the canvas.
-   The page has no background of its own and the canvas is drawn with a transparent background
-   (pdf.ts), so only ink is drawn and the lit paper of the mesh shows through. --surface-light
-   and --surface-warm (surfaceTint.ts, set per frame in main.ts) tint the ink with the scene. */
+   The canvas is drawn opaque on a paper colour (layout.ts FOCUS_PAPER): a transparent page
+   would show the mesh, whose resume overlay multiplies transparent texels to black (BUG-005).
+   --surface-light and --surface-warm (surfaceTint.ts, set per frame in main.ts) tint the paper
+   and ink with the scene. */
 .resume-page {
   position: relative;
   overflow: hidden;

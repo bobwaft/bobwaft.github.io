@@ -17,7 +17,7 @@ import {
 import { uvTransform } from '../scene/screenFrame';
 import { createScreenLayer } from '../ui/screenLayer';
 import { createResumeControls } from '../ui/resumeControls';
-import { needsRender, renderWidth, stepPage } from '../resume/layout';
+import { FOCUS_PAPER, IDLE_PAPER, needsRender, renderWidth, stepPage } from '../resume/layout';
 import { sheetFrame, topSheetTriangles } from '../resume/sheet';
 import type { ResumeDocument } from '../resume/pdf';
 import '../ui/resume.css';
@@ -146,7 +146,7 @@ export function createPapersSheet(
     const current = ++generation;
     try {
       const [bitmap, textLayer] = await Promise.all([
-        doc.renderPage(target.page, target.width),
+        doc.renderPage(target.page, target.width, FOCUS_PAPER),
         shown.page === target.page ? null : doc.renderText(target.page, PAGE_PX_WIDTH),
       ]);
       if (current !== generation) return; // replaced by a newer draw, or hidden
@@ -203,7 +203,7 @@ export function createPapersSheet(
         const { openResume } = await import('../resume/pdf');
         doc = await openResume(pdfUrl);
         controls.setPage(page, doc.numPages);
-        texture = new CanvasTexture(await doc.renderPage(1, IDLE_PX_WIDTH));
+        texture = new CanvasTexture(await doc.renderPage(1, IDLE_PX_WIDTH, IDLE_PAPER));
         texture.colorSpace = SRGBColorSpace;
         texture.anisotropy = 8;
         texture.matrixAutoUpdate = false;

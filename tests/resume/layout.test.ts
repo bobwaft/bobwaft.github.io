@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { keyDelta, needsRender, pageLabel, renderWidth, stepPage } from '../../src/resume/layout';
+import {
+  FOCUS_PAPER,
+  IDLE_PAPER,
+  keyDelta,
+  needsRender,
+  pageLabel,
+  renderWidth,
+  stepPage,
+} from '../../src/resume/layout';
 
 describe('stepPage', () => {
   it('moves forward and back within the document', () => {
@@ -71,5 +79,14 @@ describe('needsRender', () => {
 
   it('always draws when nothing is shown yet', () => {
     expect(needsRender({ page: 0, width: 0 }, 1, 1000)).toBe(true);
+  });
+});
+
+describe('page backgrounds (BUG-005)', () => {
+  it('are opaque colours, never transparent', () => {
+    for (const c of [IDLE_PAPER, FOCUS_PAPER]) expect(c).toMatch(/^#[0-9a-f]{6}$/i);
+  });
+  it('idle paper is white so the multiply leaves the baked paper unchanged', () => {
+    expect(IDLE_PAPER.toLowerCase()).toBe('#ffffff');
   });
 });

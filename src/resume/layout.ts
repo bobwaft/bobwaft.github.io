@@ -40,3 +40,12 @@ export function needsRender(
   if (shown.page !== page || shown.width <= 0) return true;
   return Math.max(width / shown.width, shown.width / width) > ratio;
 }
+
+/**
+ * Page backgrounds. The idle overlay multiplies the page over the baked paper, so its paper is
+ * white (a no-op). The focus view shows the canvas itself in the CSS layer, so it carries a warm
+ * paper colour close to the mesh paper, then the brightness/sepia tint matches it to the scene.
+ * Both are opaque: transparent texels multiply to black.
+ */
+export const IDLE_PAPER = '#ffffff';
+export const FOCUS_PAPER = '#f1ece0';

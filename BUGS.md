@@ -59,7 +59,8 @@ Number bugs sequentially and never reuse a number.
 - Expected: resume ink printed on the lit paper, text selectable (Phase 8 "blend" change)
 - Actual: the page is entirely black. Likely the transparent pdf.js canvas (`background: 'rgba(0,0,0,0)'`) plus the brightness/sepia filter, or the idle overlay texture
 - Severity: high
-- Status: open
+- Root cause (2026-10-28): the idle overlay multiplies the canvas texture over the baked paper, and the transparent pdf.js background gives transparent texels with rgb 0, which multiply to black; that black overlay mesh sits under the CSS layer in the focus view, whose canvas was also transparent. Fix: pages render opaque (white for the idle multiply, warm paper colour #f1ece0 for the focus canvas) with the tint filter kept. Not verified in a browser
+- Status: fixed 2026-10-28, awaiting re-test
 
 ### BUG-006 — Shelf tube light flickers while the camera moves
 - Phase: 8

@@ -8,8 +8,11 @@ GlobalWorkerOptions.workerSrc = workerUrl;
 /** Renders draw offscreen; the caller decides whether the result is still wanted and shows it. */
 export interface ResumeDocument {
   numPages: number;
-  /** A new canvas with the page drawn widthPx device pixels wide. */
-  renderPage(page: number, widthPx: number): Promise<HTMLCanvasElement>;
+  /**
+   * A new canvas with the page drawn widthPx device pixels wide on an opaque background (CSS
+   * colour). Never transparent: a transparent texel is black when multiplied over the paper mesh.
+   */
+  renderPage(page: number, widthPx: number, background: string): Promise<HTMLCanvasElement>;
   /** A new .textLayer element with the page's selectable text, cssWidth CSS pixels wide. */
   renderText(page: number, cssWidth: number): Promise<HTMLElement>;
   destroy(): void;
@@ -20,13 +23,13 @@ export async function openResume(url: string): Promise<ResumeDocument> {
   const doc = await task.promise;
   return {
     numPages: doc.numPages,
-    async renderPage(n, widthPx) {
+    async renderPage(n, widthPx, background) {
       const page = await doc.getPage(n);
       const viewport = page.getViewport({ scale: widthPx / page.getViewport({ scale: 1 }).width });
       const canvas = document.createElement('canvas');
       canvas.width = Math.round(viewport.width);
       canvas.height = Math.round(viewport.height);
-      await page.render({ canvas, viewport, background: 'rgba(0,0,0,0)' }).promise;
+      await page.render({ canvas, viewport, background }).promise;
       return canvas;
     },
     async renderText(n, cssWidth) {
