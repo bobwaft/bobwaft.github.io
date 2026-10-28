@@ -95,12 +95,15 @@ export function createPostFx(renderer: WebGLRenderer, scene: Object3D, camera: C
   // multisampled source is already resolved) and the blur mips then low-pass it properly.
   const setBloomSize = bloom.setSize.bind(bloom);
   bloom.setSize = (width, height) => setBloomSize(width * 2, height * 2);
-  bloom.setSize(size.x * ratio, size.y * ratio);
   const grain = new ShaderPass(GrainVignetteShader);
   composer.addPass(new RenderPass(scene as Scene, camera));
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
   composer.addPass(grain);
+  // With a caller-supplied target the composer keeps the renderer's pixel ratio on top of the
+  // target's already-scaled size, so addPass sized the passes 2x too large; size them properly.
+  composer.setPixelRatio(ratio);
+  composer.setSize(size.x, size.y);
 
   // The composer makes several renderer.render calls per frame; count them as one frame (?debug).
   renderer.info.autoReset = false;
