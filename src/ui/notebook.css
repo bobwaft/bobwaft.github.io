@@ -1,0 +1,196 @@
+/* Projects on the open notebook (A-8). Each .nb-page sits in a screen layer (screenLayer.ts)
+   over one page of the spread; a light wash keeps ink readable in any lighting while the baked
+   paper still shows through. */
+.nb-page {
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: rgba(250, 247, 238, 0.82);
+  color: #2b2a33;
+  pointer-events: auto;
+  user-select: text;
+  backface-visibility: hidden;
+  font:
+    22px/1.45 Georgia,
+    'Times New Roman',
+    serif;
+}
+
+.nb-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  /* Wider margin on the spine side. */
+  padding: 56px 64px 48px 48px;
+}
+.nb-page-right .nb-content {
+  padding: 56px 48px 48px 64px;
+}
+
+.nb-heading {
+  margin: 120px 0 0;
+  font-size: 56px;
+  font-weight: normal;
+}
+.nb-hint {
+  margin: 0;
+  color: #6b675f;
+}
+
+.nb-contents {
+  margin: 0;
+  padding: 0 0 0 1.4em;
+}
+.nb-contents li {
+  margin: 0 0 10px;
+}
+.nb-entry {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 4px;
+  border: 0;
+  border-bottom: 1px dashed rgba(43, 42, 51, 0.3);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.nb-entry:hover,
+.nb-entry:focus-visible {
+  background: rgba(43, 42, 51, 0.07);
+}
+.nb-entry-dates {
+  color: #6b675f;
+  white-space: nowrap;
+}
+
+.nb-title {
+  margin: 0;
+  font-size: 40px;
+  font-weight: normal;
+  line-height: 1.15;
+}
+.nb-dates {
+  margin: 0;
+  color: #6b675f;
+}
+.nb-media {
+  display: block;
+  width: 100%;
+  max-height: 55%;
+  object-fit: contain;
+  border-radius: 4px;
+  background: #ddd8cc;
+}
+
+.nb-summary {
+  flex: 1;
+  overflow-y: auto;
+}
+.nb-summary > :first-child {
+  margin-top: 0;
+}
+.nb-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font:
+    16px system-ui,
+    sans-serif;
+}
+.nb-tags li {
+  padding: 2px 10px;
+  border: 1px solid rgba(43, 42, 51, 0.35);
+  border-radius: 999px;
+}
+.nb-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.nb-link,
+.nb-summary a {
+  color: #1f4fa3;
+}
+
+/* Page edges turn the page: the outer 40px strip of each page. */
+.nb-edge {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.nb-edge-prev {
+  left: 0;
+  cursor: w-resize;
+}
+.nb-edge-next {
+  right: 0;
+  cursor: e-resize;
+}
+.nb-edge-prev:hover:not(:disabled),
+.nb-edge-prev:focus-visible {
+  background: linear-gradient(to right, rgba(43, 42, 51, 0.12), transparent);
+}
+.nb-edge-next:hover:not(:disabled),
+.nb-edge-next:focus-visible {
+  background: linear-gradient(to left, rgba(43, 42, 51, 0.12), transparent);
+}
+.nb-edge:disabled {
+  cursor: default;
+}
+
+#notebook-controls {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem;
+  border: 1px solid #555;
+  border-radius: 6px;
+  background: rgba(17, 17, 17, 0.75);
+  color: #eee;
+  font:
+    0.9rem system-ui,
+    sans-serif;
+}
+#notebook-controls[hidden] {
+  display: none;
+}
+#notebook-controls button {
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+#notebook-controls button:hover:not(:disabled),
+#notebook-controls button:focus-visible {
+  background: rgba(255, 255, 255, 0.12);
+}
+#notebook-controls button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.nb-label {
+  padding: 0 0.25rem;
+  white-space: nowrap;
+}

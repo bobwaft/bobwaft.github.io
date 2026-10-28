@@ -12,12 +12,14 @@ const DEG = Math.PI / 180;
  * Poses are first guesses, to be hand-tuned with ?debug (see poses.ts).
  * @param viewerPosition where the user is, used to pick the screen normal's facing side
  * @param upFor camera up for an id, overriding the spec's (the papers turn it to the sheet)
+ * @param pointsFor points to frame for an id, overriding its surface (the notebook's open spread)
  */
 export function createFocusPoseResolver(
   scene: Object3D,
   camera: PerspectiveCamera,
   viewerPosition: () => Vector3,
   upFor?: (id: string) => Vector3 | null,
+  pointsFor?: (id: string) => Vector3[] | null,
 ): (id: string) => Pose | null {
   const points = new Map<string, Vector3[]>();
   const surfacePoints = (id: string): Vector3[] | null => {
@@ -38,7 +40,7 @@ export function createFocusPoseResolver(
   );
   return (id) => {
     const spec = specs.get(id);
-    const verts = surfacePoints(id);
+    const verts = pointsFor?.(id) ?? surfacePoints(id);
     if (!spec || !verts) return null;
     const dir =
       spec.viewDirection === 'surface-normal'

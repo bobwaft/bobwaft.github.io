@@ -16,7 +16,13 @@ export const REQUIRED_CLICK_NAMES = [
   'Click_Notebook',
   'Click_Speaker',
   'Click_PullCord',
+  'Notebook_Cover',
+  'Notebook_Band',
 ] as const;
+
+/** Children of Click_Notebook (A-8): the hinged cover and the elastic band it must clear. */
+export const NOTEBOOK_COVER_NAME = 'Notebook_Cover';
+export const NOTEBOOK_BAND_NAME = 'Notebook_Band';
 
 /** Click_* name -> module. Click_Calendar and Click_Window are deliberately absent (inert). */
 export const CLICK_REGISTRY: Readonly<Record<string, InteractableModule>> = {

@@ -6,6 +6,8 @@ import {
   findMissingNames,
   FOCUS_SURFACE_NAMES,
   MAIN_CAMERA_NAME,
+  NOTEBOOK_BAND_NAME,
+  NOTEBOOK_COVER_NAME,
 } from './objects/registry';
 import { applyLook, createLookControls, lookSettings } from './camera/lookControls';
 import { createFocusController } from './camera/focusController';
@@ -46,6 +48,10 @@ import { createLaptopScreen } from './objects/laptopScreen';
 import { papers } from './objects/papers';
 import { createPapersSheet, type PapersSheet } from './objects/papersSheet';
 import type { ScreenLayer } from './ui/screenLayer';
+import { parseProject, sortProjects, type Project } from './content/projects';
+import { notebook } from './objects/notebook';
+import { createNotebookBook, type NotebookBook } from './objects/notebookBook';
+import { COVER_SECONDS } from './notebook/cover';
 import type { Mesh } from 'three';
 
 async function boot(): Promise<void> {
@@ -95,11 +101,34 @@ async function boot(): Promise<void> {
     papersSheet?.setSize(window.innerWidth, window.innerHeight);
   }
   papers.bind({ setContentVisible: (v) => papersSheet?.setContentVisible(v) });
+  let notebookBook: NotebookBook | null = null;
+  const coverMesh = scene.getObjectByName(NOTEBOOK_COVER_NAME) as Mesh | undefined;
+  if (coverMesh?.isMesh) {
+    notebookBook = createNotebookBook(
+      coverMesh,
+      scene.getObjectByName(NOTEBOOK_BAND_NAME) ?? null,
+      poses.landscape.position,
+      loadProjects(),
+      () => (settings.poseTweenSeconds === 0 ? 0 : COVER_SECONDS),
+    );
+    notebookBook.setSize(window.innerWidth, window.innerHeight);
+    const book = notebookBook;
+    notebook.bind({
+      open: (done) => book.open(done),
+      close: (done) => book.close(done),
+      setContentVisible: (v) => book.setContentVisible(v),
+    });
+  }
   const focusPose = createFocusPoseResolver(
     scene,
     camera,
     () => poses.landscape.position,
-    (id) => (id === 'papers' ? (papersSheet?.up ?? null) : null),
+    (id) => {
+      if (id === 'papers') return papersSheet?.up ?? null;
+      return id === 'notebook' ? (notebookBook?.up ?? null) : null;
+    },
+    // The notebook frames its open spread, not the closed book.
+    (id) => (id === 'notebook' ? (notebookBook?.points ?? null) : null),
   );
   const focusCtrl = createFocusController({
     tween: poseTween,
@@ -117,8 +146,11 @@ async function boot(): Promise<void> {
   window.addEventListener('pointerdown', onPointerType);
   const touchDots = createTouchDots(registered, camera, () => touchSeen);
   const backButton = createBackButton(() => dispatch({ type: 'back' }));
+  // One module per id (the laptop is registered twice: body and screen).
+  const modules = new Map([...registered.values()].map((m) => [m.id, m] as const));
   const forModule = (id: string, fn: (m: InteractableModule) => void) => {
-    for (const m of registered.values()) if (m.id === id) fn(m);
+    const m = modules.get(id);
+    if (m) fn(m);
   };
   const lamp = createLamp(lighting.uLight, () => (settings.poseTweenSeconds === 0 ? 0 : 0.4));
   const cordObject = [...registered].find(([, m]) => m === pullcord)?.[0];
@@ -155,12 +187,14 @@ async function boot(): Promise<void> {
       if (focusCtrl.enter(action.id)) touchDots.markUsed(action.id);
       else app = { kind: 'idle' };
     } else if (action?.type === 'exit') {
-      focusCtrl.exit();
+      // The camera waits for the object to finish leaving (the notebook closes first).
+      const leaving = hooks.exit ? modules.get(hooks.exit)?.onExit?.() : undefined;
+      if (leaving) void leaving.then(() => focusCtrl.exit());
+      else focusCtrl.exit();
     } else if (action?.type === 'activate') {
       touchDots.markUsed(action.id);
       forModule(action.id, (m) => m.onClick?.());
     }
-    if (hooks.exit) forModule(hooks.exit, (m) => m.onExit?.());
     if (hooks.enter) forModule(hooks.enter, (m) => m.onEnter?.());
     hoverView.show(null); // hover only exists in idle; a state change clears it
     applyLookRange();
@@ -173,6 +207,7 @@ async function boot(): Promise<void> {
     resizeToWindow(renderer, camera);
     screenLayer?.setSize(window.innerWidth, window.innerHeight);
     papersSheet?.setSize(window.innerWidth, window.innerHeight);
+    notebookBook?.setSize(window.innerWidth, window.innerHeight);
     if (debugCamera) return;
     const kind = idlePoseKind(aspectNow());
     if (kind !== poseKind) {
@@ -246,10 +281,12 @@ async function boot(): Promise<void> {
       lamp.update(dt);
       player.update(dt);
       for (const m of updatable) m.update?.(dt);
+      notebookBook?.update(dt);
       touchDots.update(app);
       renderer.render(scene, camera);
       screenLayer?.render(camera);
       papersSheet?.render(camera);
+      notebookBook?.render(camera);
       debugFps?.();
     });
     showHint(touchSeen);
@@ -269,11 +306,30 @@ async function boot(): Promise<void> {
     hoverView.dispose();
     screenLayer?.dispose();
     papersSheet?.dispose();
+    notebookBook?.dispose();
     debugCamera?.dispose();
     renderer.setAnimationLoop(null);
     renderer.dispose();
     return showFallback('load-failed', err);
   }
+}
+
+/** Projects from src/content/projects, strongest first; a file that fails to parse is skipped. */
+function loadProjects(): Project[] {
+  const sources = import.meta.glob<string>('./content/projects/*.md', {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  });
+  const projects: Project[] = [];
+  for (const [path, source] of Object.entries(sources)) {
+    try {
+      projects.push(parseProject(source, path.replace(/^.*\/|\.md$/g, '')));
+    } catch (err) {
+      console.error(err);
+    }
+  }
+  return sortProjects(projects);
 }
 
 /** Runs fn when the browser is idle (Safari lacks requestIdleCallback). */

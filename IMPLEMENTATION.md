@@ -150,14 +150,14 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 ## Phase 7 — Notebook → Projects
 
 - [x] Decide approach for the opening (procedural cover vs. Blender re-export): Blender re-export, 2026-10-28 — see ARCHITECTURE A-8 and MEMORY.md
-- [ ] Opening/closing animation: camera arrives → cover swings open → contents spread; reverse on exit
-- [ ] `src/content/projects/*.md` with front matter (title, dates, tags, links, media, order); owner provides 7–12 projects, strongest first
+- [x] Opening/closing animation: camera arrives → cover swings open → contents spread; reverse on exit
+- [ ] `src/content/projects/*.md` with front matter (title, dates, tags, links, media, order); owner provides 7–12 projects, strongest first (3 placeholders in place until then)
 - [x] Content check test: required fields present, media within size limits (WebP ≤ 300 KB, clips ≤ 3 MB)
-- [ ] Contents spread listing all projects; clicking an entry jumps to its spread
-- [ ] Project spreads: left page title, dates, image or muted looping clip; right page summary, tags, links
-- [ ] Lazy-load each spread's media when it's shown
-- [ ] Navigation: next/prev buttons, arrow keys, clicking page edges; page-turn transition
-- [ ] Handle elastic band (hide/move when opening)
+- [x] Contents spread listing all projects; clicking an entry jumps to its spread
+- [x] Project spreads: left page title, dates, image or muted looping clip; right page summary, tags, links
+- [x] Lazy-load each spread's media when it's shown
+- [x] Navigation: next/prev buttons, arrow keys, clicking page edges; page-turn transition
+- [x] Handle elastic band (hide/move when opening)
 
 ### You test
 - [ ] Clicking the notebook moves the camera above it, then it opens on the contents page
