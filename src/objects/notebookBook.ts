@@ -91,6 +91,9 @@ export function createNotebookBook(
       video.muted = true;
       void video.play().catch(() => {}); // autoplay may be refused; the first frame still shows
     }
+  };
+  /** Label and edge states follow the target spread at once, before its content swaps in. */
+  const setNav = () => {
     left.edge.disabled = index === 0;
     right.edge.disabled = index === count - 1;
     controls.setSpread(index, count);
@@ -98,14 +101,19 @@ export function createNotebookBook(
   const stopAnimations = () => {
     for (const p of pages) for (const a of p.content.getAnimations()) a.cancel();
   };
+  /** True while the old spread fades out; a turn then only moves the target. */
+  let fadingOut = false;
   const turnTo = (target: number) => {
     const next = stepSpread(target, 0, count);
     if (!visible || next === index) return;
     const dir = Math.sign(next - index);
     index = next;
+    setNav();
+    if (fadingOut) return; // the running fade-out swaps in the latest target
     const current = ++generation;
     stopAnimations();
     if (reducedMotion.matches) return fill();
+    fadingOut = true;
     const out = pages.map((p) =>
       p.content.animate([{ opacity: 1 }, { opacity: 0, transform: `translateX(${-dir * 4}%)` }], {
         duration: TURN_MS,
@@ -114,6 +122,9 @@ export function createNotebookBook(
       }),
     );
     Promise.all(out.map((a) => a.finished))
+      .finally(() => {
+        if (current === generation) fadingOut = false;
+      })
       .then(() => {
         if (current !== generation) return;
         stopAnimations();
@@ -153,8 +164,10 @@ export function createNotebookBook(
       for (const p of pages) p.layer.setVisible(v);
       controls.setVisible(v);
       generation++;
+      fadingOut = false;
       stopAnimations();
       index = 0; // every visit opens on the contents
+      setNav();
       if (v) return fill();
       // Emptying the pages stops clips and drops media until the next visit.
       for (const p of pages) p.content.replaceChildren();
