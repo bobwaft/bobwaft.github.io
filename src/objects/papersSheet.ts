@@ -61,7 +61,8 @@ function meshTriangles(mesh: Mesh) {
 }
 
 /** A copy of the top sheet's triangles that multiplies the page over the baked paper. */
-function createOverlay(points: Vector3[], uvs: Vector2[], tris: number[]) {
+/** The page-1 preview laid over the top sheet (idle view). Exported for tests. */
+export function createOverlay(points: Vector3[], uvs: Vector2[], tris: number[]) {
   const geometry = new BufferGeometry();
   geometry.setAttribute(
     'position',
@@ -89,6 +90,9 @@ function createOverlay(points: Vector3[], uvs: Vector2[], tris: number[]) {
   });
   const overlay = new Mesh(geometry, material);
   overlay.name = 'Resume_Overlay';
+  // Drawn after the rest of the scene (BUG-010). Its geometry is in world space with the object at
+  // the origin, so three's back-to-front sort of transparent objects places it arbitrarily.
+  overlay.renderOrder = 1;
   overlay.visible = false; // until page 1 is drawn
   overlay.raycast = () => {}; // clicks go to Click_Papers
   return overlay;
