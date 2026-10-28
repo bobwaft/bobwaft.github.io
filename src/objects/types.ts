@@ -17,6 +17,7 @@ export interface InteractableModule {
   focus?: FocusSpec;
   onClick?(): void;
   onEnter?(): void;
-  onExit?(): void;
+  /** A returned promise holds the camera until it settles (the notebook closes first). */
+  onExit?(): void | Promise<void>;
   update?(dt: number): void;
 }
