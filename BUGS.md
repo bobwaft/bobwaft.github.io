@@ -53,7 +53,7 @@ Number bugs sequentially and never reuse a number.
 - Root cause (2026-10-28): the monitor treated any frame gap over 1000 ms as a stall and restarted its window, so under heavy CPU throttle (frames 1-2 s apart) it restarted forever; it also demanded 20 samples, unreachable in a 5 s window at <4 fps. Fix: gaps count up to 5 s (hidden tabs handled by the hidden flag and visibilitychange), and a median under 4 fps needs only 3 samples. `?debug` now shows the monitor state and median fps. Not verified in a browser
 - Re-test 2026-10-28: no fallback, but `?debug` showed the median above 25 fps. DevTools CPU throttling slows JavaScript only, and with a real GPU the scene stays above 25 fps, so not falling back is correct. The test step is wrong: add a `?slow` debug flag that forces slow frames, and test with that
 - Fix 2026-10-28: added the `?slow[=<ms>]` test hook (src/scene/slowFrames.ts; default 80 ms, clamped 1..500; each frame busy-waits, so ~10 fps) and changed the Phase 8 test step to use it. After "Try 3D anyway" the session flag disables the monitor, so 3D stays even with `?slow` (expected). Monitor code unchanged
-- Status: fixed 2026-10-28, awaiting re-test (use `?slow`)
+- Status: closed (re-tested 2026-10-28: pass with `?slow`)
 
 ### BUG-005 — Resume page renders wholly black in the focus view
 - Phase: 8
@@ -73,7 +73,8 @@ Number bugs sequentially and never reuse a number.
 - Root cause (2026-10-28): likely (unverified in a browser): UnrealBloom's high-pass had a near-hard cutoff (smoothWidth 0.01 at threshold 1.05), so the thin HDR tube's edge pixels flip across it as the camera moves and its coverage changes, producing shimmer; adaptive pixel-ratio steps need 2 s of sustained <50 fps so are unlikely the cause, and MSAA does apply (the composer clones the 4-sample target). Fix: soft knee smoothWidth 1 and radius 0.5 to 0.65
 - Re-test 2026-10-28: still flickers. Owner's observation: it happens when panning up and down, as if how much of the light is on screen changes the glow (likely the bloom mip chain aliasing the thin strip as it moves vertically by sub-pixel amounts)
 - Fix 2026-10-28 (likely cause, unverified in a browser): UnrealBloomPass's high-pass writes to a half-resolution target with a single bilinear tap per output pixel, so it skips every other scene pixel and a 1-2 px HDR strip aliases as it moves vertically by sub-pixel amounts. The bloom pass now gets a doubled size so its high-pass and first blur mip are full resolution (src/scene/postfx.ts; costs a heavier bloom, adaptive pixel ratio covers slow GPUs). MSAA is resolved before bloom, so the geometry itself is not the cause. If it still flickers, next step is lowering the strip's emissive (scene-lighting.js)
-- Status: fixed 2026-10-28, awaiting re-test
+- Re-test 2026-10-28 (after full-res bloom): same flicker. Owner: it didn't exist before Phase 8, so it's the glow added to the tube light; reduce it or remove it entirely from the tube light
+- Status: open
 
 ### BUG-007 — Notebook spread: green band across the page, left-page text too high
 - Phase: 8
@@ -93,7 +94,8 @@ Number bugs sequentially and never reuse a number.
 - Root cause (2026-10-28): design change, not a defect: the window was registered as an interactable that cycled the time. Fix: Click_Window is no longer registered or required, src/objects/window.ts and the cycle code/tests are removed (timeFromClock kept; main.ts sets the clock time once at load); D-18 and MEMORY.md updated. The CRT page gets 28px rounded corners (CSS border-radius with the overlay inheriting it; the idle texture clips to the same radius), not verified visually
 - Re-test 2026-10-28: the window part passes. The owner changed their mind on the corners: undo the rounded corners and instead shrink the laptop screen content slightly so a thin black border (bezel) shows around it, on both the DOM page and the idle texture
 - Fix 2026-10-28: rounded corners removed (CSS and canvas clip). Instead a 20px black bezel: `.screen-page` is black with 20px padding around a new `.screen-inner` (browser bar + scroll), so the element still fills the screen mesh exactly; the CRT overlay is inset to the inner area, and the idle texture fills black then draws the page and CRT pass translated and clipped inside it (BEZEL_PX in laptopScreen.ts). Not verified visually
-- Status: fixed 2026-10-28, awaiting re-test
+- Re-test 2026-10-28: bezel passes; make the margins a little thinner
+- Status: open (thinner bezel)
 
 ### BUG-009 — Resume paper much too bright
 - Phase: 8
@@ -101,4 +103,5 @@ Number bugs sequentially and never reuse a number.
 - Expected: the paper in the focus view matches the brightness of the lit paper in the scene around it
 - Actual: the paper is much too bright compared with how it should look (after the BUG-005 fix rendered it opaque on #f1ece0 / white)
 - Root cause (2026-10-28): the old tint scaled the near-white CSS paper by the raw light level (1.0 in daylight), but the scene paper is lit below 1.0 and then bloom/AgX tone-mapped, so it displays far darker; the CSS layer is not tone-mapped. Fix: surfaceTint now maps light to the displayed paper colour (PAPER_RADIANCE 0.45 through an AgX-like shoulder and sRGB encode, divided by the CSS paper's luma), giving about 0.67 by day, 0.39 at night with the lamp off, and lamp-on night equal to day. The constants are assumptions tuned without the lightmap values, so expect a by-eye tweak. The filter already covers paper and ink (both are in the canvas); the notebook uses the same variables, so it is consistent (its ink only, over baked paper)
-- Status: fixed 2026-10-28, awaiting re-test
+- Re-test 2026-10-28 (owner screenshot): the resume page is a flat, desaturated grey-green (~rgb 167,162,148) while the papers under it are warm peach (~rgb 225,195,165) under the lamp. Too dark and too cold; a computed tint can't match the bake + AgX + bloom result
+- Status: open
