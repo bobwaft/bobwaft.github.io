@@ -1,3 +1,4 @@
+import { createPostFx } from './scene/postfx';
 import { createRenderer, resizeToWindow } from './scene/renderer';
 import { collectNames, loadScene } from './scene/loadScene';
 import type { InteractableModule } from './objects/types';
@@ -52,7 +53,7 @@ import { parseProject, sortProjects, type Project } from './content/projects';
 import { notebook } from './objects/notebook';
 import { createNotebookBook, type NotebookBook } from './objects/notebookBook';
 import { COVER_SECONDS } from './notebook/cover';
-import type { Mesh } from 'three';
+import { Vector2, type Mesh } from 'three';
 
 async function boot(): Promise<void> {
   const canvas = document.getElementById('scene') as HTMLCanvasElement;
@@ -203,8 +204,11 @@ async function boot(): Promise<void> {
   // Slight parallax while a focus view is open (D-3); the full idle range otherwise.
   const applyLookRange = () =>
     look.setRange(inFocusView(app) ? settings.focusRange : settings.range);
+  const postfx = createPostFx(renderer, scene, camera);
   const onResize = () => {
     resizeToWindow(renderer, camera);
+    const drawn = renderer.getSize(new Vector2());
+    postfx.setSize(drawn.x, drawn.y, renderer.getPixelRatio());
     screenLayer?.setSize(window.innerWidth, window.innerHeight);
     papersSheet?.setSize(window.innerWidth, window.innerHeight);
     notebookBook?.setSize(window.innerWidth, window.innerHeight);
@@ -265,7 +269,7 @@ async function boot(): Promise<void> {
       };
     }
     dispatch({ type: 'loaded' });
-    renderer.render(scene, camera); // first frame before the fade
+    postfx.render(0); // first frame before the fade
     const debugFps = createDebugFps(renderer);
     let last: number | null = null;
     renderer.setAnimationLoop((time: number) => {
@@ -283,7 +287,7 @@ async function boot(): Promise<void> {
       for (const m of updatable) m.update?.(dt);
       notebookBook?.update(dt);
       touchDots.update(app);
-      renderer.render(scene, camera);
+      postfx.render(dt);
       screenLayer?.render(camera);
       papersSheet?.render(camera);
       notebookBook?.render(camera);
@@ -309,6 +313,7 @@ async function boot(): Promise<void> {
     notebookBook?.dispose();
     debugCamera?.dispose();
     renderer.setAnimationLoop(null);
+    postfx.dispose();
     renderer.dispose();
     return showFallback('load-failed', err);
   }

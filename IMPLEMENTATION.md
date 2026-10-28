@@ -171,8 +171,8 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 
 ## Phase 8 — Visual polish and performance
 
-- [ ] Post-processing: bloom (bulb, street lamps, city windows), film grain, vignette via `EffectComposer` + `OutputPass`
-- [ ] Check tone mapping is applied once only with the composer (MEMORY.md ISSUE-2)
+- [x] Post-processing: bloom (bulb, street lamps, city windows), film grain, vignette via `EffectComposer` + `OutputPass`
+- [x] Check tone mapping is applied once only with the composer (MEMORY.md ISSUE-2)
 - [ ] Measure against NFR-1/NFR-2; convert textures to KTX2 (Basis) if over 15 MB or under target fps
 - [ ] Adaptive pixel ratio if below target fps
 - [ ] Detect software renderers (`Microsoft Basic Render Driver`, SwiftShader, llvmpipe) via the WebGL renderer string → start at a low pixel ratio or offer the fallback (BUG-001)

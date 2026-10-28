@@ -49,8 +49,8 @@ Re-apply these when dropping in a new Blender export (the file is excluded from 
 - All export files have the same timestamp (10:35), so it's unclear which values are current. The JSON was probably rewritten by a re-bake without regenerating the JS/README.
 - Difference is small (≤3.4%) but should be settled. **Action (Phase 0):** confirm with the owner / re-run `export.py`; prefer reading the JSON at runtime so they can't drift again.
 
-### ISSUE-2. Possible double tone mapping with post-processing (watch)
-The baked `ShaderMaterial` includes `<tonemapping_fragment>` and `<colorspace_fragment>`. With `EffectComposer` + `OutputPass`, three.js normally renders to a linear target and tone-maps in `OutputPass`; verify the baked materials don't tone-map too (Phase 8).
+### ISSUE-2. Double tone mapping with post-processing: RESOLVED 2026-10-28
+The baked `ShaderMaterial` includes `<tonemapping_fragment>` and `<colorspace_fragment>`. Verified in three 0.186.1 (`WebGLPrograms.js` ~l.177-213, `WebGLRenderer.js` ~l.2378-2393): tone mapping is only enabled (`TONE_MAPPING` define) and the output colour space is only `renderer.outputColorSpace` when the render target is null (or XR); into the composer's render target both chunks are no-ops (linear working space), so `OutputPass` applies AgX + sRGB exactly once. Grain/vignette run after it and do not tone-map. `scene-lighting.js` was not changed.
 
 ## Open questions
 
