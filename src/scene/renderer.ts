@@ -1,9 +1,24 @@
 import { AgXToneMapping, SRGBColorSpace, WebGLRenderer } from 'three';
-import { cappedPixelRatio, pixelRatioOverride } from './pixelRatio';
+import { gpuName } from './gpuInfo';
+import { pixelRatioOverride } from './pixelRatio';
+import { initialPixelRatio, isSoftwareRenderer } from './softwareRenderer';
 
-/** Device pixel ratio (capped), unless `?dpr=` forces one. */
+/** Startup ratio (lower on software renderers), later lowered/raised by the adaptive controller. */
+let baseRatio = 1;
+
+/** Pixel ratio: `?dpr=` wins; otherwise the startup/adaptive ratio, which survives resizes. */
 function pixelRatio(): number {
-  return pixelRatioOverride(window.location.search) ?? cappedPixelRatio(window.devicePixelRatio);
+  return pixelRatioOverride(window.location.search) ?? baseRatio;
+}
+
+/** True when the pixel ratio is free to adapt (no `?dpr=` override). */
+export function adaptiveRatioAllowed(): boolean {
+  return pixelRatioOverride(window.location.search) === null;
+}
+
+/** Sets the ratio used from now on (applied by the next resizeToWindow). */
+export function setAdaptiveRatio(ratio: number): void {
+  baseRatio = ratio;
 }
 
 /** Creates the WebGL2 renderer. Throws if a WebGL2 context cannot be created. */
@@ -13,6 +28,7 @@ export function createRenderer(canvas: HTMLCanvasElement): WebGLRenderer {
   const renderer = new WebGLRenderer({ canvas, context });
   renderer.outputColorSpace = SRGBColorSpace;
   renderer.toneMapping = AgXToneMapping;
+  baseRatio = initialPixelRatio(window.devicePixelRatio, isSoftwareRenderer(gpuName(context)));
   renderer.setPixelRatio(pixelRatio());
   resizeToWindow(renderer);
   return renderer;

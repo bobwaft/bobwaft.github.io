@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fallbackReason } from '../../src/ui/fallbackReason';
+import { fallbackReason, offersRetry3d } from '../../src/ui/fallbackReason';
 
 describe('fallbackReason', () => {
   it('is null when WebGL2 works and nothing failed', () => {
@@ -16,5 +16,13 @@ describe('fallbackReason', () => {
 
   it('prefers missing WebGL2 over a load error', () => {
     expect(fallbackReason(false, new Error('x'))).toBe('no-webgl2');
+  });
+});
+
+describe('offersRetry3d', () => {
+  it('is offered for automatic fallbacks only', () => {
+    expect(offersRetry3d('slow')).toBe(true);
+    expect(offersRetry3d('load-failed')).toBe(true);
+    expect(offersRetry3d('no-webgl2')).toBe(false);
   });
 });

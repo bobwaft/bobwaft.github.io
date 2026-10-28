@@ -1,5 +1,10 @@
 import { createPostFx } from './scene/postfx';
-import { createRenderer, resizeToWindow } from './scene/renderer';
+import {
+  adaptiveRatioAllowed,
+  createRenderer,
+  resizeToWindow,
+  setAdaptiveRatio,
+} from './scene/renderer';
 import { collectNames, loadScene } from './scene/loadScene';
 import type { InteractableModule } from './objects/types';
 import {
@@ -28,6 +33,8 @@ import {
 } from './interaction/stateMachine';
 import { idlePoseKind, PORTRAIT_IDLE_POSE, poseFromLookAt } from './camera/poses';
 import { createDebugCamera, type DebugCamera } from './ui/debugCamera';
+import { createAdaptivePixelRatio } from './scene/adaptivePixelRatio';
+import { createFpsMonitor, isForce3d } from './ui/fpsMonitor';
 import { createDebugFps } from './ui/debugFps';
 import { showFallback } from './ui/fallback';
 import { fallbackReason } from './ui/fallbackReason';
@@ -233,6 +240,24 @@ async function boot(): Promise<void> {
   };
   reducedMotion.addEventListener('change', onMotionChange);
   let disposeClicks = () => {};
+  const teardown = () => {
+    window.removeEventListener('resize', onResize);
+    reducedMotion.removeEventListener('change', onMotionChange);
+    look.dispose();
+    disposeClicks();
+    backButton.dispose();
+    touchDots.dispose();
+    player.dispose();
+    window.removeEventListener('pointerdown', onPointerType);
+    hoverView.dispose();
+    screenLayer?.dispose();
+    papersSheet?.dispose();
+    notebookBook?.dispose();
+    debugCamera?.dispose();
+    renderer.setAnimationLoop(null);
+    postfx.dispose();
+    renderer.dispose();
+  };
   try {
     onResize();
     window.addEventListener('resize', onResize);
@@ -272,7 +297,21 @@ async function boot(): Promise<void> {
     postfx.render(0); // first frame before the fade
     const debugFps = createDebugFps(renderer);
     let last: number | null = null;
+    const adaptive = adaptiveRatioAllowed()
+      ? createAdaptivePixelRatio({
+          initial: renderer.getPixelRatio(),
+          max: renderer.getPixelRatio(),
+        })
+      : null;
+    const monitor = createFpsMonitor({
+      disabled: isForce3d(),
+      onSlow: () => {
+        teardown();
+        showFallback('slow');
+      },
+    });
     renderer.setAnimationLoop((time: number) => {
+      const hidden = document.hidden;
       const dt = last === null ? 0 : Math.min((time - last) / 1000, 0.1);
       last = time;
       if (debugCamera) {
@@ -292,6 +331,14 @@ async function boot(): Promise<void> {
       papersSheet?.render(camera);
       notebookBook?.render(camera);
       debugFps?.();
+      const next = adaptive?.frame(time, hidden);
+      if (next != null) {
+        setAdaptiveRatio(next);
+        resizeToWindow(renderer, camera);
+        const drawn = renderer.getSize(new Vector2());
+        postfx.setSize(drawn.x, drawn.y, renderer.getPixelRatio());
+      }
+      monitor.frame(time, hidden);
     });
     showHint(touchSeen);
     loading.fadeOut();
@@ -299,22 +346,7 @@ async function boot(): Promise<void> {
     const sheet = papersSheet;
     if (sheet) requestIdle(() => void sheet.load());
   } catch (err) {
-    window.removeEventListener('resize', onResize);
-    reducedMotion.removeEventListener('change', onMotionChange);
-    look.dispose();
-    disposeClicks();
-    backButton.dispose();
-    touchDots.dispose();
-    player.dispose();
-    window.removeEventListener('pointerdown', onPointerType);
-    hoverView.dispose();
-    screenLayer?.dispose();
-    papersSheet?.dispose();
-    notebookBook?.dispose();
-    debugCamera?.dispose();
-    renderer.setAnimationLoop(null);
-    postfx.dispose();
-    renderer.dispose();
+    teardown();
     return showFallback('load-failed', err);
   }
 }
