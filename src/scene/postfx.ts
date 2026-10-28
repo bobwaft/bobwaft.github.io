@@ -87,6 +87,15 @@ export function createPostFx(renderer: WebGLRenderer, scene: Object3D, camera: C
   // (BUG-006). A wide knee makes the bloom contribution vary smoothly with coverage.
   (bloom.highPassUniforms as Record<string, { value: number }>).smoothWidth.value =
     BLOOM.smoothWidth;
+  // UnrealBloomPass runs its high-pass into a half-resolution target, sampling the full-res scene
+  // with one bilinear tap per half-res pixel, so it skips every other pixel. A 1-2 px HDR strip
+  // (the shelf tube) then appears and disappears as the camera moves by sub-pixel amounts, and the
+  // whole glow pulses (BUG-006, likely cause, not verified in a browser). Handing the pass a
+  // doubled size makes its "half" target full resolution (every scene pixel is sampled; the
+  // multisampled source is already resolved) and the blur mips then low-pass it properly.
+  const setBloomSize = bloom.setSize.bind(bloom);
+  bloom.setSize = (width, height) => setBloomSize(width * 2, height * 2);
+  bloom.setSize(size.x * ratio, size.y * ratio);
   const grain = new ShaderPass(GrainVignetteShader);
   composer.addPass(new RenderPass(scene as Scene, camera));
   composer.addPass(bloom);

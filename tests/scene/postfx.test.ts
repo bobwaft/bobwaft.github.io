@@ -51,6 +51,15 @@ describe('createPostFx', () => {
     ).toBeGreaterThanOrEqual(0.5);
   });
 
+  it('runs the bloom high-pass at full drawing-buffer resolution, not half (BUG-006)', () => {
+    const fx = make();
+    const bloom = fx.composer.passes[1] as UnrealBloomPass;
+    expect(bloom.renderTargetBright.width).toBe(fx.composer.renderTarget1.width);
+    fx.setSize(400, 300, 1.5);
+    expect(bloom.renderTargetBright.width).toBe(fx.composer.renderTarget1.width);
+    expect(bloom.renderTargetBright.height).toBe(fx.composer.renderTarget1.height);
+  });
+
   it('resizes with the pixel ratio and counts one frame in renderer.info', () => {
     const renderer = fakeRenderer();
     const fx = createPostFx(renderer, new Scene(), new PerspectiveCamera());

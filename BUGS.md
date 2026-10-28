@@ -72,7 +72,8 @@ Number bugs sequentially and never reuse a number.
 - Severity: med
 - Root cause (2026-10-28): likely (unverified in a browser): UnrealBloom's high-pass had a near-hard cutoff (smoothWidth 0.01 at threshold 1.05), so the thin HDR tube's edge pixels flip across it as the camera moves and its coverage changes, producing shimmer; adaptive pixel-ratio steps need 2 s of sustained <50 fps so are unlikely the cause, and MSAA does apply (the composer clones the 4-sample target). Fix: soft knee smoothWidth 1 and radius 0.5 to 0.65
 - Re-test 2026-10-28: still flickers. Owner's observation: it happens when panning up and down, as if how much of the light is on screen changes the glow (likely the bloom mip chain aliasing the thin strip as it moves vertically by sub-pixel amounts)
-- Status: open
+- Fix 2026-10-28 (likely cause, unverified in a browser): UnrealBloomPass's high-pass writes to a half-resolution target with a single bilinear tap per output pixel, so it skips every other scene pixel and a 1-2 px HDR strip aliases as it moves vertically by sub-pixel amounts. The bloom pass now gets a doubled size so its high-pass and first blur mip are full resolution (src/scene/postfx.ts; costs a heavier bloom, adaptive pixel ratio covers slow GPUs). MSAA is resolved before bloom, so the geometry itself is not the cause. If it still flickers, next step is lowering the strip's emissive (scene-lighting.js)
+- Status: fixed 2026-10-28, awaiting re-test
 
 ### BUG-007 — Notebook spread: green band across the page, left-page text too high
 - Phase: 8
