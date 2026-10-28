@@ -29,6 +29,9 @@ export function parseDecodeMultipliers(json) {
   return { sun: pick('Sun'), night: pick('Night'), shelf: pick('Shelf') };
 }
 
+// [local change] The shelf strip's emissive is scaled below the bloom threshold so it does not glow or shimmer (BUG-006).
+export const SHELF_EMISSIVE_SCALE = 0.35;
+
 // Shared uniforms: change .value anywhere and every baked material updates.
 export const lighting = {
   uDay:       { value: 1 },   // 0..1 sunlight pass
@@ -109,7 +112,7 @@ export async function loadDeskScene(glbUrl, texDir, dracoPath = 'https://www.gst
     if (m.name === 'M_Env_Baked' || m.name === 'M_Env_ShelfBulb') {
       const key = m.name;
       cache[key] ??= bakedMaterial('Env', m.map, texDir, texLoader, decode,
-        m.name === 'M_Env_ShelfBulb' ? new THREE.Color(3.0, 1.6, 0.6) : null);   // bulb glow fades with uLight
+        m.name === 'M_Env_ShelfBulb' ? new THREE.Color(3.0, 1.6, 0.6).multiplyScalar(SHELF_EMISSIVE_SCALE) : null);   // bulb glow fades with uLight
       o.material = cache[key];
     } else if (m.name === 'M_Click_Baked') {
       cache.click ??= bakedMaterial('Click', m.map, texDir, texLoader, decode);

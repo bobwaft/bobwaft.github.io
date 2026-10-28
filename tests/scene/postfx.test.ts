@@ -3,6 +3,7 @@ import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { describe, expect, it, vi } from 'vitest';
+import { SHELF_EMISSIVE_SCALE } from '../../src/scene/scene-lighting.js';
 import { BLOOM, createPostFx, GRAIN_VIGNETTE } from '../../src/scene/postfx';
 
 function fakeRenderer() {
@@ -44,20 +45,16 @@ describe('createPostFx', () => {
     expect(GRAIN_VIGNETTE.vignette).toBeLessThanOrEqual(0.4);
   });
 
-  it('uses a wide soft knee so thin bright strips do not shimmer (BUG-006)', () => {
+  it('keeps the shelf tube emissive luma below the bloom threshold (BUG-006)', () => {
+    const luma = (3.0 * 0.2126 + 1.6 * 0.7152 + 0.6 * 0.0722) * SHELF_EMISSIVE_SCALE;
+    expect(luma).toBeLessThan(BLOOM.threshold * 0.8);
+  });
+
+  it('uses a wide soft knee for a smooth bloom ramp', () => {
     const bloom = make().composer.passes[1] as UnrealBloomPass;
     expect(
       (bloom.highPassUniforms as Record<string, { value: number }>).smoothWidth.value,
     ).toBeGreaterThanOrEqual(0.5);
-  });
-
-  it('runs the bloom high-pass at full drawing-buffer resolution, not half (BUG-006)', () => {
-    const fx = make();
-    const bloom = fx.composer.passes[1] as UnrealBloomPass;
-    expect(bloom.renderTargetBright.width).toBe(fx.composer.renderTarget1.width);
-    fx.setSize(400, 300, 1.5);
-    expect(bloom.renderTargetBright.width).toBe(fx.composer.renderTarget1.width);
-    expect(bloom.renderTargetBright.height).toBe(fx.composer.renderTarget1.height);
   });
 
   it('resizes with the pixel ratio and counts one frame in renderer.info', () => {

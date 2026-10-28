@@ -13,7 +13,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
-/** Bloom is modest and only catches HDR values (bulb, street lamps, city windows exceed 1.0). */
+/** Bloom is modest and only catches HDR values (street lamps, city windows exceed 1.0; the shelf tube stays below it). */
 export const BLOOM = { strength: 0.35, radius: 0.65, threshold: 1.05, smoothWidth: 1 } as const;
 /** Grain amplitude and vignette darkening at the corners; both are subtle. */
 export const GRAIN_VIGNETTE = { grain: 0.04, vignette: 0.3 } as const;
@@ -82,19 +82,11 @@ export function createPostFx(renderer: WebGLRenderer, scene: Object3D, camera: C
     BLOOM.radius,
     BLOOM.threshold,
   );
-  // The default knee (0.01) is a hard cutoff: a thin HDR strip (the shelf tube) changes pixel
-  // coverage as the camera moves, so its edge pixels flip across the threshold and shimmer
-  // (BUG-006). A wide knee makes the bloom contribution vary smoothly with coverage.
+  // Soft knee: bloom contribution ramps smoothly over [threshold, threshold + smoothWidth]. The
+  // shelf tube is kept out of bloom altogether (its emissive is scaled below the threshold in
+  // scene-lighting.js, BUG-006); street lamps and city windows still bloom.
   (bloom.highPassUniforms as Record<string, { value: number }>).smoothWidth.value =
     BLOOM.smoothWidth;
-  // UnrealBloomPass runs its high-pass into a half-resolution target, sampling the full-res scene
-  // with one bilinear tap per half-res pixel, so it skips every other pixel. A 1-2 px HDR strip
-  // (the shelf tube) then appears and disappears as the camera moves by sub-pixel amounts, and the
-  // whole glow pulses (BUG-006, likely cause, not verified in a browser). Handing the pass a
-  // doubled size makes its "half" target full resolution (every scene pixel is sampled; the
-  // multisampled source is already resolved) and the blur mips then low-pass it properly.
-  const setBloomSize = bloom.setSize.bind(bloom);
-  bloom.setSize = (width, height) => setBloomSize(width * 2, height * 2);
   const grain = new ShaderPass(GrainVignetteShader);
   composer.addPass(new RenderPass(scene as Scene, camera));
   composer.addPass(bloom);

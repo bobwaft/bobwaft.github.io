@@ -34,6 +34,7 @@ Running log of facts, gotchas, and open questions for this project. Newest entri
 
 Re-apply these when dropping in a new Blender export (the file is excluded from Prettier to keep diffs against the export small):
 - 2026-10-27: hard-coded `DECODE` replaced by `parseDecodeMultipliers(json)`; `loadDeskScene` fetches `${texDir}lightmap_scales.json` alongside the GLB and builds the shader from it (ISSUE-1). A malformed JSON rejects the load.
+- 2026-10-28: the `M_Env_ShelfBulb` emissive is multiplied by `SHELF_EMISSIVE_SCALE` (0.35) so the shelf strip stays under the bloom threshold and does not glow/flicker (BUG-006).
 
 ## Gotchas
 
