@@ -7,7 +7,7 @@ Running log of facts, gotchas, and open questions for this project. Newest entri
 ## Asset source
 
 - Blender export: `C:\Users\donov\Documents\Blender Projects\PersonalWebsite\export\`
-  - `desk_scene.glb` (5.9 MB), `desk_scene_draco.glb` (3.9 MB, needs `DRACOLoader`)
+  - `desk_scene.glb` (6.3 MB), `desk_scene_draco.glb` (4.0 MB, needs `DRACOLoader`)
   - `textures/LM_{AO,Sun,Night,Shelf}_{Env,Click}.png`, `T_Base_{Env,Click}.png`, `lightmap_scales.json`
   - `scene-lighting.js` — loader + lightmap shader + `setTimeOfDay()` helper
   - `README.md` — full scene notes (source of the facts below)
@@ -15,11 +15,13 @@ Running log of facts, gotchas, and open questions for this project. Newest entri
 
 ## Scene facts
 
-- ~49.7k triangles (room/props ~39k, outside ~11k). Y-up, metres. Rotation/scale applied; locations kept (pivots at natural centres).
+- ~58.4k triangles (re-export 2026-10-28; was ~49.7k). Y-up, metres. Rotation/scale applied; locations kept (pivots at natural centres).
 - `Cam_Main`: vertical FOV 42.55°, 16:9, near 0.1, far 3000, eye (0, 1.18, 0), pitched −9°.
 - `Ref_Lamp`: empty at the centre of the shelf tube light.
-- Clickables: `Click_PullCord` (pivot at attachment point), `Click_Laptop` → child `Click_Laptop_Screen` (UV 0–1, material `M_Screen`), `Click_Notebook` (with elastic band), `Click_Papers`, `Click_Speaker` (cylindrical portable speaker), `Click_Calendar` (formerly `Click_WallNote`), `Click_Window` (double-sided glass).
-- Static: `Env_*` — Room, Floor, Trim, Desk, Shelves, ShelfStrip (emissive bulb), Bed, WindowFrame, Bottles, Flag, DinoPlush, RubberDuck.
+- Clickables: `Click_PullCord` (pivot at attachment point), `Click_Laptop` → child `Click_Laptop_Screen` (UV 0–1, material `M_Screen`), `Click_Notebook` → children `Notebook_Cover` (hinged, see below) and `Notebook_Band`, `Click_Papers`, `Click_Speaker` (cylindrical portable speaker), `Click_Calendar` (formerly `Click_WallNote`), `Click_Window` (double-sided glass).
+- Static: `Env_*` — Room, Floor, Trim, Desk, Shelves, ShelfStrip (emissive bulb), Bed, WindowFrame, Bottles, Flag, DinoPlush, RubberDuck, WhaleSharkPlush, Backpack, Vinyl.
+- `Notebook_Cover` (added 2026-10-28): origin on the spine; hinge = local +X, `rotateX(+θ)` opens it, ~165° looks right (180° floats ~1.8 cm above the desk). Exported closed. Baked so the pages and the cover's inside face are lit as if open; the outside and the surrounding desk as if closed. `Notebook_Band` crosses the cover's path: hide it before opening.
+- `Click_Papers` top sheet (2026-10-28): flat A4 (0.210 × 0.297 m), found by `topSheetTriangles`. Its mesh UVs span u 0.293–0.363, v 0.121–0.220; the export README/report gives u 0.0135–0.0836 for it. The site reads UVs from the mesh, so the README corners are unused.
 - Outside layer is not baked; tinted at runtime by `setTimeOfDay`. `Env_WindowSky` is a curved backdrop (r = 1200 m, UV u = azimuth, v = elevation).
 - Lighting formula: `light = sun·kSun·uDay + night·kNight·uNight + shelf·kShelf·uLight`; `final = base × mix(1, AO, 0.5) × light (+ bulb emissive × uLight)`. Defaults kSun 1.0, kNight 0.3, kShelf 0.7.
 - `TEXCOORD_1` == `TEXCOORD_0`. AO is linear (`NoColorSpace`); Sun/Night/Shelf are sRGB-encoded and normalised (multiply by decode multiplier).
@@ -55,7 +57,7 @@ The baked `ShaderMaterial` includes `<tonemapping_fragment>` and `<colorspace_fr
 1. ~~**Pull cord target.**~~ **Resolved 2026-10-27: the cord toggles the shelf light (`lighting.uLight`); no new bake.** The request says the cord turns on "the lightbulb in the desk", but the only switchable light in the bake is the shelf tube light (`Env_ShelfStrip`, driven by `lighting.uLight`; `Ref_Lamp` sits at its centre). Is that the intended light, or is a separate desk bulb expected (would need a new bake pass)?
 2. **Time of day.** Fixed, follow the visitor's local clock, or user-controllable (e.g. clicking the window)?
 3. **`Click_Calendar` and `Click_Window`.** Exist in the scene but have no behaviour in the spec. Leave inert (no hover), or assign something later?
-4. **Notebook opening.** The notebook is exported as one object with an elastic band — no separate cover or pages. Build a procedural cover in three.js, or re-export with a hinged cover?
+4. ~~**Notebook opening.**~~ Resolved 2026-10-28: re-exported with a hinged `Notebook_Cover` and separate `Notebook_Band` (see Scene facts). The notebook is exported as one object with an elastic band — no separate cover or pages. Build a procedural cover in three.js, or re-export with a hinged cover?
 5. ~~**Music.**~~ Resolved 2026-10-28: three MP3s from Free Music Archive (re-encoded to 128 kbps, ~10 MB total), all CC BY-NC-SA, listed with credits in `src/content/playlist.json`. Attribution is shown by the now-playing caption (`src/ui/nowPlaying.ts`). NC: the site must stay non-commercial (no ads/paid content) while these tracks are used.
 6. **Content.** About text/photo/links, resume source + PDF, and the project list — owner to provide.
 

@@ -29,7 +29,7 @@ A static single-page app. three.js renders the baked desk scene; a small interac
 _Decided 2026-10-27 (spec audit G-1)._
 
 ### A-2. Use the Draco GLB and the provided `scene-lighting.js`
-Load `desk_scene_draco.glb` (3.9 MB) via `loadDeskScene()`. Copy the export into `public/models/` (GLB) and `public/models/textures/` (lightmaps).
+Load `desk_scene_draco.glb` (4.0 MB) via `loadDeskScene()`. Copy the export into `public/models/` (GLB) and `public/models/textures/` (lightmaps).
 - Self-host the Draco decoder (copy from `three/examples/jsm/libs/draco/` into `public/draco/`) instead of the gstatic CDN default, so the site has no third-party runtime dependency.
 - Keep `scene-lighting.js` close to the original so re-exports from Blender can be dropped in; local changes are listed in [MEMORY.md](MEMORY.md).
 - **Decode multipliers are read at runtime from `textures/lightmap_scales.json`** (the bake's source of truth) rather than hard-coded in `scene-lighting.js`. This is the one deliberate local change to the file (resolves ISSUE-1).
@@ -87,7 +87,7 @@ public/audio/         # music (provided by owner later)
 Markdown is converted to HTML (e.g. `marked`) and the same content feeds both the 3D views and the plain HTML fallback (D-12). A unit test enforces the media size limits and required front-matter fields.
 
 ### A-8. Notebook opening
-The exported notebook is a single `Click_Notebook` object (plus elastic band); it likely has no separate cover. Plan: add a procedural cover/page pair in three.js (thin boxes hinged at the spine, textured to match) that animates open over the notebook, hiding the band. Alternative: re-export the notebook from Blender with a separate cover object and pivot at the spine. See open question in [MEMORY.md](MEMORY.md).
+Decided 2026-10-28: Blender re-export. `Click_Notebook` has children `Notebook_Cover` (origin on the spine, opens with `rotateX(+θ)`, ~165°) and `Notebook_Band` (hidden before the cover opens). The pages and the cover's inside face are baked as if open, so no procedural geometry is needed. Both names go in `objects/registry.ts` (Phase 7). Details in [MEMORY.md](MEMORY.md).
 
 ### A-9. Audio
 - A single `HTMLAudioElement` is started on the speaker click, which satisfies the browser user-gesture rule.

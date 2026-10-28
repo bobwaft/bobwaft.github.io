@@ -149,7 +149,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 
 ## Phase 7 — Notebook → Projects
 
-- [ ] Decide approach for the opening (procedural cover vs. Blender re-export) — see ARCHITECTURE A-8 and MEMORY.md
+- [x] Decide approach for the opening (procedural cover vs. Blender re-export): Blender re-export, 2026-10-28 — see ARCHITECTURE A-8 and MEMORY.md
 - [ ] Opening/closing animation: camera arrives → cover swings open → contents spread; reverse on exit
 - [ ] `src/content/projects/*.md` with front matter (title, dates, tags, links, media, order); owner provides 7–12 projects, strongest first
 - [ ] Content check test: required fields present, media within size limits (WebP ≤ 300 KB, clips ≤ 3 MB)
