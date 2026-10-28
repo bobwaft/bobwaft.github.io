@@ -108,9 +108,9 @@ All content (about, projects, resume download link) is pre-rendered into `index.
 ### D-13. Reduced motion
 With `prefers-reduced-motion`, camera moves become short cross-fades or quick cuts, and idle look-around and parallax are reduced.
 
-### D-18. Time of day follows the clock; the window cycles it
-The scene starts at the visitor's local time (12:00 = full day, 00:00 = full night, linear between). Clicking the window cycles day, dusk, night, day with a ~1.2 s ease (instant under reduced motion). A clock time first snaps to its nearest phase, then advances. Nothing is persisted. `Click_Calendar` stays inert.
-**Why:** a living room that matches the visitor's hour, with a cheap, discoverable way to see the other looks.
+### D-18. Time of day follows the clock only
+The scene's outside follows the visitor's local time (12:00 = full day, 00:00 = full night, linear between), set at load. Clicking the window does nothing: it is inert, like `Click_Calendar` (owner decision 2026-10-28, BUG-008; replaces the earlier day/dusk/night cycling). Nothing is persisted.
+**Why:** a living room that matches the visitor's hour, with no extra control to explain.
 
 ## Open design questions
 

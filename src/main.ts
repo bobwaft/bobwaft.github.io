@@ -47,8 +47,7 @@ import { lighting, setTimeOfDay } from './scene/scene-lighting.js';
 import { createLamp } from './objects/lamp';
 import { pullcord } from './objects/pullcord';
 import { speaker } from './objects/speaker';
-import { windowModule } from './objects/window';
-import { createTimeOfDay, timeFromClock } from './scene/timeOfDay';
+import { timeFromClock } from './scene/timeOfDay';
 import { createPlayer } from './audio/player';
 import playlist from './content/playlist.json';
 import { createNowPlaying } from './ui/nowPlaying';
@@ -166,12 +165,8 @@ async function boot(): Promise<void> {
   const lamp = createLamp(lighting.uLight, () => (settings.poseTweenSeconds === 0 ? 0 : 0.4));
   const cordObject = [...registered].find(([, m]) => m === pullcord)?.[0];
   pullcord.bind({ toggle: () => lamp.toggle(), object: cordObject });
-  const timeOfDay = createTimeOfDay({
-    initial: timeFromClock(new Date()),
-    apply: (t) => setTimeOfDay(t, scene),
-    durationS: () => (settings.poseTweenSeconds === 0 ? 0 : 1.2),
-  });
-  windowModule.bind({ cycle: () => timeOfDay.cycle(), update: (dt) => timeOfDay.update(dt) });
+  // The outside follows the visitor's local clock, set once at load; the window is inert (D-18).
+  setTimeOfDay(timeFromClock(new Date()), scene);
   const nowPlaying = createNowPlaying(playlist);
   const player = createPlayer({
     tracks: playlist.map((t) => t.src),

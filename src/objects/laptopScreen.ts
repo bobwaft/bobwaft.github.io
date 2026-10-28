@@ -16,6 +16,8 @@ import '../ui/about.css';
 
 /** CSS width of the page; the screen fills most of the viewport when focused, so ~1:1. */
 export const SCREEN_PX_WIDTH = 960;
+/** Corner radius of the CRT page in CSS px; keep in step with .screen-page in about.css. */
+export const CRT_RADIUS_PX = 28;
 /** Emissive strength of the idle preview; tune by eye against the room lighting. */
 const PREVIEW_BRIGHTNESS = 0.9;
 const ADDRESS = 'bobwaft.github.io/about';
@@ -63,6 +65,11 @@ function drawPreview(
   ctx.scale(k, k);
   const w = SCREEN_PX_WIDTH;
   const font = 'system-ui, -apple-system, "Segoe UI", sans-serif';
+  // CRT-style rounded corners, matching .screen-page in about.css (BUG-008); the CRT pass below
+  // is drawn inside this clip too.
+  ctx.beginPath();
+  ctx.roundRect(0, 0, w, canvas.height / k, CRT_RADIUS_PX);
+  ctx.clip();
   ctx.fillStyle = '#f6f4ef';
   ctx.fillRect(0, 0, w, canvas.height / k);
   // Browser bar.

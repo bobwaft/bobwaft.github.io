@@ -86,4 +86,5 @@ Number bugs sequentially and never reuse a number.
 - Expected (user decision 2026-10-28, replaces the window part of D-18): the outside follows the visitor's real local time only, and clicking the window does not change it (the window goes back to inert). The laptop's CRT page has rounded corners
 - Actual: clicking the window cycles day/dusk/night; the CRT page has square corners
 - Severity: low
-- Status: open
+- Root cause (2026-10-28): design change, not a defect: the window was registered as an interactable that cycled the time. Fix: Click_Window is no longer registered or required, src/objects/window.ts and the cycle code/tests are removed (timeFromClock kept; main.ts sets the clock time once at load); D-18 and MEMORY.md updated. The CRT page gets 28px rounded corners (CSS border-radius with the overlay inheriting it; the idle texture clips to the same radius), not verified visually
+- Status: fixed 2026-10-28, awaiting re-test
