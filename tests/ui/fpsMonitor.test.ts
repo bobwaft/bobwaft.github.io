@@ -134,6 +134,42 @@ describe('createFpsMonitor', () => {
     expect(onSlow).toHaveBeenCalledTimes(1);
   });
 
+  it('triggers on genuinely slow frames 1.5 s apart (heavy CPU throttle)', () => {
+    const onSlow = vi.fn();
+    const m = createFpsMonitor({ onSlow });
+    const s = { t: 0 };
+    for (let i = 0; i < 12 && onSlow.mock.calls.length === 0; i++) {
+      s.t += 1500;
+      m.frame(s.t, false);
+    }
+    expect(onSlow).toHaveBeenCalledTimes(1);
+    expect(s.t).toBeLessThanOrEqual(12000);
+  });
+
+  it('a single long hidden gap does not trigger (flagged hidden or > 5 s)', () => {
+    const onSlow = vi.fn();
+    const m = createFpsMonitor({ onSlow, warmupMs: 0 });
+    const s = { t: 0 };
+    feed(m, s, 60, 1);
+    s.t += 30000;
+    m.frame(s.t, true);
+    s.t += 30000;
+    m.frame(s.t, false);
+    feed(m, s, 60, 6);
+    expect(onSlow).not.toHaveBeenCalled();
+  });
+
+  it('status() reports state and the open window median', () => {
+    const m = createFpsMonitor({ onSlow: () => {}, warmupMs: 0 });
+    expect(m.status()).toEqual({ state: 'warming', medianFps: null });
+    const s = { t: 0 };
+    feed(m, s, 40, 0.5);
+    const st = m.status();
+    expect(st.state).toBe('measuring');
+    expect(st.medianFps).toBeCloseTo(40, 0);
+    expect(createFpsMonitor({ onSlow: () => {}, disabled: true }).status().state).toBe('disabled');
+  });
+
   it('reset() restarts the window', () => {
     const onSlow = vi.fn();
     const m = createFpsMonitor({ onSlow, warmupMs: 0 });

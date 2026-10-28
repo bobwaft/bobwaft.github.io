@@ -43,3 +43,44 @@ Number bugs sequentially and never reuse a number.
 - Root cause (2026-10-28): looking straight down, the CSS3D camera element viewed its own plane edge-on, and Chrome's 3D hit testing then missed the page (elementFromPoint returned the WebGL canvas). Fix: the screen layer puts the element at the origin facing +Z and moves the camera into the surface's frame (`surfaceCameraMatrix`); same picture, working hit testing. Laptop page unaffected
 - Severity: med
 - Status: closed (re-tested 2026-10-28: pass)
+
+### BUG-004 — Slow-device fallback never triggers under CPU throttling
+- Phase: 8
+- Steps: `npm run dev`, DevTools → Performance → CPU 6× (also tried 20×) slowdown, reload without `?dpr`
+- Expected: within ~6 s the plain fallback appears with "Try 3D anyway"; clicking it restores the 3D for the session (A-14)
+- Actual: no fallback, even at 20× slowdown
+- Severity: high
+- Root cause (2026-10-28): the monitor treated any frame gap over 1000 ms as a stall and restarted its window, so under heavy CPU throttle (frames 1-2 s apart) it restarted forever; it also demanded 20 samples, unreachable in a 5 s window at <4 fps. Fix: gaps count up to 5 s (hidden tabs handled by the hidden flag and visibilitychange), and a median under 4 fps needs only 3 samples. `?debug` now shows the monitor state and median fps. Not verified in a browser
+- Status: fixed 2026-10-28, awaiting re-test
+
+### BUG-005 — Resume page renders wholly black in the focus view
+- Phase: 8
+- Steps: night, lamp off; click the papers
+- Expected: resume ink printed on the lit paper, text selectable (Phase 8 "blend" change)
+- Actual: the page is entirely black. Likely the transparent pdf.js canvas (`background: 'rgba(0,0,0,0)'`) plus the brightness/sepia filter, or the idle overlay texture
+- Severity: high
+- Status: open
+
+### BUG-006 — Shelf tube light flickers while the camera moves
+- Phase: 8
+- Steps: lamp on, move the mouse to look around (or let a focus tween run)
+- Expected: steady light and glow
+- Actual: the tube light flickers slightly whenever the camera moves. Likely bloom on the thin bright strip shimmering between pixels (threshold/resolution), or adaptive pixel-ratio steps
+- Severity: med
+- Status: open
+
+### BUG-007 — Notebook spread: green band across the page, left-page text too high
+- Phase: 8
+- Steps: click the notebook, view a project spread
+- Expected: clean pages; left-page text sits inside the page margins
+- Actual: a green band runs across the middle of the page (remove it); left-page text floats slightly off the page's top corner (move it down)
+- Severity: low
+- Status: open
+
+### BUG-008 — Changes requested after the Phase 8 review: no window cycling, rounded CRT corners
+- Phase: 8
+- Steps: click the window; open the laptop
+- Expected (user decision 2026-10-28, replaces the window part of D-18): the outside follows the visitor's real local time only, and clicking the window does not change it (the window goes back to inert). The laptop's CRT page has rounded corners
+- Actual: clicking the window cycles day/dusk/night; the CRT page has square corners
+- Severity: low
+- Status: open

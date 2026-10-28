@@ -62,8 +62,16 @@ export interface FpsMonitorOptions {
 
 export const MONITOR_WARMUP_MS = 1000;
 export const MONITOR_MIN_SAMPLES = 20;
-/** Well above adaptivePixelRatio's 250 ms so genuinely slow (<4 fps) devices still get measured. */
-export const MONITOR_MAX_GAP_MS = 1000;
+/**
+ * A gap this long is a stall or suspended tab, not slowness. Hidden tabs are handled by the hidden
+ * flag / visibilitychange; heavy CPU throttling can put frames 1-2 s apart, which must still count.
+ */
+export const MONITOR_MAX_GAP_MS = 5000;
+/** Below this median fps the device is hopeless: a window needs only a few frames, not minSamples. */
+export const MONITOR_VERY_SLOW_FPS = 4;
+const VERY_SLOW_MIN_SAMPLES = 3;
+
+export type MonitorState = 'disabled' | 'warming' | 'measuring' | 'fired';
 
 /**
  * Feed every rendered frame's timestamp. Calls onSlow once when a full window's median fps is
@@ -89,6 +97,17 @@ export function createFpsMonitor(opts: FpsMonitorOptions) {
     if (nowMs !== null && !warmedUp) warmUntil = nowMs + warmupMs;
   };
   return {
+    /** Current state and the median fps of the frames sampled in the open window (debug overlay). */
+    status(): { state: MonitorState; medianFps: number | null } {
+      const state: MonitorState = opts.disabled
+        ? 'disabled'
+        : fired
+          ? 'fired'
+          : warmedUp
+            ? 'measuring'
+            : 'warming';
+      return { state, medianFps: medianFps(samples) };
+    },
     reset(): void {
       restart(null);
     },
@@ -106,8 +125,12 @@ export function createFpsMonitor(opts: FpsMonitorOptions) {
       }
       samples.push(nowMs - last);
       last = nowMs;
-      if (nowMs - start < windowMs || samples.length < minSamples) return;
+      if (nowMs - start < windowMs) return;
       const median = medianFps(samples);
+      const verySlow = median !== null && median < MONITOR_VERY_SLOW_FPS;
+      if (samples.length < (verySlow ? Math.min(minSamples, VERY_SLOW_MIN_SAMPLES) : minSamples)) {
+        return;
+      }
       start = nowMs;
       samples = [];
       if (median !== null && median < threshold) {

@@ -1,12 +1,16 @@
 import { Vector2, type WebGLRenderer } from 'three';
 import { gpuName } from '../scene/gpuInfo';
+import type { MonitorState } from './fpsMonitor';
 import { createFpsCounter, formatPerfReadout, isDebug } from './fpsCalc';
 
 /**
  * Returns a per-frame hook (call after render) that updates a fixed perf overlay — fps, pixel
  * ratio, buffer size, draw calls, GPU — or null unless `?debug` is set.
  */
-export function createDebugFps(renderer: WebGLRenderer): (() => void) | null {
+export function createDebugFps(
+  renderer: WebGLRenderer,
+  monitorStatus?: () => { state: MonitorState; medianFps: number | null },
+): (() => void) | null {
   if (!isDebug(window.location.search)) return null;
   const el = document.createElement('div');
   el.id = 'debug-fps';
@@ -22,14 +26,20 @@ export function createDebugFps(renderer: WebGLRenderer): (() => void) | null {
     const fps = tick(performance.now());
     if (fps === null) return;
     renderer.getDrawingBufferSize(size);
-    el.textContent = formatPerfReadout({
-      fps,
-      pixelRatio: renderer.getPixelRatio(),
-      width: size.x,
-      height: size.y,
-      calls: renderer.info.render.calls,
-      triangles: renderer.info.render.triangles,
-      gpu,
-    });
+    const mon = monitorStatus?.();
+    const monLine = mon
+      ? `
+fallback monitor: ${mon.state} � median ${mon.medianFps === null ? '--' : mon.medianFps.toFixed(1)} fps`
+      : '';
+    el.textContent =
+      formatPerfReadout({
+        fps,
+        pixelRatio: renderer.getPixelRatio(),
+        width: size.x,
+        height: size.y,
+        calls: renderer.info.render.calls,
+        triangles: renderer.info.render.triangles,
+        gpu,
+      }) + monLine;
   };
 }

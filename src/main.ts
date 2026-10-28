@@ -315,7 +315,10 @@ async function boot(): Promise<void> {
     }
     dispatch({ type: 'loaded' });
     postfx.render(0); // first frame before the fade
-    const debugFps = createDebugFps(renderer);
+    const debugFps = createDebugFps(
+      renderer,
+      () => monitor?.status() ?? { state: 'warming', medianFps: null },
+    );
     let last: number | null = null;
     const adaptive = adaptiveRatioAllowed()
       ? createAdaptivePixelRatio({
