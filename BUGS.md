@@ -100,5 +100,5 @@ Number bugs sequentially and never reuse a number.
 - Steps: click the papers, with the lamp on and off, day and night
 - Expected: the paper in the focus view matches the brightness of the lit paper in the scene around it
 - Actual: the paper is much too bright compared with how it should look (after the BUG-005 fix rendered it opaque on #f1ece0 / white)
-- Severity: med
-- Status: open
+- Root cause (2026-10-28): the old tint scaled the near-white CSS paper by the raw light level (1.0 in daylight), but the scene paper is lit below 1.0 and then bloom/AgX tone-mapped, so it displays far darker; the CSS layer is not tone-mapped. Fix: surfaceTint now maps light to the displayed paper colour (PAPER_RADIANCE 0.45 through an AgX-like shoulder and sRGB encode, divided by the CSS paper's luma), giving about 0.67 by day, 0.39 at night with the lamp off, and lamp-on night equal to day. The constants are assumptions tuned without the lightmap values, so expect a by-eye tweak. The filter already covers paper and ink (both are in the canvas); the notebook uses the same variables, so it is consistent (its ink only, over baked paper)
+- Status: fixed 2026-10-28, awaiting re-test

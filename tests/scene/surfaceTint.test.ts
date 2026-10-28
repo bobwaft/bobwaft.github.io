@@ -4,8 +4,15 @@ import { surfaceTint, tintKey } from '../../src/scene/surfaceTint';
 const t = (uDay: number, uNight: number, uLight: number) => surfaceTint({ uDay, uNight, uLight });
 
 describe('surfaceTint', () => {
-  it('is full brightness in daylight', () => {
-    expect(t(1, 0, 0).brightness).toBeCloseTo(1);
+  it('dims the near-white CSS paper to the displayed lit-paper level in daylight (BUG-009)', () => {
+    // The scene paper is lit below 1.0 and tone-mapped, so it shows as mid-light grey, never as
+    // the CSS paper's own near-white.
+    expect(t(1, 0, 0).brightness).toBeGreaterThan(0.55);
+    expect(t(1, 0, 0).brightness).toBeLessThan(0.8);
+  });
+  it('is much darker at night with the lamp off', () => {
+    expect(t(0, 1, 0).brightness).toBeLessThan(0.75 * t(1, 0, 0).brightness);
+    expect(t(0, 1, 0).brightness).toBeGreaterThan(0.2);
   });
   it('is dimmer at night with the lamp off than by day', () => {
     expect(t(0, 1, 0).brightness).toBeLessThan(t(1, 0, 0).brightness);
