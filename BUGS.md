@@ -77,7 +77,8 @@ Number bugs sequentially and never reuse a number.
 - Expected: clean pages; left-page text sits inside the page margins
 - Actual: a green band runs across the middle of the page (remove it); left-page text floats slightly off the page's top corner (move it down)
 - Severity: low
-- Status: open
+- Root cause (2026-10-28): left text: the content padding (56px) left it at the page's top corner; top padding on the left page is now 104px (CSS, unverified visually). Green band: not from code. Notebook_Band is looked up by name and hidden on open (notebookBook.open), and nothing in notebook.css draws a band, so it is most likely baked into the page texture (the band's colour or shadow, now visible since .nb-page is transparent); it needs a re-bake, or an opaque paper-coloured background on .nb-content (the tint filter would still apply) as a workaround, not applied
+- Status: fixed 2026-10-28, awaiting re-test
 
 ### BUG-008 — Changes requested after the Phase 8 review: no window cycling, rounded CRT corners
 - Phase: 8

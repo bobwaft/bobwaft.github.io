@@ -27,6 +27,10 @@
   /* Wider margin on the spine side. */
   padding: 56px 64px 48px 48px;
 }
+.nb-page-left .nb-content {
+  /* More top margin: the baked page's top edge sits lower than the panel's (BUG-007). */
+  padding-top: 104px;
+}
 .nb-page-right .nb-content {
   padding: 56px 48px 48px 64px;
 }
