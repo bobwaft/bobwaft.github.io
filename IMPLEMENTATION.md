@@ -178,6 +178,9 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [ ] Detect software renderers (`Microsoft Basic Render Driver`, SwiftShader, llvmpipe) via the WebGL renderer string → start at a low pixel ratio or offer the fallback (BUG-001)
 - [ ] Fallback triggers, second part: fps monitor (median < 25 fps over 5 s after load, ignored while hidden) → fallback with "Try 3D anyway" (sessionStorage flag) — unit tested
 - [ ] Decide and implement time-of-day behaviour (MEMORY.md open question 2)
+- [ ] Resume: render the PDF onto the paper itself rather than placing a separate viewer over it
+- [ ] Projects: render the spreads onto the notebook pages themselves rather than placing a separate viewer over them
+- [ ] About: put a CRT filter (or similar) over the laptop screen so the page doesn't look jarringly flat
 
 ### You test
 - [ ] Bulb, street lamps, and city windows glow; grain and vignette are subtle
