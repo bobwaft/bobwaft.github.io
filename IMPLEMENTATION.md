@@ -160,12 +160,12 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] Handle elastic band (hide/move when opening)
 
 ### You test
-- [ ] Clicking the notebook moves the camera above it, then it opens on the contents page
-- [ ] Clicking a contents entry jumps to that project
-- [ ] Each project fills its own spread; next/prev, arrow keys, and edge clicks all work
-- [ ] Clips play muted and loop; media loads only when its spread is opened (Network tab)
-- [ ] First/last spread can't be paged past
-- [ ] Back closes the notebook and then returns the camera
+- [x] Clicking the notebook moves the camera above it, then it opens on the contents page
+- [x] Clicking a contents entry jumps to that project
+- [x] Each project fills its own spread; next/prev, arrow keys, and edge clicks all work
+- [x] Clips play muted and loop; media loads only when its spread is opened (Network tab)
+- [x] First/last spread can't be paged past
+- [x] Back closes the notebook and then returns the camera
 
 ---
 
