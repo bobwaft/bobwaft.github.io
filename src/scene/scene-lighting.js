@@ -29,8 +29,8 @@ export function parseDecodeMultipliers(json) {
   return { sun: pick('Sun'), night: pick('Night'), shelf: pick('Shelf') };
 }
 
-// [local change] The shelf strip's emissive is scaled below the bloom threshold so it does not glow or shimmer (BUG-006).
-export const SHELF_EMISSIVE_SCALE = 0.35;
+// [local change] Bloom mask (BUG-006): baked materials write uBloomMask as alpha (default 1); the shelf strip sets 0,
+// and the bloom high-pass (postfx.ts) multiplies luminosity by alpha, so the strip keeps its brightness but never blooms.
 
 // Shared uniforms: change .value anywhere and every baked material updates.
 export const lighting = {
@@ -60,6 +60,7 @@ const makeFrag = (DECODE) => /* glsl */`
   uniform sampler2D tBase, tAO, tSun, tNight, tShelf;
   uniform float uDay, uNight, uLight, kSun, kNight, kShelf, aoStrength;
   uniform vec3 uEmissive;
+  uniform float uBloomMask;
   varying vec2 vUv;
   void main() {
     vec3 base = texture2D(tBase, vUv).rgb;
@@ -68,7 +69,7 @@ const makeFrag = (DECODE) => /* glsl */`
         texture2D(tSun,   vUv).rgb * ${DECODE.sun.toFixed(4)}   * kSun   * uDay
       + texture2D(tNight, vUv).rgb * ${DECODE.night.toFixed(4)} * kNight * uNight
       + texture2D(tShelf, vUv).rgb * ${DECODE.shelf.toFixed(4)} * kShelf * uLight;
-    gl_FragColor = vec4(base * ao * light + uEmissive * uLight, 1.0);
+    gl_FragColor = vec4(base * ao * light + uEmissive * uLight, uBloomMask);
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
   }`;
@@ -80,7 +81,7 @@ function loadTex(loader, url, srgb) {
   return t;
 }
 
-function bakedMaterial(set, baseMap, texDir, texLoader, decode, emissive = null) {
+function bakedMaterial(set, baseMap, texDir, texLoader, decode, emissive = null, bloomMask = 1) {
   const lm = (pass, srgb = true) => loadTex(texLoader, `${texDir}LM_${pass}_${set}.png`, srgb);
   return new THREE.ShaderMaterial({
     uniforms: {
@@ -91,6 +92,7 @@ function bakedMaterial(set, baseMap, texDir, texLoader, decode, emissive = null)
       tNight: { value: lm('Night') },
       tShelf: { value: lm('Shelf') },
       uEmissive: { value: emissive ?? new THREE.Color(0, 0, 0) },
+      uBloomMask: { value: bloomMask },
     },
     vertexShader: vert,
     fragmentShader: makeFrag(decode),
@@ -112,7 +114,8 @@ export async function loadDeskScene(glbUrl, texDir, dracoPath = 'https://www.gst
     if (m.name === 'M_Env_Baked' || m.name === 'M_Env_ShelfBulb') {
       const key = m.name;
       cache[key] ??= bakedMaterial('Env', m.map, texDir, texLoader, decode,
-        m.name === 'M_Env_ShelfBulb' ? new THREE.Color(3.0, 1.6, 0.6).multiplyScalar(SHELF_EMISSIVE_SCALE) : null);   // bulb glow fades with uLight
+        m.name === 'M_Env_ShelfBulb' ? new THREE.Color(3.0, 1.6, 0.6) : null,   // bulb glow fades with uLight
+        m.name === 'M_Env_ShelfBulb' ? 0 : 1);   // strip is excluded from bloom
       o.material = cache[key];
     } else if (m.name === 'M_Click_Baked') {
       cache.click ??= bakedMaterial('Click', m.map, texDir, texLoader, decode);

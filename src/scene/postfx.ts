@@ -13,12 +13,20 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 
-/** Bloom is modest and only catches HDR values (street lamps, city windows exceed 1.0; the shelf tube stays below it). */
+/** Bloom is modest and only catches HDR values (street lamps, city windows exceed 1.0; the shelf tube is masked out via alpha). */
 export const BLOOM = { strength: 0.35, radius: 0.65, threshold: 1.05, smoothWidth: 1 } as const;
 /** Grain amplitude and vignette darkening at the corners; both are subtle. */
 export const GRAIN_VIGNETTE = { grain: 0.04, vignette: 0.3 } as const;
 /** MSAA samples for the composer's render targets (the canvas's own antialias does not apply). */
 export const MSAA_SAMPLES = 4;
+
+/** Bloom mask: the high-pass weights luminosity by texel alpha (baked materials write 1, the shelf strip 0). */
+export function maskHighPass(fragmentShader: string): string {
+  return fragmentShader.replace(
+    'float v = luminance( texel.xyz );',
+    'float v = luminance( texel.xyz ) * clamp( texel.a, 0.0, 1.0 );',
+  );
+}
 
 const GrainVignetteShader = {
   name: 'GrainVignetteShader',
@@ -49,7 +57,7 @@ const GrainVignetteShader = {
       float v = smoothstep(0.85, 0.2, length(d * vec2(1.0, 0.85)));
       c.rgb *= mix(1.0 - uVignette, 1.0, v);
       c.rgb += (hash(gl_FragCoord.xy + fract(uTime) * 91.7) - 0.5) * uGrain;
-      gl_FragColor = c;
+      gl_FragColor = vec4(c.rgb, 1.0);   // the canvas is opaque; alpha was only the bloom mask
     }`,
 };
 
@@ -83,12 +91,18 @@ export function createPostFx(renderer: WebGLRenderer, scene: Object3D, camera: C
     BLOOM.threshold,
   );
   // Soft knee: bloom contribution ramps smoothly over [threshold, threshold + smoothWidth]. The
-  // shelf tube is kept out of bloom altogether (its emissive is scaled below the threshold in
-  // scene-lighting.js, BUG-006); street lamps and city windows still bloom.
+  // shelf tube is kept out of bloom via the alpha mask (scene-lighting.js uBloomMask, BUG-006);
+  // street lamps and city windows still bloom.
+  bloom.materialHighPassFilter.fragmentShader = maskHighPass(
+    bloom.materialHighPassFilter.fragmentShader,
+  );
+  bloom.materialHighPassFilter.needsUpdate = true;
   (bloom.highPassUniforms as Record<string, { value: number }>).smoothWidth.value =
     BLOOM.smoothWidth;
   const grain = new ShaderPass(GrainVignetteShader);
-  composer.addPass(new RenderPass(scene as Scene, camera));
+  const renderPass = new RenderPass(scene as Scene, camera);
+  renderPass.clearAlpha = 1; // empty pixels are unmasked (alpha 1), so they bloom as before
+  composer.addPass(renderPass);
   composer.addPass(bloom);
   composer.addPass(new OutputPass());
   composer.addPass(grain);

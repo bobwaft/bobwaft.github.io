@@ -1,10 +1,11 @@
 import { HalfFloatType, PerspectiveCamera, Scene, type WebGLRenderer } from 'three';
+import { readFileSync } from 'node:fs';
+import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { describe, expect, it, vi } from 'vitest';
-import { SHELF_EMISSIVE_SCALE } from '../../src/scene/scene-lighting.js';
-import { BLOOM, createPostFx, GRAIN_VIGNETTE } from '../../src/scene/postfx';
+import { BLOOM, createPostFx, GRAIN_VIGNETTE, maskHighPass } from '../../src/scene/postfx';
 
 function fakeRenderer() {
   return {
@@ -45,9 +46,25 @@ describe('createPostFx', () => {
     expect(GRAIN_VIGNETTE.vignette).toBeLessThanOrEqual(0.4);
   });
 
-  it('keeps the shelf tube emissive luma below the bloom threshold (BUG-006)', () => {
-    const luma = (3.0 * 0.2126 + 1.6 * 0.7152 + 0.6 * 0.0722) * SHELF_EMISSIVE_SCALE;
-    expect(luma).toBeLessThan(BLOOM.threshold * 0.8);
+  it('weights the bloom high-pass luminosity by texel alpha (BUG-006)', () => {
+    const bloom = make().composer.passes[1] as UnrealBloomPass;
+    expect(bloom.materialHighPassFilter.fragmentShader).toContain('* clamp( texel.a, 0.0, 1.0 )');
+    expect(maskHighPass('nothing to patch')).toBe('nothing to patch');
+  });
+
+  it('clears to alpha 1 and forces the final output alpha to 1', () => {
+    const fx = make();
+    expect((fx.composer.passes[0] as RenderPass).clearAlpha).toBe(1);
+    const grain = fx.composer.passes[3] as ShaderPass;
+    expect(grain.material.fragmentShader).toContain('vec4(c.rgb, 1.0)');
+  });
+
+  it('leaves the shelf strip at its original emissive and masks it from bloom', () => {
+    const src = readFileSync('src/scene/scene-lighting.js', 'utf8');
+    expect(src).toContain('new THREE.Color(3.0, 1.6, 0.6) : null');
+    expect(src).not.toContain('SHELF_EMISSIVE_SCALE');
+    expect(src).toContain("'M_Env_ShelfBulb' ? 0 : 1");
+    expect(src).toContain('uEmissive * uLight, uBloomMask)');
   });
 
   it('uses a wide soft knee for a smooth bloom ramp', () => {
