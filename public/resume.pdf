@@ -1,0 +1,72 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 4 0 R] /Count 2 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> /Contents 7 0 R >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> /Contents 8 0 R >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+7 0 obj
+<< /Length 1005 >>
+stream
+BT /F2 26 Tf 64 769.9 Td (Your Name) Tj ET
+BT /F1 12 Tf 64 735.9 Td (Software Engineer  |  City, Region) Tj ET
+BT /F1 11 Tf 64 717.9 Td (you@example.com  |  linkedin.com/in/you  |  github.com/bobwaft) Tj ET
+BT /F2 15 Tf 64 681.9 Td (Experience) Tj ET
+BT /F2 12 Tf 64 657.9 Td (Company One  -  Senior Engineer  \(2023 - present\)) Tj ET
+BT /F1 11 Tf 64 639.9 Td (- Led a thing that made another thing faster.) Tj ET
+BT /F1 11 Tf 64 623.9 Td (- Built and shipped a feature used by many people.) Tj ET
+BT /F1 11 Tf 64 607.9 Td (- Placeholder text. Replace public/resume.pdf with the real resume before launch.) Tj ET
+BT /F2 12 Tf 64 579.9 Td (Company Two  -  Engineer  \(2020 - 2023\)) Tj ET
+BT /F1 11 Tf 64 561.9 Td (- Designed a service and kept it running.) Tj ET
+BT /F1 11 Tf 64 545.9 Td (- Mentored new team members.) Tj ET
+BT /F2 15 Tf 64 517.9 Td (Education) Tj ET
+BT /F1 12 Tf 64 493.9 Td (University Name  -  B.Sc. Computer Science  \(2016 - 2020\)) Tj ET
+BT /F1 9 Tf 64 465.9 Td (Page 1 of 2) Tj ET
+endstream
+endobj
+8 0 obj
+<< /Length 562 >>
+stream
+BT /F2 15 Tf 64 769.9 Td (Projects) Tj ET
+BT /F2 12 Tf 64 745.9 Td (Project Alpha) Tj ET
+BT /F1 11 Tf 64 727.9 Td (- A short description of the project and its impact.) Tj ET
+BT /F2 12 Tf 64 699.9 Td (Project Beta) Tj ET
+BT /F1 11 Tf 64 681.9 Td (- Another short description.) Tj ET
+BT /F2 15 Tf 64 653.9 Td (Skills) Tj ET
+BT /F1 11 Tf 64 629.9 Td (TypeScript, three.js, WebGL, Node.js, Python, SQL) Tj ET
+BT /F1 11 Tf 64 601.9 Td (Placeholder text. Replace public/resume.pdf with the real resume before launch.) Tj ET
+BT /F1 9 Tf 64 573.9 Td (Page 2 of 2) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Title (Resume placeholder) >>
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000263 00000 n 
+0000000405 00000 n 
+0000000502 00000 n 
+0000000604 00000 n 
+0000001661 00000 n 
+0000002274 00000 n 
+trailer
+<< /Size 10 /Root 1 0 R /Info 9 0 R >>
+startxref
+2323
+%%EOF

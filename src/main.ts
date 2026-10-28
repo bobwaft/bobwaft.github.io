@@ -43,6 +43,8 @@ import aboutSource from './content/about.md?raw';
 import { parseAbout } from './content/render';
 import { laptop } from './objects/laptop';
 import { createLaptopScreen } from './objects/laptopScreen';
+import { papers } from './objects/papers';
+import { createPapersSheet, type PapersSheet } from './objects/papersSheet';
 import type { ScreenLayer } from './ui/screenLayer';
 import type { Mesh } from 'three';
 
@@ -85,7 +87,20 @@ async function boot(): Promise<void> {
   let debugCamera: DebugCamera | null = null;
   const registered = collectRegistered(scene);
   const picker = createPicker(camera, canvas, registered);
-  const focusPose = createFocusPoseResolver(scene, camera, () => poses.landscape.position);
+  let papersSheet: PapersSheet | null = null;
+  const papersMesh = scene.getObjectByName(FOCUS_SURFACE_NAMES.papers) as Mesh | undefined;
+  if (papersMesh?.isMesh) {
+    const pdfUrl = `${import.meta.env.BASE_URL}resume.pdf`;
+    papersSheet = createPapersSheet(papersMesh, scene, poses.landscape.position, pdfUrl);
+    papersSheet?.setSize(window.innerWidth, window.innerHeight);
+  }
+  papers.bind({ setContentVisible: (v) => papersSheet?.setContentVisible(v) });
+  const focusPose = createFocusPoseResolver(
+    scene,
+    camera,
+    () => poses.landscape.position,
+    (id) => (id === 'papers' ? (papersSheet?.up ?? null) : null),
+  );
   const focusCtrl = createFocusController({
     tween: poseTween,
     idlePose: () => poses[poseKind],
@@ -157,6 +172,7 @@ async function boot(): Promise<void> {
   const onResize = () => {
     resizeToWindow(renderer, camera);
     screenLayer?.setSize(window.innerWidth, window.innerHeight);
+    papersSheet?.setSize(window.innerWidth, window.innerHeight);
     if (debugCamera) return;
     const kind = idlePoseKind(aspectNow());
     if (kind !== poseKind) {
@@ -233,10 +249,14 @@ async function boot(): Promise<void> {
       touchDots.update(app);
       renderer.render(scene, camera);
       screenLayer?.render(camera);
+      papersSheet?.render(camera);
       debugFps?.();
     });
     showHint(touchSeen);
     loading.fadeOut();
+    // pdf.js is a chunk of its own, fetched once the scene is interactive (A-15).
+    const sheet = papersSheet;
+    if (sheet) requestIdle(() => void sheet.load());
   } catch (err) {
     window.removeEventListener('resize', onResize);
     reducedMotion.removeEventListener('change', onMotionChange);
@@ -248,11 +268,18 @@ async function boot(): Promise<void> {
     window.removeEventListener('pointerdown', onPointerType);
     hoverView.dispose();
     screenLayer?.dispose();
+    papersSheet?.dispose();
     debugCamera?.dispose();
     renderer.setAnimationLoop(null);
     renderer.dispose();
     return showFallback('load-failed', err);
   }
+}
+
+/** Runs fn when the browser is idle (Safari lacks requestIdleCallback). */
+function requestIdle(fn: () => void): void {
+  if ('requestIdleCallback' in window) window.requestIdleCallback(fn, { timeout: 2000 });
+  else setTimeout(fn, 500);
 }
 
 boot().catch((err) => showFallback('load-failed', err));

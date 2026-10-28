@@ -11,11 +11,13 @@ const DEG = Math.PI / 180;
  * Uses the camera's current fov and aspect, so call it again after a resize.
  * Poses are first guesses, to be hand-tuned with ?debug (see poses.ts).
  * @param viewerPosition where the user is, used to pick the screen normal's facing side
+ * @param upFor camera up for an id, overriding the spec's (the papers turn it to the sheet)
  */
 export function createFocusPoseResolver(
   scene: Object3D,
   camera: PerspectiveCamera,
   viewerPosition: () => Vector3,
+  upFor?: (id: string) => Vector3 | null,
 ): (id: string) => Pose | null {
   const points = new Map<string, Vector3[]>();
   const surfacePoints = (id: string): Vector3[] | null => {
@@ -45,7 +47,7 @@ export function createFocusPoseResolver(
     return computeFocusPose({
       points: verts,
       viewDirection: dir,
-      up: spec.up ? new Vector3(...spec.up) : undefined,
+      up: upFor?.(id) ?? (spec.up ? new Vector3(...spec.up) : undefined),
       vfov: camera.fov * DEG,
       aspect: camera.aspect,
       margin: spec.margin,

@@ -130,12 +130,12 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 
 ## Phase 6 — Papers → Resume (from PDF)
 
-- [ ] Owner provides `public/resume.pdf` (email + links + city/region only)
-- [ ] Lazy-load `pdfjs-dist` after the scene is interactive; confirm it isn't in the initial bundle
-- [ ] Idle: render page 1 to a `CanvasTexture` on the top sheet
-- [ ] Focus: render the current page at device pixel ratio + text layer inside a CSS3DObject aligned to the top sheet
-- [ ] Next/prev page controls and arrow keys for multi-page PDFs
-- [ ] **Download PDF** button (`<a download>`) visible only in the papers focus view
+- [ ] Owner provides `public/resume.pdf` (email + links + city/region only) — a 2-page A4 placeholder is in place until then
+- [x] Lazy-load `pdfjs-dist` after the scene is interactive; confirm it isn't in the initial bundle
+- [x] Idle: render page 1 to a `CanvasTexture` on the top sheet
+- [x] Focus: render the current page at device pixel ratio + text layer inside a CSS3DObject aligned to the top sheet
+- [x] Next/prev page controls and arrow keys for multi-page PDFs
+- [x] **Download PDF** button (`<a download>`) visible only in the papers focus view
 
 ### You test
 - [ ] In the idle view, the top sheet shows the first page of the resume
@@ -143,7 +143,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [ ] You can select and copy text from the resume
 - [ ] Paging works if the PDF has more than one page
 - [ ] **Download PDF** downloads the same file
-- [ ] The initial page load doesn't download pdf.js (check the Network tab before clicking the papers)
+- [ ] pdf.js isn't requested until the loading screen has faded (Network tab), and isn't in the initial bundle
 
 ---
 

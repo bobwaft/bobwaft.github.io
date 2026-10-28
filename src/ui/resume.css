@@ -1,0 +1,146 @@
+/* Resume on the top sheet (A-15) and its controls. The page element sits in a screen layer
+   (screenLayer.ts); .textLayer holds pdf.js's transparent, selectable text over the canvas. */
+.resume-page {
+  position: relative;
+  overflow: hidden;
+  background: #fff;
+  pointer-events: auto;
+  user-select: text;
+  backface-visibility: hidden;
+  /* pdf.js sizes the text layer with these. */
+  --scale-round-x: 1px;
+  --scale-round-y: 1px;
+}
+
+.resume-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.resume-status {
+  position: absolute;
+  inset: 40% 10% auto;
+  margin: 0;
+  color: #77736b;
+  font:
+    20px/1.4 system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+  text-align: center;
+}
+
+/* The subset of pdf.js's pdf_viewer.css the text layer needs. */
+.textLayer {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
+  line-height: 1;
+  text-align: initial;
+  transform-origin: 0 0;
+  forced-color-adjust: none;
+  --min-font-size: 1;
+  --text-scale-factor: calc(var(--total-scale-factor) * var(--min-font-size));
+  --min-font-size-inv: calc(1 / var(--min-font-size));
+}
+.textLayer :is(span, br) {
+  position: absolute;
+  color: transparent;
+  white-space: pre;
+  cursor: text;
+  transform-origin: 0% 0%;
+  user-select: text;
+}
+.textLayer > :not(.markedContent),
+.textLayer .markedContent span:not(.markedContent) {
+  z-index: 1;
+  --font-height: 0;
+  font-size: calc(var(--text-scale-factor) * var(--font-height));
+  --scale-x: 1;
+  --rotate: 0deg;
+  transform: rotate(var(--rotate)) scaleX(var(--scale-x)) scale(var(--min-font-size-inv));
+}
+.textLayer .markedContent {
+  display: contents;
+}
+.textLayer span[role='img'] {
+  user-select: none;
+  cursor: default;
+}
+.textLayer ::selection {
+  background: rgba(0, 0, 255, 0.25);
+  color: transparent;
+}
+/* Ends a selection cleanly when dragging past the last line (pdf.js adds it). */
+.textLayer .endOfContent {
+  display: block;
+  position: absolute;
+  inset: 100% 0 0;
+  z-index: 0;
+  cursor: default;
+  user-select: none;
+}
+
+#resume-controls {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 5;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font:
+    0.9rem system-ui,
+    sans-serif;
+}
+#resume-controls[hidden],
+.resume-pager[hidden] {
+  display: none;
+}
+.resume-pager {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem;
+  border: 1px solid #555;
+  border-radius: 6px;
+  background: rgba(17, 17, 17, 0.75);
+  color: #eee;
+}
+.resume-pager button {
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.resume-pager button:hover:not(:disabled),
+.resume-pager button:focus-visible {
+  background: rgba(255, 255, 255, 0.12);
+}
+.resume-pager button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.resume-label {
+  padding: 0 0.25rem;
+  white-space: nowrap;
+}
+.resume-download {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid #555;
+  border-radius: 6px;
+  background: rgba(17, 17, 17, 0.75);
+  color: #eee;
+  text-decoration: none;
+}
+.resume-download:hover,
+.resume-download:focus-visible {
+  background: rgba(40, 40, 40, 0.9);
+  border-color: #aaa;
+}

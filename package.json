@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "marked": "18.1.0",
+    "pdfjs-dist": "6.4.299",
     "three": "0.186.1"
   },
   "devDependencies": {
