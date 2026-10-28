@@ -35,7 +35,7 @@ describe('medianFps', () => {
 describe('createFpsMonitor', () => {
   it('triggers when median fps < 25 over 5 s', () => {
     const onSlow = vi.fn();
-    const m = createFpsMonitor({ onSlow });
+    const m = createFpsMonitor({ onSlow, warmupMs: 0 });
     const s = { t: 0 };
     feed(m, s, 15, 4.5);
     expect(onSlow).not.toHaveBeenCalled();
@@ -45,19 +45,19 @@ describe('createFpsMonitor', () => {
 
   it('does not trigger at 30 fps across several windows', () => {
     const onSlow = vi.fn();
-    feed(createFpsMonitor({ onSlow }), { t: 0 }, 30, 20);
+    feed(createFpsMonitor({ onSlow, warmupMs: 0 }), { t: 0 }, 30, 20);
     expect(onSlow).not.toHaveBeenCalled();
   });
 
   it('triggers only once', () => {
     const onSlow = vi.fn();
-    feed(createFpsMonitor({ onSlow }), { t: 0 }, 10, 30);
+    feed(createFpsMonitor({ onSlow, warmupMs: 0 }), { t: 0 }, 10, 30);
     expect(onSlow).toHaveBeenCalledTimes(1);
   });
 
   it('a brief stutter does not trigger (median, not mean)', () => {
     const onSlow = vi.fn();
-    const m = createFpsMonitor({ onSlow });
+    const m = createFpsMonitor({ onSlow, warmupMs: 0 });
     const s = { t: 0 };
     feed(m, s, 60, 2);
     feed(m, s, 5, 0.9);
@@ -67,7 +67,7 @@ describe('createFpsMonitor', () => {
 
   it('ignores hidden frames and resets the window on visibility change', () => {
     const onSlow = vi.fn();
-    const m = createFpsMonitor({ onSlow });
+    const m = createFpsMonitor({ onSlow, warmupMs: 0 });
     const s = { t: 0 };
     feed(m, s, 15, 4); // 4 s slow
     feed(m, s, 15, 10, true); // hidden: ignored
@@ -77,7 +77,7 @@ describe('createFpsMonitor', () => {
 
   it('the first frame after being hidden (huge dt) does not count', () => {
     const onSlow = vi.fn();
-    const m = createFpsMonitor({ onSlow });
+    const m = createFpsMonitor({ onSlow, warmupMs: 0 });
     const s = { t: 0 };
     feed(m, s, 60, 1);
     s.t += 60000;
@@ -88,9 +88,65 @@ describe('createFpsMonitor', () => {
     expect(onSlow).not.toHaveBeenCalled();
   });
 
+  it('a long stall restarts the window instead of being sampled', () => {
+    const onSlow = vi.fn();
+    const m = createFpsMonitor({ onSlow, warmupMs: 0 });
+    const s = { t: 0 };
+    feed(m, s, 60, 0.3);
+    s.t += 60000; // tab was hidden, no frames and no hidden flag
+    feed(m, s, 60, 6);
+    expect(onSlow).not.toHaveBeenCalled();
+  });
+
+  it('a stall right after load does not give a ~0 fps median', () => {
+    const onSlow = vi.fn();
+    const m = createFpsMonitor({ onSlow, warmupMs: 0 });
+    const s = { t: 0 };
+    feed(m, s, 60, 0.1);
+    s.t += 30000;
+    feed(m, s, 60, 6);
+    expect(onSlow).not.toHaveBeenCalled();
+  });
+
+  it('ignores a slow warm-up period after load', () => {
+    const onSlow = vi.fn();
+    const m = createFpsMonitor({ onSlow }); // default 1 s warm-up
+    const s = { t: 0 };
+    feed(m, s, 5, 1); // compile hitches
+    feed(m, s, 60, 6);
+    expect(onSlow).not.toHaveBeenCalled();
+  });
+
+  it('still fires when slow after the warm-up', () => {
+    const onSlow = vi.fn();
+    const m = createFpsMonitor({ onSlow });
+    feed(m, { t: 0 }, 10, 8);
+    expect(onSlow).toHaveBeenCalledTimes(1);
+  });
+
+  it('needs a minimum sample count before it can trigger', () => {
+    const onSlow = vi.fn();
+    const m = createFpsMonitor({ onSlow, warmupMs: 0, windowMs: 1000, minSamples: 10 });
+    const s = { t: 0 };
+    feed(m, s, 5, 1.8); // 9 samples over the window: too few
+    expect(onSlow).not.toHaveBeenCalled();
+    feed(m, s, 5, 1);
+    expect(onSlow).toHaveBeenCalledTimes(1);
+  });
+
+  it('reset() restarts the window', () => {
+    const onSlow = vi.fn();
+    const m = createFpsMonitor({ onSlow, warmupMs: 0 });
+    const s = { t: 0 };
+    feed(m, s, 15, 4.5);
+    m.reset();
+    feed(m, s, 60, 6);
+    expect(onSlow).not.toHaveBeenCalled();
+  });
+
   it('does nothing when disabled', () => {
     const onSlow = vi.fn();
-    feed(createFpsMonitor({ onSlow, disabled: true }), { t: 0 }, 5, 30);
+    feed(createFpsMonitor({ onSlow, disabled: true, warmupMs: 0 }), { t: 0 }, 5, 30);
     expect(onSlow).not.toHaveBeenCalled();
   });
 });

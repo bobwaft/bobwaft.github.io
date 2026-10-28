@@ -63,7 +63,7 @@ import { parseProject, sortProjects, type Project } from './content/projects';
 import { notebook } from './objects/notebook';
 import { createNotebookBook, type NotebookBook } from './objects/notebookBook';
 import { COVER_SECONDS } from './notebook/cover';
-import { Vector2, type Mesh } from 'three';
+import { Vector2, type Mesh, type Object3D, type Texture } from 'three';
 
 async function boot(): Promise<void> {
   const canvas = document.getElementById('scene') as HTMLCanvasElement;
@@ -249,22 +249,33 @@ async function boot(): Promise<void> {
   };
   reducedMotion.addEventListener('change', onMotionChange);
   let disposeClicks = () => {};
+  const onVisibility = () => monitor?.reset();
+  let monitor: ReturnType<typeof createFpsMonitor> | null = null;
+  let tornDown = false;
+  // Single teardown for both failure paths; the animation loop stops first.
   const teardown = () => {
+    if (tornDown) return;
+    tornDown = true;
+    renderer.setAnimationLoop(null);
     window.removeEventListener('resize', onResize);
+    document.removeEventListener('visibilitychange', onVisibility);
     reducedMotion.removeEventListener('change', onMotionChange);
     look.dispose();
     disposeClicks();
     backButton.dispose();
     touchDots.dispose();
     player.dispose();
+    nowPlaying.dispose();
+    document.getElementById('debug-fps')?.remove();
     window.removeEventListener('pointerdown', onPointerType);
     hoverView.dispose();
     screenLayer?.dispose();
     papersSheet?.dispose();
     notebookBook?.dispose();
     debugCamera?.dispose();
-    renderer.setAnimationLoop(null);
     postfx.dispose();
+    disposeScene(scene);
+    renderer.forceContextLoss();
     renderer.dispose();
   };
   try {
@@ -312,16 +323,26 @@ async function boot(): Promise<void> {
           max: renderer.getPixelRatio(),
         })
       : null;
-    const monitor = createFpsMonitor({
+    let pendingRatio: number | null = null;
+    monitor = createFpsMonitor({
       disabled: isForce3d(),
       onSlow: () => {
         teardown();
         showFallback('slow');
       },
     });
+    document.addEventListener('visibilitychange', onVisibility);
     let tintKeyShown = '';
     renderer.setAnimationLoop((time: number) => {
       const hidden = document.hidden;
+      // A pixel-ratio change clears the drawing buffer, so it is applied before this frame draws.
+      if (pendingRatio !== null) {
+        setAdaptiveRatio(pendingRatio);
+        pendingRatio = null;
+        resizeToWindow(renderer, camera);
+        const drawn = renderer.getSize(new Vector2());
+        postfx.setSize(drawn.x, drawn.y, renderer.getPixelRatio());
+      }
       const dt = last === null ? 0 : Math.min((time - last) / 1000, 0.1);
       last = time;
       if (debugCamera) {
@@ -354,13 +375,8 @@ async function boot(): Promise<void> {
       notebookBook?.render(camera);
       debugFps?.();
       const next = adaptive?.frame(time, hidden);
-      if (next != null) {
-        setAdaptiveRatio(next);
-        resizeToWindow(renderer, camera);
-        const drawn = renderer.getSize(new Vector2());
-        postfx.setSize(drawn.x, drawn.y, renderer.getPixelRatio());
-      }
-      monitor.frame(time, hidden);
+      if (next != null) pendingRatio = next;
+      monitor?.frame(time, hidden);
     });
     showHint(touchSeen);
     loading.fadeOut();
@@ -371,6 +387,23 @@ async function boot(): Promise<void> {
     teardown();
     return showFallback('load-failed', err);
   }
+}
+
+/** Frees GPU resources held by every mesh in the scene. */
+function disposeScene(scene: Object3D): void {
+  scene.traverse((obj) => {
+    const mesh = obj as Mesh;
+    if (!mesh.isMesh) return;
+    mesh.geometry?.dispose();
+    const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    for (const mat of mats) {
+      if (!mat) continue;
+      for (const value of Object.values(mat)) {
+        if (value && (value as Texture).isTexture) (value as Texture).dispose();
+      }
+      mat.dispose();
+    }
+  });
 }
 
 /** Projects from src/content/projects, strongest first; a file that fails to parse is skipped. */

@@ -91,6 +91,15 @@ describe('state machine', () => {
     }
   });
 
+  it('never activates an object (window, speaker, cord) while a focus view is open (D-4)', () => {
+    const win = { id: 'window', hasFocus: false };
+    for (const s of [tIn, focused, tOut]) {
+      for (const hit of [win, speaker]) {
+        expect(transition(s, { type: 'click', hit }).action?.type).not.toBe('activate');
+      }
+    }
+  });
+
   it('ignores arrived when not transitioning', () => {
     expect(transition(idle, { type: 'arrived' })).toEqual({ state: idle });
     expect(transition(focused, { type: 'arrived' })).toEqual({ state: focused });
