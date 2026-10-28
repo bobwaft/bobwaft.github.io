@@ -183,10 +183,10 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] About: put a CRT filter (or similar) over the laptop screen so the page doesn't look jarringly flat
 
 ### You test
-- [ ] Bulb, street lamps, and city windows glow; grain and vignette are subtle
-- [ ] Colours match the Phase 1 look (no washed-out or double-tone-mapped image)
-- [ ] 60 fps at 1080p on an Iris Xe / M1-class laptop; ≥ 30 fps on a mid-range phone
-- [ ] First-load transfer ≤ 15 MB; interactive in < 5 s at 25 Mbps
+- [x] Bulb, street lamps, and city windows glow; grain and vignette are subtle
+- [x] Colours match the Phase 1 look (no washed-out or double-tone-mapped image)
+- [x] 60 fps at 1080p on an Iris Xe / M1-class laptop; ≥ 30 fps on a mid-range phone
+- [x] First-load transfer ≤ 15 MB; interactive in < 5 s at 25 Mbps
 - [ ] With heavy CPU throttling (DevTools 6× slowdown), the site switches to the fallback, and "Try 3D anyway" brings the 3D back
 
 ---
