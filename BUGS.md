@@ -120,4 +120,12 @@ Number bugs sequentially and never reuse a number.
 - Investigation 2026-10-28 (static, no browser/GPU available, not fixed): the idle path is unchanged since Phase 8 apart from the opaque white page (IDLE_PAPER). With three's premultiplied MultiplyBlending (dst*src + dst*(1-srcAlpha)) a white opaque page and a transparent one both leave blank paper untouched, so the white background alone cannot hide the preview; nothing in main.ts, papersSheet.ts, the sampler (focus only) or setContentVisible (touches only the DOM canvas) hides or disposes the overlay or its texture. Remaining suspects need a real GPU: load() failing silently (check the console for 'Resume failed to render' and that Resume_Overlay.visible becomes true), or the ink-only multiply being too faint at the idle sheet size (1024px texture minified onto a small sheet). Next step: open the site with ?debug and inspect Resume_Overlay
 - Re-test 2026-10-28: still no preview after waiting ~5 s; no console error
 - Root cause (2026-10-29): not a Phase 8 regression. The Phase 7 build (711229c) shows no preview either; the owner noticed it appears at certain camera angles. The overlay was an exact coplanar copy of the top sheet, and the sheet won the depth test from most angles despite the polygon offset (z-fighting). Fix: lift the overlay 1 mm above the sheet (`OVERLAY_LIFT`), keep `renderOrder = 1`; regression tests in tests/objects/papersSheet.test.ts
-- Status: fixed 2026-10-29, awaiting re-test
+- Status: closed (re-tested 2026-10-29: pass; rotation misalignment split off as BUG-011)
+
+### BUG-011 — Resume preview and focus page are rotated relative to the top sheet
+- Phase: 6/7 (found in Phase 8)
+- Steps: look at the paper stack in the idle view; then click the papers
+- Expected: page 1 lines up with the edges of the top sheet, both in the idle preview and in the focus view
+- Actual: both the idle preview and the focus-view PDF are at a different angle from the top sheet
+- Severity: med
+- Status: open
