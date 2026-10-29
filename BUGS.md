@@ -112,12 +112,12 @@ Number bugs sequentially and never reuse a number.
 - Status: closed (re-tested 2026-10-28: pass; missing idle preview split off as BUG-010)
 
 ### BUG-010 — Resume preview no longer shows on the paper stack before clicking
-- Phase: 8 (regression from the BUG-005/BUG-009 fixes)
+- Phase: 6/7 (found in Phase 8; predates it)
 - Steps: load the site, look at the papers on the desk without clicking them
 - Expected: page 1 of the resume is visible on the top sheet in the idle view (A-15), as before Phase 8
 - Actual: no preview on the stack until the papers are clicked
 - Severity: med
 - Investigation 2026-10-28 (static, no browser/GPU available, not fixed): the idle path is unchanged since Phase 8 apart from the opaque white page (IDLE_PAPER). With three's premultiplied MultiplyBlending (dst*src + dst*(1-srcAlpha)) a white opaque page and a transparent one both leave blank paper untouched, so the white background alone cannot hide the preview; nothing in main.ts, papersSheet.ts, the sampler (focus only) or setContentVisible (touches only the DOM canvas) hides or disposes the overlay or its texture. Remaining suspects need a real GPU: load() failing silently (check the console for 'Resume failed to render' and that Resume_Overlay.visible becomes true), or the ink-only multiply being too faint at the idle sheet size (1024px texture minified onto a small sheet). Next step: open the site with ?debug and inspect Resume_Overlay
 - Re-test 2026-10-28: still no preview after waiting ~5 s; no console error
-- Root cause (2026-10-28): the overlay is drawn and textured (verified via a `?debug` probe: visible, 1024×1448 map, multiply blending), and it appears as soon as it is forced to draw last (with or without depth test). Its geometry is in world space with the object at the origin, so three's back-to-front sort of transparent objects puts it at an arbitrary place in the order and later draws overwrite it. Fix: `overlay.renderOrder = 1`; regression test in tests/objects/papersSheet.test.ts
-- Status: fixed 2026-10-28, awaiting re-test
+- Root cause (2026-10-29): not a Phase 8 regression. The Phase 7 build (711229c) shows no preview either; the owner noticed it appears at certain camera angles. The overlay was an exact coplanar copy of the top sheet, and the sheet won the depth test from most angles despite the polygon offset (z-fighting). Fix: lift the overlay 1 mm above the sheet (`OVERLAY_LIFT`), keep `renderOrder = 1`; regression tests in tests/objects/papersSheet.test.ts
+- Status: fixed 2026-10-29, awaiting re-test

@@ -60,14 +60,19 @@ function meshTriangles(mesh: Mesh) {
   return { points, uvs, index };
 }
 
-/** A copy of the top sheet's triangles that multiplies the page over the baked paper. */
-/** The page-1 preview laid over the top sheet (idle view). Exported for tests. */
+/**
+ * Height in metres the overlay floats above the top sheet (BUG-010). Exactly coplanar, the sheet won
+ * the depth test from most angles despite the polygon offset; 1 mm is invisible from the camera.
+ */
+export const OVERLAY_LIFT = 0.001;
+
+/** A copy of the top sheet's triangles, lifted slightly, that multiplies the page over the paper. */
 export function createOverlay(points: Vector3[], uvs: Vector2[], tris: number[]) {
   const geometry = new BufferGeometry();
   geometry.setAttribute(
     'position',
     new Float32BufferAttribute(
-      tris.flatMap((i) => points[i].toArray()),
+      tris.flatMap((i) => [points[i].x, points[i].y + OVERLAY_LIFT, points[i].z]),
       3,
     ),
   );
@@ -90,8 +95,8 @@ export function createOverlay(points: Vector3[], uvs: Vector2[], tris: number[])
   });
   const overlay = new Mesh(geometry, material);
   overlay.name = 'Resume_Overlay';
-  // Drawn after the rest of the scene (BUG-010). Its geometry is in world space with the object at
-  // the origin, so three's back-to-front sort of transparent objects places it arbitrarily.
+  // Drawn after the rest of the scene: its geometry is in world space with the object at the
+  // origin, so three's back-to-front sort of transparent objects would place it arbitrarily.
   overlay.renderOrder = 1;
   overlay.visible = false; // until page 1 is drawn
   overlay.raycast = () => {}; // clicks go to Click_Papers
