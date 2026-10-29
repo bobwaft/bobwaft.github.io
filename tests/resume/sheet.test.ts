@@ -1,6 +1,6 @@
-import { Vector3 } from 'three';
+import { Vector2, Vector3 } from 'three';
 import { describe, expect, it } from 'vitest';
-import { sheetFrame, topSheetTriangles } from '../../src/resume/sheet';
+import { sheetFrameFromUvs, topSheetTriangles } from '../../src/resume/sheet';
 
 const DEG = Math.PI / 180;
 
@@ -44,32 +44,52 @@ describe('topSheetTriangles', () => {
   });
 });
 
-describe('sheetFrame', () => {
+/** UVs of sheet()'s corners: an axis-aligned A4 island in the atlas, u across, v up the page. */
+const ISLAND = { u0: 0.293, v0: 0.121, du: 0.07, dv: 0.099 };
+const cornerUvs = [
+  [0, 0],
+  [1, 0],
+  [1, 1],
+  [0, 1],
+].map(([s, t]) => new Vector2(ISLAND.u0 + s * ISLAND.du, ISLAND.v0 + t * ISLAND.dv));
+
+describe('sheetFrameFromUvs (BUG-011)', () => {
   const awayFromViewer = new Vector3(0, 0, -1);
+  const yAxis = new Vector3(0, 1, 0);
 
-  it('finds the size, centre and axes of a turned sheet', () => {
+  it('takes size, centre and axes from the UV directions of a turned sheet', () => {
     const at = new Vector3(-0.4, 0.76, -0.98);
-    const f = sheetFrame(sheet(0.21, 0.297, 0, 20 * DEG, at), awayFromViewer);
-    expect(f.width).toBeCloseTo(0.21, 3);
-    expect(f.height).toBeCloseTo(0.297, 3);
-    expect(f.center.distanceTo(at)).toBeLessThan(1e-3);
+    const f = sheetFrameFromUvs(sheet(0.21, 0.297, 0, 20 * DEG, at), cornerUvs, awayFromViewer);
+    expect(f.width).toBeCloseTo(0.21, 4);
+    expect(f.height).toBeCloseTo(0.297, 4);
+    expect(f.center.distanceTo(at)).toBeLessThan(1e-4);
     expect(f.normal.y).toBeCloseTo(1, 5);
-    const longSide = new Vector3(0, 0, -1).applyAxisAngle(new Vector3(0, 1, 0), 20 * DEG);
-    expect(f.up.dot(longSide)).toBeCloseTo(1, 3);
-  });
-
-  it('points up away from the viewer whichever way the long side was found', () => {
-    const f = sheetFrame(sheet(0.21, 0.297, 0, 170 * DEG), awayFromViewer);
-    expect(f.up.z).toBeLessThan(0);
-  });
-
-  it('makes right = up x normal, as for a CSS3D element', () => {
-    const f = sheetFrame(sheet(0.21, 0.297, 0, 35 * DEG), awayFromViewer);
+    const longSide = new Vector3(0, 0, -1).applyAxisAngle(yAxis, 20 * DEG);
+    expect(f.up.dot(longSide)).toBeCloseTo(1, 5);
     expect(f.right.distanceTo(new Vector3().crossVectors(f.up, f.normal))).toBeLessThan(1e-6);
   });
 
-  it('uses the long side as up for a portrait page even with a skewed hint', () => {
-    const f = sheetFrame(sheet(0.21, 0.297, 0, 50 * DEG), awayFromViewer);
-    expect(f.height).toBeGreaterThan(f.width);
+  it('follows the UVs where the outline would mislead a bounding rectangle', () => {
+    // The paper's printed edges (UVs) are turned 4 degrees from its outline: a bent sheet whose
+    // vertices sit where the min-area rectangle would be, while the texture runs along the UVs.
+    const turn = 4 * DEG;
+    const pts = sheet(0.21, 0.297, 0, 0);
+    const uvs = pts.map((p) => {
+      const q = p.clone().applyAxisAngle(yAxis, -turn); // page coordinates of each vertex
+      return new Vector2(
+        ISLAND.u0 + (q.x / 0.21 + 0.5) * ISLAND.du,
+        ISLAND.v0 + (-q.z / 0.297 + 0.5) * ISLAND.dv,
+      );
+    });
+    const f = sheetFrameFromUvs(pts, uvs, awayFromViewer);
+    const pageUp = new Vector3(0, 0, -1).applyAxisAngle(yAxis, turn);
+    expect(f.up.dot(pageUp)).toBeCloseTo(1, 5);
+  });
+
+  it('points up away from the viewer even when v runs towards them', () => {
+    const flipped = cornerUvs.map((uv) => new Vector2(uv.x, 2 * ISLAND.v0 + ISLAND.dv - uv.y));
+    const f = sheetFrameFromUvs(sheet(0.21, 0.297, 0), flipped, awayFromViewer);
+    expect(f.up.z).toBeLessThan(0);
+    expect(f.normal.y).toBeGreaterThan(0);
   });
 });

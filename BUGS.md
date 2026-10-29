@@ -128,4 +128,5 @@ Number bugs sequentially and never reuse a number.
 - Expected: page 1 lines up with the edges of the top sheet, both in the idle preview and in the focus view
 - Actual: both the idle preview and the focus-view PDF are at a different angle from the top sheet
 - Severity: med
-- Status: open
+- Root cause (2026-10-29): `sheetFrame` took the page's orientation from the minimum-area rectangle around the top sheet's vertices; the re-exported sheet isn't a perfect flat rectangle (curl/bent corners), so that rectangle sat a few degrees off the paper's real edges. Both the idle overlay (via the frame-to-UV transform) and the focus view use the frame, so both were turned. Likely also made the BUG-009 paper-colour samples (92% out to the corners) land partly off the sheet (owner screenshot: page browner than the paper). Fix: `sheetFrameFromUvs` fits position = origin + U·u + V·v over the sheet's vertices and uses the UV axes (an axis-aligned A4 island in the atlas) as the page edges; the old bounding-rectangle `sheetFrame` is removed
+- Status: fixed 2026-10-29, awaiting re-test

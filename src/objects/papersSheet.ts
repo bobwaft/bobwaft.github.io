@@ -19,7 +19,7 @@ import { uvTransform } from '../scene/screenFrame';
 import { createScreenLayer } from '../ui/screenLayer';
 import { createResumeControls } from '../ui/resumeControls';
 import { FOCUS_PAPER, IDLE_PAPER, needsRender, renderWidth, stepPage } from '../resume/layout';
-import { sheetFrame, topSheetTriangles } from '../resume/sheet';
+import { sheetFrameFromUvs, topSheetTriangles } from '../resume/sheet';
 import type { ResumeDocument } from '../resume/pdf';
 import '../ui/resume.css';
 
@@ -122,7 +122,11 @@ export function createPapersSheet(
   const used = [...new Set(tris)];
   const sheetPoints = used.map((i) => points[i]);
   const mid = sheetPoints.reduce((s, p) => s.add(p), new Vector3()).divideScalar(used.length);
-  const frame = sheetFrame(sheetPoints, mid.clone().sub(viewer).setY(0));
+  const frame = sheetFrameFromUvs(
+    sheetPoints,
+    used.map((i) => uvs[i]),
+    mid.clone().sub(viewer).setY(0),
+  );
 
   const overlay = createOverlay(points, uvs, tris);
   scene.add(overlay);
