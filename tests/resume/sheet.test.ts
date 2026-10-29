@@ -39,6 +39,31 @@ describe('topSheetTriangles', () => {
     expect(tris).toEqual([0, 1, 2, 3, 4, 5]);
   });
 
+  it('picks the sheet lying highest overall, not one with a curled corner (BUG-011)', () => {
+    // A finely tessellated lower sheet with one corner curled up above a flat two-triangle sheet,
+    // as in the exported stack.
+    const n = 4;
+    const grid: Vector3[] = [];
+    for (let j = 0; j <= n; j++) {
+      for (let i = 0; i <= n; i++) {
+        const curl = i === n && j === n ? 0.0028 : -0.0015;
+        grid.push(new Vector3(-0.1 + (0.2 * i) / n, curl, 0.15 - (0.3 * j) / n));
+      }
+    }
+    const at = (i: number, j: number) => j * (n + 1) + i;
+    const gridTris: number[] = [];
+    for (let j = 0; j < n; j++) {
+      for (let i = 0; i < n; i++) {
+        gridTris.push(at(i, j), at(i + 1, j), at(i + 1, j + 1));
+        gridTris.push(at(i, j), at(i + 1, j + 1), at(i, j + 1));
+      }
+    }
+    const flat = grid.length;
+    const points = [...grid, ...sheet(0.21, 0.297, 0.0006, 5 * DEG)];
+    const tris = topSheetTriangles(points, [...gridTris, ...quadUp(flat)]);
+    expect(tris).toEqual(quadUp(flat));
+  });
+
   it('returns nothing when no face points up', () => {
     expect(topSheetTriangles(sheet(0.2, 0.3, 0), quadDown(0))).toEqual([]);
   });

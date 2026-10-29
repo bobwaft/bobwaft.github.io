@@ -7,7 +7,7 @@ import type { ScreenFrame } from '../scene/screenFrame';
 const MIN_UP = 0.9;
 
 /**
- * Triangles (as a flat index list) of the highest connected up-facing surface.
+ * Triangles (as a flat index list) of the connected up-facing surface lying highest (median y).
  * Triangles connect through shared vertex positions, so split vertices (UV seams) don't
  * break a sheet apart.
  * @param points world-space vertex positions
@@ -37,16 +37,21 @@ export function topSheetTriangles(points: readonly Vector3[], index: readonly nu
       else parent[find(i)] = find(other);
     }
   });
-  const groups = new Map<number, { tris: number[]; top: number }>();
+  const groups = new Map<number, { tris: number[]; ys: number[] }>();
   up.forEach((tri, i) => {
     const root = find(i);
-    const g = groups.get(root) ?? { tris: [], top: -Infinity };
+    const g = groups.get(root) ?? { tris: [], ys: [] };
     g.tris.push(tri);
-    for (let k = 0; k < 3; k++) g.top = Math.max(g.top, points[index[tri * 3 + k]].y);
+    for (let k = 0; k < 3; k++) g.ys.push(points[index[tri * 3 + k]].y);
     groups.set(root, g);
   });
-  let best: { tris: number[]; top: number } | null = null;
-  for (const g of groups.values()) if (!best || g.top > best.top) best = g;
+  // Rank by median height: a lower sheet's curled corner can rise above the flat top sheet (BUG-011).
+  const median = (ys: number[]) => ys.slice().sort((a, b) => a - b)[ys.length >> 1];
+  let best: { tris: number[]; height: number } | null = null;
+  for (const g of groups.values()) {
+    const height = median(g.ys);
+    if (!best || height > best.height) best = { tris: g.tris, height };
+  }
   return (best?.tris ?? []).flatMap((tri) => [
     index[tri * 3],
     index[tri * 3 + 1],
