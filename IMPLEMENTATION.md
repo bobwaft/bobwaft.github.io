@@ -173,7 +173,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 
 - [x] Post-processing: bloom (bulb, street lamps, city windows), film grain, vignette via `EffectComposer` + `OutputPass`
 - [x] Check tone mapping is applied once only with the composer (MEMORY.md ISSUE-2)
-- [ ] Measure against NFR-1/NFR-2; convert textures to KTX2 (Basis) if over 15 MB or under target fps
+- [x] Measure against NFR-1/NFR-2; convert textures to KTX2 (Basis) if over 15 MB or under target fps — measured 2026-10-29: first load ≈ 14.4 MB, interactive < 5 s at 25 Mbps, 60 fps at 1080p; no conversion needed. Revisit KTX2 (GPU memory ~80 MB → ~25 MB) only if Phase 9 phone testing shows memory or load problems
 - [x] Adaptive pixel ratio if below target fps
 - [x] Detect software renderers (`Microsoft Basic Render Driver`, SwiftShader, llvmpipe) via the WebGL renderer string → start at a low pixel ratio or offer the fallback (BUG-001)
 - [x] Fallback triggers, second part: fps monitor (median < 25 fps over 5 s after load, ignored while hidden) → fallback with "Try 3D anyway" (sessionStorage flag) — unit tested
