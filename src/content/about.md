@@ -1,15 +1,17 @@
 ---
-# PLACEHOLDER: owner to replace every value below (no phone number or street address).
-name: Your Name
-headline: Software Engineer
-location: City, Region
-email: you@example.com
-linkedin: https://www.linkedin.com/in/your-handle
+name: Donovan
+title: Hi, I'm **Donovan**!
+location: Vancouver, British Columbia
+email: donovanhu08@gmail.com
+linkedin: https://www.linkedin.com/in/donovan-hu-1789b1373/
 github: https://github.com/bobwaft
-# photo: /about/photo.webp
+instagram: https://www.instagram.com/d_hung063/
+photo: /about/headshot.png
+photoAlt: Donovan in a red hoodie and chef's hat, smiling
+tags: Roadrunner, Risktaker, Innovator, Clipfarmer, Performative
 ---
 
-Placeholder bio. Replace this with two or three short paragraphs: what you do, what you're
-good at, and what kind of work you're looking for.
-
-This text is shown on the laptop screen and in the plain HTML version of the site.
+I'm a 17 year old software dev from Hawai'i pursuing Computer Science at the
+University of British Columbia. I love to explore the ideas that others write off, and I'll try my
+hand at anything from lightweight CLI tools to full stack projects. Outside of tech, I like
+travelling, thrifting, and matcha.
