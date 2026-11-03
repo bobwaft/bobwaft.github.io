@@ -20,6 +20,8 @@ import {
 import { applyLook, createLookControls, lookSettings } from './camera/lookControls';
 import { createFocusController } from './camera/focusController';
 import { createPoseTween } from './camera/focusTween';
+import { dampZoom, NO_ZOOM, panBy, zoomAt, zoomedPose } from './camera/focusZoom';
+import { stepZoom } from './resume/layout';
 import { createClickInput } from './interaction/clickInput';
 import { createFocusPoseResolver } from './interaction/focusPoses';
 import { hoverTarget } from './interaction/hover';
@@ -64,7 +66,7 @@ import { parseProject, sortProjects, type Project } from './content/projects';
 import { notebook } from './objects/notebook';
 import { createNotebookBook, type NotebookBook } from './objects/notebookBook';
 import { COVER_SECONDS } from './notebook/cover';
-import { Vector2, type Mesh, type Object3D, type Texture } from 'three';
+import { Quaternion, Vector2, Vector3, type Mesh, type Object3D, type Texture } from 'three';
 
 async function boot(): Promise<void> {
   const canvas = document.getElementById('scene') as HTMLCanvasElement;
@@ -106,10 +108,25 @@ async function boot(): Promise<void> {
   const registered = collectRegistered(scene);
   const picker = createPicker(camera, canvas, registered);
   let papersSheet: PapersSheet | null = null;
+  // Camera zoom in the papers view: the target set by the controls, and the eased one shown.
+  let zoomTarget = NO_ZOOM;
+  let zoomShown = NO_ZOOM;
+  const sheetZoom = {
+    step(delta: number, anchor?: { x: number; y: number }) {
+      zoomTarget = zoomAt(zoomTarget, stepZoom(zoomTarget.zoom, delta), anchor?.x, anchor?.y);
+      return zoomTarget.zoom;
+    },
+    pan(dx: number, dy: number) {
+      zoomTarget = panBy(zoomTarget, dx, dy);
+    },
+    reset() {
+      zoomTarget = NO_ZOOM;
+    },
+  };
   const papersMesh = scene.getObjectByName(FOCUS_SURFACE_NAMES.papers) as Mesh | undefined;
   if (papersMesh?.isMesh) {
     const pdfUrl = `${import.meta.env.BASE_URL}resume.pdf`;
-    papersSheet = createPapersSheet(papersMesh, scene, poses.landscape.position, pdfUrl);
+    papersSheet = createPapersSheet(papersMesh, scene, poses.landscape.position, pdfUrl, sheetZoom);
     papersSheet?.setSize(window.innerWidth, window.innerHeight);
   }
   papers.bind({ setContentVisible: (v) => papersSheet?.setContentVisible(v) });
@@ -317,6 +334,7 @@ async function boot(): Promise<void> {
       () => monitor?.status() ?? { state: 'warming', medianFps: null },
     );
     let last: number | null = null;
+    const zoomPose = { position: new Vector3(), quaternion: new Quaternion() };
     const adaptive = adaptiveRatioAllowed()
       ? createAdaptivePixelRatio({
           initial: renderer.getPixelRatio(),
@@ -357,7 +375,22 @@ async function boot(): Promise<void> {
       } else {
         focusCtrl.step(dt);
         const { yaw, pitch } = look.update(dt);
-        applyLook(camera, base, yaw, pitch);
+        zoomShown =
+          settings.poseTweenSeconds === 0
+            ? zoomTarget
+            : dampZoom(zoomShown, zoomTarget, ZOOM_DAMPING, dt);
+        const view = papersSheet
+          ? zoomedPose(
+              base,
+              zoomShown,
+              papersSheet.center,
+              camera.fov * DEG,
+              camera.aspect,
+              zoomPose,
+            )
+          : base;
+        // Parallax shrinks as the view zooms, so it moves the page the same on screen.
+        applyLook(camera, view, yaw / zoomShown.zoom, pitch / zoomShown.zoom);
       }
       lamp.update(dt);
       const tint = surfaceTint({
@@ -447,6 +480,10 @@ function loadProjects(): Project[] {
   }
   return sortProjects(projects);
 }
+
+const DEG = Math.PI / 180;
+/** Rate (1/s) the camera eases to a new zoom or pan; quicker than the look damping. */
+const ZOOM_DAMPING = 12;
 
 /** Longest the loading screen waits for the resume before showing the scene without it. */
 const RESUME_LOAD_TIMEOUT_MS = 10_000;

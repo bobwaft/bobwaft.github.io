@@ -1,5 +1,6 @@
 // Resume controls (FR-15, FR-16): page buttons, arrow keys, zoom and Download PDF. DOM, fixed in
-// the top-right corner, shown only in the papers focus view.
+// the top-right corner, shown only in the papers focus view. Zoom moves the camera (focusZoom.ts):
+// buttons, +/- and ctrl+wheel (or a trackpad pinch) zoom; the wheel and dragging pan.
 import { keyDelta, pageLabel, ZOOM_LEVELS, zoomKeyDelta, zoomLabel } from '../resume/layout';
 
 export interface ResumeControls {
@@ -13,10 +14,24 @@ export interface ResumeControls {
 /** Ctrl+wheel (and trackpad pinch) travel per zoom step, in pixels. */
 const WHEEL_STEP = 60;
 
+/** A point on screen in NDC (-1..1, y up). */
+export interface ScreenPoint {
+  x: number;
+  y: number;
+}
+
+const toNdc = (clientX: number, clientY: number): ScreenPoint => ({
+  x: (clientX / window.innerWidth) * 2 - 1,
+  y: 1 - (clientY / window.innerHeight) * 2,
+});
+
 export function createResumeControls(
   pdfUrl: string,
   onStep: (delta: number) => void,
-  onZoom: (delta: number) => void,
+  /** Zooms a step, keeping the point at anchor (default: the centre) in place. */
+  onZoom: (delta: number, anchor?: ScreenPoint) => void,
+  /** Pans the view by a screen NDC offset. */
+  onPan: (dx: number, dy: number) => void,
 ): ResumeControls {
   const root = document.createElement('div');
   root.id = 'resume-controls';
@@ -60,22 +75,53 @@ export function createResumeControls(
     e.preventDefault();
     onStep(delta);
   };
-  // Ctrl+wheel zooms the page instead of the browser; a trackpad pinch arrives the same way.
+  // Ctrl+wheel zooms the view instead of the browser page; a trackpad pinch arrives the same way.
   let wheel = 0;
   const onWheel = (e: WheelEvent) => {
-    if (root.hidden || !e.ctrlKey) return;
+    if (root.hidden) return;
     e.preventDefault();
+    if (!e.ctrlKey) {
+      onPan(e.deltaX / (window.innerWidth / 2), -e.deltaY / (window.innerHeight / 2));
+      return;
+    }
     wheel += e.deltaY;
     if (Math.abs(wheel) < WHEEL_STEP) return;
-    onZoom(wheel < 0 ? 1 : -1);
+    onZoom(wheel < 0 ? 1 : -1, toNdc(e.clientX, e.clientY));
     wheel = 0;
+  };
+  // Dragging pans, content following the pointer. A mouse on the page selects text instead.
+  let drag: { id: number; x: number; y: number } | null = null;
+  const onDown = (e: PointerEvent) => {
+    const target = e.target instanceof Element ? e.target : null;
+    if (root.hidden || drag || e.button !== 0 || target?.closest('#resume-controls, a, button'))
+      return;
+    if (e.pointerType === 'mouse' && target?.closest('.resume-page')) return;
+    drag = { id: e.pointerId, x: e.clientX, y: e.clientY };
+  };
+  const onMove = (e: PointerEvent) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    onPan(
+      -(e.clientX - drag.x) / (window.innerWidth / 2),
+      (e.clientY - drag.y) / (window.innerHeight / 2),
+    );
+    drag.x = e.clientX;
+    drag.y = e.clientY;
+  };
+  const onUp = (e: PointerEvent) => {
+    if (drag && e.pointerId === drag.id) drag = null;
   };
   window.addEventListener('keydown', onKey);
   window.addEventListener('wheel', onWheel, { passive: false });
+  window.addEventListener('pointerdown', onDown);
+  // Capture: the page stops its pointermoves from bubbling (screenLayer.ts).
+  window.addEventListener('pointermove', onMove, true);
+  window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointercancel', onUp);
   document.body.appendChild(root);
   return {
     setVisible(visible) {
       root.hidden = !visible;
+      drag = null;
     },
     setPage(page, count) {
       pager.hidden = count < 2;
@@ -91,6 +137,10 @@ export function createResumeControls(
     dispose() {
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('wheel', onWheel);
+      window.removeEventListener('pointerdown', onDown);
+      window.removeEventListener('pointermove', onMove, true);
+      window.removeEventListener('pointerup', onUp);
+      window.removeEventListener('pointercancel', onUp);
       root.remove();
     },
   };

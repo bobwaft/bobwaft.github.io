@@ -17,15 +17,8 @@ import {
 import { marginPoints } from '../scene/paperSample';
 import { uvTransform } from '../scene/screenFrame';
 import { createScreenLayer } from '../ui/screenLayer';
-import { createResumeControls } from '../ui/resumeControls';
-import {
-  FOCUS_PAPER,
-  IDLE_PAPER,
-  needsRender,
-  renderWidth,
-  stepPage,
-  stepZoom,
-} from '../resume/layout';
+import { createResumeControls, type ScreenPoint } from '../ui/resumeControls';
+import { FOCUS_PAPER, IDLE_PAPER, needsRender, renderWidth, stepPage } from '../resume/layout';
 import { sheetFrameFromUvs, topSheetTriangles } from '../resume/sheet';
 import type { ResumeDocument } from '../resume/pdf';
 import '../ui/resume.css';
@@ -36,9 +29,19 @@ export const PAGE_PX_WIDTH = 794;
 const IDLE_PX_WIDTH = 1024;
 const RERENDER_DELAY_MS = 250;
 
+/** The focus view's camera zoom (focusZoom.ts), driven by the resume controls. */
+export interface SheetZoom {
+  /** Zooms a step about anchor (screen NDC, default the centre); returns the new zoom. */
+  step(delta: number, anchor?: ScreenPoint): number;
+  pan(dx: number, dy: number): void;
+  reset(): void;
+}
+
 export interface PapersSheet {
   /** Camera up for the focus view: the page's own up, so it reads upright. */
   up: Vector3;
+  /** Centre of the page on the sheet, for the zoom's dolly distance. */
+  center: Vector3;
   setContentVisible(visible: boolean): void;
   /** World points on the sheet's blank margins, to sample the displayed paper colour from. */
   samplePoints: Vector3[];
@@ -119,6 +122,7 @@ export function createPapersSheet(
   scene: Object3D,
   viewer: Vector3,
   pdfUrl: string,
+  zoom: SheetZoom,
 ): PapersSheet | null {
   const { points, uvs, index } = meshTriangles(mesh);
   const tris = topSheetTriangles(points, index);
@@ -141,24 +145,17 @@ export function createPapersSheet(
   const element = document.createElement('div');
   element.className = 'resume-page';
   element.innerHTML =
-    `<div class="resume-scroll"><div class="resume-sizer"><div class="resume-zoom">` +
     `<canvas class="resume-canvas"></canvas><div class="resume-text"></div>` +
-    `</div></div></div>` +
     `<p class="resume-status">Loading resume…</p>`;
   const canvas = element.querySelector('canvas')!;
   const text = element.querySelector<HTMLElement>('.resume-text')!;
   const status = element.querySelector<HTMLElement>('.resume-status')!;
-  const scroll = element.querySelector<HTMLElement>('.resume-scroll')!;
-  const sizer = element.querySelector<HTMLElement>('.resume-sizer')!;
   const layer = createScreenLayer(element, frame, PAGE_PX_WIDTH);
-  const pageHeight = parseFloat(element.style.height); // set by the screen layer
 
   let doc: ResumeDocument | null = null;
   let texture: CanvasTexture | null = null;
   let visible = false;
   let page = 1;
-  /** The page is scaled by this inside the sheet and scrolled to pan. */
-  let zoom = 1;
   /** What the canvas and text layer show now. */
   let shown = { page: 0, width: 0 };
   /** The draw that is scheduled or running; null when none. */
@@ -195,28 +192,17 @@ export function createPapersSheet(
       if (pending === target) pending = null;
     }
   };
-  /** Scales the page, keeping the point at the middle of the view where it is. */
-  const setZoom = (z: number) => {
-    const cx = (scroll.scrollLeft + scroll.clientWidth / 2) / (PAGE_PX_WIDTH * zoom);
-    const cy = (scroll.scrollTop + scroll.clientHeight / 2) / (pageHeight * zoom);
-    zoom = z;
-    element.style.setProperty('--zoom', String(z));
-    sizer.style.width = `${PAGE_PX_WIDTH * z}px`;
-    sizer.style.height = `${pageHeight * z}px`;
-    scroll.scrollLeft = cx * PAGE_PX_WIDTH * z - scroll.clientWidth / 2;
-    scroll.scrollTop = cy * pageHeight * z - scroll.clientHeight / 2;
-    controls.setZoom(z); // render() redraws sharper once the zoom settles
-  };
   const controls = createResumeControls(
     pdfUrl,
     (delta) => {
       page = stepPage(page, delta, doc?.numPages ?? 1);
       controls.setPage(page, doc?.numPages ?? 1); // render() draws the new page next frame
-      scroll.scrollTop = 0;
     },
-    (delta) => setZoom(stepZoom(zoom, delta)),
+    // render() redraws the page sharper once the zoom settles.
+    (delta, anchor) => controls.setZoom(zoom.step(delta, anchor)),
+    (dx, dy) => zoom.pan(dx, dy),
   );
-  setZoom(1);
+  controls.setZoom(1);
 
   // Edges of the page's horizontal midline, for its on-screen width.
   const left = frame.center.clone().addScaledVector(frame.right, -frame.width / 2);
@@ -231,6 +217,7 @@ export function createPapersSheet(
 
   return {
     up: frame.up.clone(),
+    center: frame.center.clone(),
     samplePoints: marginPoints(frame),
     setPaperColor: (css) => element.style.setProperty('--paper-color', css),
     setContentVisible(v) {
@@ -243,7 +230,8 @@ export function createPapersSheet(
       generation++; // drop any draw still in flight
       page = 1; // the idle sheet shows page 1, so the next visit starts there
       controls.setPage(page, doc?.numPages ?? 1);
-      setZoom(1);
+      zoom.reset();
+      controls.setZoom(1);
       if (shown.page !== page) {
         // Don't flash the old page on the next visit.
         canvas.width = 0;
@@ -279,11 +267,7 @@ export function createPapersSheet(
     render(camera) {
       layer.render(camera);
       if (!visible || !doc) return;
-      const width = renderWidth(
-        onScreenWidth(camera) * zoom,
-        window.devicePixelRatio,
-        PAGE_PX_WIDTH * zoom,
-      );
+      const width = renderWidth(onScreenWidth(camera), window.devicePixelRatio, PAGE_PX_WIDTH);
       if (!needsRender(shown, page, width)) return;
       if (pending?.page === page && pending.width === width) return; // already on its way
       const target = { page, width };
