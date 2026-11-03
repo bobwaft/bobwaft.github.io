@@ -119,7 +119,7 @@ _Decided 2026-10-27 (spec audit G-5, G-7)._
 - A visible "Skip the 3D" link is always available.
 
 ### A-15. Resume rendered from the PDF with pdf.js
-- `pdfjs-dist` is lazy-loaded (dynamic `import()`) after the scene is interactive, so it isn't part of the initial load.
+- `pdfjs-dist` is a chunk of its own (dynamic `import()`), fetched once the scene has loaded. The loading screen stays up until page 1 is drawn on the sheet (or a 10 s timeout passes), so the scene never appears with a blank sheet.
 - **Idle view:** page 1 is rendered to a canvas at a modest resolution and used as a `CanvasTexture` on the top sheet (via the paper's existing UVs, or a thin plane laid on top if the UVs don't suit).
 - **Focus view:** the current page is rendered to a canvas at device pixel ratio × fit scale, plus pdf.js's **text layer** for selection, inside the CSS3D element on the top sheet (A-4). Next/prev controls page through multi-page PDFs.
 - The Download button is an `<a href="/resume.pdf" download>`.

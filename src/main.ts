@@ -402,11 +402,11 @@ async function boot(): Promise<void> {
       if (next != null) pendingRatio = next;
       monitor?.frame(time, hidden);
     });
+    // The loading screen stays up until the resume is drawn on the sheet (A-15). load() settles
+    // on failure too; the timeout keeps a stalled PDF from holding the site behind it.
+    if (papersSheet) await Promise.race([papersSheet.load(), wait(RESUME_LOAD_TIMEOUT_MS)]);
     showHint(touchSeen);
     loading.fadeOut();
-    // pdf.js is a chunk of its own, fetched once the scene is interactive (A-15).
-    const sheet = papersSheet;
-    if (sheet) requestIdle(() => void sheet.load());
   } catch (err) {
     teardown();
     return showFallback('load-failed', err);
@@ -448,10 +448,11 @@ function loadProjects(): Project[] {
   return sortProjects(projects);
 }
 
-/** Runs fn when the browser is idle (Safari lacks requestIdleCallback). */
-function requestIdle(fn: () => void): void {
-  if ('requestIdleCallback' in window) window.requestIdleCallback(fn, { timeout: 2000 });
-  else setTimeout(fn, 500);
+/** Longest the loading screen waits for the resume before showing the scene without it. */
+const RESUME_LOAD_TIMEOUT_MS = 10_000;
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 boot().catch((err) => showFallback('load-failed', err));
