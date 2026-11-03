@@ -7,7 +7,45 @@ import {
   pageLabel,
   renderWidth,
   stepPage,
+  stepZoom,
+  ZOOM_LEVELS,
+  zoomKeyDelta,
+  zoomLabel,
 } from '../../src/resume/layout';
+
+describe('stepZoom', () => {
+  it('moves to the next zoom level either way', () => {
+    expect(stepZoom(1, 1)).toBe(1.5);
+    expect(stepZoom(2, -1)).toBe(1.5);
+  });
+
+  it("can't zoom past the smallest or largest level", () => {
+    expect(stepZoom(1, -1)).toBe(1);
+    expect(stepZoom(ZOOM_LEVELS.at(-1)!, 1)).toBe(ZOOM_LEVELS.at(-1));
+  });
+
+  it('steps from the nearest level for an off-step zoom', () => {
+    expect(stepZoom(1.4, 1)).toBe(2);
+  });
+});
+
+describe('zoomKeyDelta', () => {
+  it('maps plus and minus keys to a zoom step', () => {
+    expect(zoomKeyDelta('+')).toBe(1);
+    expect(zoomKeyDelta('=')).toBe(1);
+    expect(zoomKeyDelta('-')).toBe(-1);
+  });
+
+  it('ignores other keys', () => {
+    expect(zoomKeyDelta('ArrowRight')).toBe(0);
+  });
+});
+
+describe('zoomLabel', () => {
+  it('shows the zoom as a percentage', () => {
+    expect(zoomLabel(1.5)).toBe('150%');
+  });
+});
 
 describe('stepPage', () => {
   it('moves forward and back within the document', () => {

@@ -18,7 +18,14 @@ import { marginPoints } from '../scene/paperSample';
 import { uvTransform } from '../scene/screenFrame';
 import { createScreenLayer } from '../ui/screenLayer';
 import { createResumeControls } from '../ui/resumeControls';
-import { FOCUS_PAPER, IDLE_PAPER, needsRender, renderWidth, stepPage } from '../resume/layout';
+import {
+  FOCUS_PAPER,
+  IDLE_PAPER,
+  needsRender,
+  renderWidth,
+  stepPage,
+  stepZoom,
+} from '../resume/layout';
 import { sheetFrameFromUvs, topSheetTriangles } from '../resume/sheet';
 import type { ResumeDocument } from '../resume/pdf';
 import '../ui/resume.css';
@@ -134,17 +141,24 @@ export function createPapersSheet(
   const element = document.createElement('div');
   element.className = 'resume-page';
   element.innerHTML =
+    `<div class="resume-scroll"><div class="resume-sizer"><div class="resume-zoom">` +
     `<canvas class="resume-canvas"></canvas><div class="resume-text"></div>` +
+    `</div></div></div>` +
     `<p class="resume-status">Loading resume…</p>`;
   const canvas = element.querySelector('canvas')!;
   const text = element.querySelector<HTMLElement>('.resume-text')!;
   const status = element.querySelector<HTMLElement>('.resume-status')!;
+  const scroll = element.querySelector<HTMLElement>('.resume-scroll')!;
+  const sizer = element.querySelector<HTMLElement>('.resume-sizer')!;
   const layer = createScreenLayer(element, frame, PAGE_PX_WIDTH);
+  const pageHeight = parseFloat(element.style.height); // set by the screen layer
 
   let doc: ResumeDocument | null = null;
   let texture: CanvasTexture | null = null;
   let visible = false;
   let page = 1;
+  /** The page is scaled by this inside the sheet and scrolled to pan. */
+  let zoom = 1;
   /** What the canvas and text layer show now. */
   let shown = { page: 0, width: 0 };
   /** The draw that is scheduled or running; null when none. */
@@ -181,10 +195,28 @@ export function createPapersSheet(
       if (pending === target) pending = null;
     }
   };
-  const controls = createResumeControls(pdfUrl, (delta) => {
-    page = stepPage(page, delta, doc?.numPages ?? 1);
-    controls.setPage(page, doc?.numPages ?? 1); // render() draws the new page next frame
-  });
+  /** Scales the page, keeping the point at the middle of the view where it is. */
+  const setZoom = (z: number) => {
+    const cx = (scroll.scrollLeft + scroll.clientWidth / 2) / (PAGE_PX_WIDTH * zoom);
+    const cy = (scroll.scrollTop + scroll.clientHeight / 2) / (pageHeight * zoom);
+    zoom = z;
+    element.style.setProperty('--zoom', String(z));
+    sizer.style.width = `${PAGE_PX_WIDTH * z}px`;
+    sizer.style.height = `${pageHeight * z}px`;
+    scroll.scrollLeft = cx * PAGE_PX_WIDTH * z - scroll.clientWidth / 2;
+    scroll.scrollTop = cy * pageHeight * z - scroll.clientHeight / 2;
+    controls.setZoom(z); // render() redraws sharper once the zoom settles
+  };
+  const controls = createResumeControls(
+    pdfUrl,
+    (delta) => {
+      page = stepPage(page, delta, doc?.numPages ?? 1);
+      controls.setPage(page, doc?.numPages ?? 1); // render() draws the new page next frame
+      scroll.scrollTop = 0;
+    },
+    (delta) => setZoom(stepZoom(zoom, delta)),
+  );
+  setZoom(1);
 
   // Edges of the page's horizontal midline, for its on-screen width.
   const left = frame.center.clone().addScaledVector(frame.right, -frame.width / 2);
@@ -211,6 +243,7 @@ export function createPapersSheet(
       generation++; // drop any draw still in flight
       page = 1; // the idle sheet shows page 1, so the next visit starts there
       controls.setPage(page, doc?.numPages ?? 1);
+      setZoom(1);
       if (shown.page !== page) {
         // Don't flash the old page on the next visit.
         canvas.width = 0;
@@ -246,7 +279,11 @@ export function createPapersSheet(
     render(camera) {
       layer.render(camera);
       if (!visible || !doc) return;
-      const width = renderWidth(onScreenWidth(camera), window.devicePixelRatio, PAGE_PX_WIDTH);
+      const width = renderWidth(
+        onScreenWidth(camera) * zoom,
+        window.devicePixelRatio,
+        PAGE_PX_WIDTH * zoom,
+      );
       if (!needsRender(shown, page, width)) return;
       if (pending?.page === page && pending.width === width) return; // already on its way
       const target = { page, width };

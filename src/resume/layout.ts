@@ -19,6 +19,30 @@ export function pageLabel(page: number, count: number): string {
   return `Page ${page} of ${count}`;
 }
 
+/** Zoom steps for the page in the focus view; 1 fits the sheet. */
+export const ZOOM_LEVELS = [1, 1.5, 2, 3];
+
+/** The zoom level delta steps away from zoom, kept within ZOOM_LEVELS. */
+export function stepZoom(zoom: number, delta: number): number {
+  const nearest = ZOOM_LEVELS.reduce(
+    (best, z, i) => (Math.abs(z - zoom) < Math.abs(ZOOM_LEVELS[best] - zoom) ? i : best),
+    0,
+  );
+  const i = Math.min(ZOOM_LEVELS.length - 1, Math.max(0, nearest + delta));
+  return ZOOM_LEVELS[i];
+}
+
+/** Zoom step for a key: + (or =) and -; 0 for anything else. */
+export function zoomKeyDelta(key: string): -1 | 0 | 1 {
+  if (key === '+' || key === '=') return 1;
+  if (key === '-' || key === '_') return -1;
+  return 0;
+}
+
+export function zoomLabel(zoom: number): string {
+  return `${Math.round(zoom * 100)}%`;
+}
+
 /**
  * Canvas width in device pixels for a page shown onScreenWidth CSS pixels wide: sharp at
  * the device pixel ratio, at least the element's CSS width, capped at MAX_RENDER_PX.

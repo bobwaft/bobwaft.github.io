@@ -17,6 +17,32 @@
   --scale-round-y: 1px;
 }
 
+/* Zoom (resumeControls.ts): .resume-sizer is set to the zoomed page size, so the scroller pans it,
+   and .resume-zoom scales the page up to fill it. The transform makes .resume-zoom its own
+   blending group, so it carries the paper colour for the canvas to multiply over. */
+.resume-scroll {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-x pan-y;
+  scrollbar-width: thin;
+}
+.resume-sizer {
+  position: relative;
+}
+.resume-zoom {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% / var(--zoom, 1));
+  height: calc(100% / var(--zoom, 1));
+  transform: scale(var(--zoom, 1));
+  transform-origin: 0 0;
+  background: var(--paper-color, #c9b9a3);
+  isolation: isolate;
+}
+
 .resume-canvas {
   mix-blend-mode: multiply;
   position: absolute;
