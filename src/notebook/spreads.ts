@@ -30,11 +30,13 @@ function contents(projects: readonly Project[]): SpreadHtml {
         `<span class="nb-entry-dates">${e(p.dates)}</span></button></li>`,
     )
     .join('');
+  // All on the ruled right page; the left page (the cover's inside) stays blank.
   return {
-    left:
+    left: '',
+    right:
       '<h1 class="nb-heading">Projects</h1>' +
-      '<p class="nb-hint">Pick a project, or turn the page.</p>',
-    right: `<ol class="nb-contents">${entries}</ol>`,
+      '<p class="nb-hint">Pick a project, or turn the page.</p>' +
+      `<ol class="nb-contents">${entries}</ol>`,
   };
 }
 

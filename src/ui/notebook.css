@@ -1,26 +1,31 @@
 /* Projects on the open notebook (A-8). Each .nb-page sits in a screen layer (screenLayer.ts)
    over one page of the spread. No background or frames: the baked paper shows through and the
-   content is ink on it, tinted by --surface-light / --surface-warm (surfaceTint.ts, set per
+   content is pencil on it, tinted by --surface-light / --surface-warm (surfaceTint.ts, set per
    frame in main.ts) so it darkens and warms with the lamp and time of day. */
 .nb-page {
+  --pencil: #3d3d42;
+  --pencil-light: #77767a;
   position: relative;
   box-sizing: border-box;
   overflow: hidden;
   background: none;
-  color: #2b2a33;
+  color: var(--pencil);
   pointer-events: auto;
   user-select: text;
   backface-visibility: hidden;
   font:
-    22px/1.45 Georgia,
-    'Times New Roman',
-    serif;
+    26px/1.4 'Patrick Hand',
+    'Comic Sans MS',
+    cursive;
 }
 
 .nb-content {
   position: absolute;
   inset: 0;
   filter: brightness(var(--surface-light, 1)) sepia(var(--surface-warm, 0));
+  /* Graphite: slightly soft-edged, not quite solid. */
+  opacity: 0.92;
+  text-shadow: 0 0 0.6px currentColor;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -31,35 +36,49 @@
   /* More top margin: the baked page's top edge sits lower than the panel's (BUG-007). */
   padding-top: 104px;
 }
+.nb-page-right {
+  /* Written on the baked rules (BUG-007 screenshot, page CSS px): a rule every 26px from y = 138,
+     the red margin at x = 68. Every line box is 26px tall and starts 24.76px above a rule, which
+     puts a 24px Patrick Hand baseline 3px above the rule (baseline = 13 + 0.365 * 24 from the
+     box top; ascent 1.042, descent 0.312 em). Block gaps and margins are whole rules. */
+  --rule: 26px;
+  font-size: 24px;
+  line-height: var(--rule);
+}
 .nb-page-right .nb-content {
-  padding: 56px 48px 48px 64px;
+  gap: var(--rule);
+  padding: 113px 48px 48px 80px;
 }
 
+/* 60px over three rules, baseline on the first rule (y = 138): the box starts two rules early
+   and the glyphs move down to the rule. */
 .nb-heading {
-  margin: 120px 0 0;
-  font-size: 56px;
+  position: relative;
+  top: 13px;
+  margin: calc(-2 * var(--rule)) 0 0;
+  font-size: 60px;
   font-weight: normal;
+  line-height: calc(3 * var(--rule));
 }
 .nb-hint {
   margin: 0;
-  color: #6b675f;
+  color: var(--pencil-light);
 }
 
 .nb-contents {
   margin: 0;
-  padding: 0 0 0 1.4em;
+  padding: 0 0 0 1.2em;
 }
 .nb-contents li {
-  margin: 0 0 10px;
+  margin: 0;
 }
 .nb-entry {
   display: flex;
   width: 100%;
   justify-content: space-between;
   gap: 12px;
-  padding: 6px 4px;
+  padding: 0 4px;
   border: 0;
-  border-bottom: 1px dashed rgba(43, 42, 51, 0.3);
   background: none;
   color: inherit;
   font: inherit;
@@ -68,22 +87,22 @@
 }
 .nb-entry:hover,
 .nb-entry:focus-visible {
-  background: rgba(43, 42, 51, 0.07);
+  background: rgba(61, 61, 66, 0.07);
 }
 .nb-entry-dates {
-  color: #6b675f;
+  color: var(--pencil-light);
   white-space: nowrap;
 }
 
 .nb-title {
   margin: 0;
-  font-size: 40px;
+  font-size: 46px;
   font-weight: normal;
-  line-height: 1.15;
+  line-height: 1.1;
 }
 .nb-dates {
   margin: 0;
-  color: #6b675f;
+  color: var(--pencil-light);
 }
 .nb-media {
   display: block;
@@ -93,35 +112,48 @@
 }
 
 .nb-summary {
-  flex: 1;
+  /* A whole number of rules, so the tags and links below stay on the lines; 20 rules leaves
+     room for them above the page's last rule. Scrolled text moves off the lines. */
+  flex: none;
+  max-height: calc(20 * var(--rule));
   overflow-y: auto;
 }
-.nb-summary > :first-child {
-  margin-top: 0;
+.nb-summary :is(p, ul, ol, blockquote, h1, h2, h3, h4) {
+  margin: 0 0 var(--rule);
+  font-size: 24px;
+  line-height: var(--rule);
+}
+.nb-summary :is(h1, h2, h3, h4) {
+  font-weight: normal;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+.nb-summary > :last-child {
+  margin-bottom: 0;
 }
 .nb-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 0 20px;
   margin: 0;
   padding: 0;
   list-style: none;
-  font:
-    16px system-ui,
-    sans-serif;
+  color: var(--pencil-light);
 }
-.nb-tags li {
-  padding: 0 2px;
-  border-bottom: 1px solid rgba(43, 42, 51, 0.45);
+.nb-tags li::before {
+  content: '#';
 }
 .nb-links {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 0 20px;
 }
 .nb-link,
 .nb-summary a {
-  color: #1f4fa3;
+  color: inherit;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
 }
 
 /* Page edges turn the page: the outer 40px strip of each page. */
@@ -145,11 +177,11 @@
 }
 .nb-edge-prev:hover:not(:disabled),
 .nb-edge-prev:focus-visible {
-  background: linear-gradient(to right, rgba(43, 42, 51, 0.12), transparent);
+  background: linear-gradient(to right, rgba(61, 61, 66, 0.12), transparent);
 }
 .nb-edge-next:hover:not(:disabled),
 .nb-edge-next:focus-visible {
-  background: linear-gradient(to left, rgba(43, 42, 51, 0.12), transparent);
+  background: linear-gradient(to left, rgba(61, 61, 66, 0.12), transparent);
 }
 .nb-edge:disabled {
   cursor: default;

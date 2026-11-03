@@ -41,7 +41,8 @@ describe('spreadCount / stepSpread / spreadLabel', () => {
 describe('spreadHtml', () => {
   it('contents lists every project in order, each jumping to its spread', () => {
     const { left, right } = spreadHtml(PROJECTS, 0);
-    expect(left).toContain('Projects');
+    expect(left).toBe('');
+    expect(right).toContain('<h1 class="nb-heading">Projects</h1>');
     const targets = [...right.matchAll(/data-spread="(\d+)"/g)].map((m) => m[1]);
     expect(targets).toEqual(['1', '2', '3']);
     expect(right.indexOf('Project 1')).toBeLessThan(right.indexOf('Project 2'));

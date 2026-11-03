@@ -87,6 +87,7 @@ Number bugs sequentially and never reuse a number.
 - Severity: low
 - Root cause (2026-10-28): left text: the content padding (56px) left it at the page's top corner; top padding on the left page is now 104px (CSS, unverified visually). Green band: not from code. Notebook_Band is looked up by name and hidden on open (notebookBook.open), and nothing in notebook.css draws a band, so it is most likely baked into the page texture (the band's colour or shadow, now visible since .nb-page is transparent); it needs a re-bake, or an opaque paper-coloured background on .nb-content (the tint filter would still apply) as a workaround, not applied
 - Status: closed (re-tested 2026-10-28: pass; the green band is baked into the page texture, needs a re-bake or an opaque page background)
+- Fix 2026-11-03 (green band): re-baked the *_Click maps and re-exported the GLB without the band (a first attempt had a UV island overlapping the calendar and notebook islands; fixed in Blender)
 
 ### BUG-008 — Changes requested after the Phase 8 review: no window cycling, rounded CRT corners
 - Phase: 8

@@ -8,6 +8,7 @@ import { spreadCount, spreadHtml, stepSpread } from '../notebook/spreads';
 import type { ScreenFrame } from '../scene/screenFrame';
 import { createNotebookControls } from '../ui/notebookControls';
 import { createScreenLayer } from '../ui/screenLayer';
+import '@fontsource/patrick-hand/latin-400.css';
 import '../ui/notebook.css';
 
 /** CSS width of one page element (A5 portrait). */
