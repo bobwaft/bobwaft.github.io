@@ -31,6 +31,13 @@
         background: #111;
         overflow: hidden;
       }
+      /* No mobile text autosizing: phone browsers enlarge text in blocks wider than the screen,
+         which the CSS3D pages (hundreds of px wide, scaled down) and the credit ticker all are.
+         Device emulation doesn't do it, so only real phones showed it. */
+      html {
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+      }
       [hidden] {
         display: none !important;
       }

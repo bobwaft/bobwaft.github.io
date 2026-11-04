@@ -163,3 +163,12 @@ Number bugs sequentially and never reuse a number.
 - Severity: low
 - Fix 2026-11-04: at ≤ 600 px wide the controls become a wrapped, centred bar at the bottom (translucent backing, 2.5rem buttons that no longer shrink, safe-area aware); desktop layout unchanged (src/ui/resume.css). Not verified in a browser
 - Status: closed (re-tested 2026-11-04: pass)
+
+### BUG-015 — Notebook text, resume and one song credit render wrong on a real phone
+- Phase: 9 (found on the live site on a phone)
+- Steps: open the live site on a phone; open the notebook, the papers, and play music until the long credit ("Bossa Nova Midnight Club Late Bossa") shows
+- Expected: the same layout as in DevTools device mode
+- Actual: the projects text is shifted off the pages, the resume view is off, and the long song credit is very large
+- Severity: med
+- Likely cause (2026-11-04, static): mobile text autosizing (iOS Safari text-size-adjust, Android font boosting) enlarges text in blocks wider than the screen. The CSS3D pages are laid out hundreds of px wide and scaled down, and the scrolling credit's track is twice the credit's width, so all three got boosted; device emulation doesn't autosize, which is why the earlier phone check passed. Fix: `text-size-adjust: 100%` (and the -webkit- prefix) on html in index.html. Not verified on a phone
+- Status: open
