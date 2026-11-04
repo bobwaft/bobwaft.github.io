@@ -85,6 +85,7 @@ describe('surfaceCameraMatrix', () => {
     const placement = {
       position: new Vector3(-0.4, 0.76, -0.98),
       quaternion: new Quaternion().setFromAxisAngle(new Vector3(1, 0, 0), -Math.PI / 2),
+      scale: 1,
     };
     const camera = new PerspectiveCamera();
     camera.position.set(-0.4, 1.3, -0.98);
@@ -96,8 +97,31 @@ describe('surfaceCameraMatrix', () => {
     close(local.clone().applyMatrix4(viewInverse), world.applyMatrix4(camera.matrixWorldInverse));
   });
 
+  it('works in CSS pixels: the view is the world view divided by the scale (BUG-015)', () => {
+    const placement = {
+      position: new Vector3(0.2, 0.76, -0.5),
+      quaternion: new Quaternion().setFromAxisAngle(new Vector3(0, 1, 0), 0.3),
+      scale: 0.0002,
+    };
+    const camera = new PerspectiveCamera();
+    camera.position.set(0.1, 1.1, 0);
+    camera.lookAt(placement.position);
+    camera.updateMatrixWorld();
+    const px = new Vector3(120, -80, 0);
+    const world = px
+      .clone()
+      .multiplyScalar(placement.scale)
+      .applyQuaternion(placement.quaternion)
+      .add(placement.position);
+    const viewInverse = surfaceCameraMatrix(placement, camera.matrixWorld).invert();
+    close(
+      px.applyMatrix4(viewInverse),
+      world.applyMatrix4(camera.matrixWorldInverse).divideScalar(placement.scale),
+    );
+  });
+
   it('is the camera itself for a surface at the origin facing +Z', () => {
-    const placement = { position: new Vector3(), quaternion: new Quaternion() };
+    const placement = { position: new Vector3(), quaternion: new Quaternion(), scale: 1 };
     const m = new Matrix4().makeTranslation(1, 2, 3);
     expect(surfaceCameraMatrix(placement, m).equals(m)).toBe(true);
   });

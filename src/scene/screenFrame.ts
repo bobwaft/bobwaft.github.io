@@ -93,13 +93,19 @@ export function uvTransform(
  * World matrix of a camera moved into the surface's frame, so the CSS3D element can sit at the
  * origin facing +Z. Seen through it, the element lands where the real camera sees the surface.
  * Keeps the CSS camera from looking edge-on at its own plane (top-down views; BUG-003).
+ * Distances are in the element's CSS pixels rather than metres, so the element keeps scale 1:
+ * the same picture, but WebKit misplaces a tiny-scaled element seen from a few "pixels" away
+ * (BUG-015).
  */
 export function surfaceCameraMatrix(
-  placement: Pick<CssPlacement, 'position' | 'quaternion'>,
+  placement: Pick<CssPlacement, 'position' | 'quaternion' | 'scale'>,
   cameraWorld: Matrix4,
 ): Matrix4 {
-  return new Matrix4()
+  const m = new Matrix4()
     .compose(placement.position, placement.quaternion, new Vector3(1, 1, 1))
     .invert()
     .multiply(cameraWorld);
+  const e = m.elements;
+  for (const i of [12, 13, 14]) e[i] /= placement.scale;
+  return m;
 }

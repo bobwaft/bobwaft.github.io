@@ -31,8 +31,8 @@ export function createScreenLayer(
   // The element sits at the origin facing +Z and the camera is moved into the surface's frame
   // instead. Same picture, but the CSS camera never looks edge-on at its own plane; with the
   // world frame, a top-down view (papers) broke the browser's hit testing (BUG-003).
+  // Unscaled: the camera works in the element's pixels instead (surfaceCameraMatrix, BUG-015).
   const object = new CSS3DObject(element);
-  object.scale.setScalar(placement.scale);
   // A scene of its own: it holds only the content element.
   const scene = new Scene().add(object);
   const surfaceCamera = new PerspectiveCamera();
