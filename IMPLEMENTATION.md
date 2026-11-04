@@ -112,7 +112,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 
 ## Phase 5 — Laptop → About
 
-- [ ] Write `src/content/about.md` (owner provides bio, photo, email/LinkedIn/GitHub, city/region; no phone or address)
+- [x] Write `src/content/about.md` (owner provides bio, photo, email/LinkedIn/GitHub, city/region; no phone or address)
 - [x] Content pipeline: Markdown → HTML (`marked`), shared by 3D views and fallback — unit tested
 - [x] `CSS3DRenderer` layer; CSS3DObject sized and aligned to `Click_Laptop_Screen`
 - [x] About page styling: clean single page, contact links prominent, optional thin browser bar; scrollable if long
@@ -130,7 +130,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 
 ## Phase 6 — Papers → Resume (from PDF)
 
-- [ ] Owner provides `public/resume.pdf` (email + links + city/region only) — a 2-page A4 placeholder is in place until then
+- [x] Owner provides `public/resume.pdf` (email + links + city/region only) — a 2-page A4 placeholder is in place until then
 - [x] Lazy-load `pdfjs-dist` after the scene is interactive; confirm it isn't in the initial bundle
 - [x] Idle: render page 1 to a `CanvasTexture` on the top sheet
 - [x] Focus: render the current page at device pixel ratio + text layer inside a CSS3DObject aligned to the top sheet
@@ -151,7 +151,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 
 - [x] Decide approach for the opening (procedural cover vs. Blender re-export): Blender re-export, 2026-10-28 — see ARCHITECTURE A-8 and MEMORY.md
 - [x] Opening/closing animation: camera arrives → cover swings open → contents spread; reverse on exit
-- [ ] `src/content/projects/*.md` with front matter (title, dates, tags, links, media, order); owner provides 7–12 projects, strongest first (3 placeholders in place until then)
+- [x] `src/content/projects/*.md` with front matter (title, dates, tags, links, media, order); owner provides 7–12 projects, strongest first (3 placeholders in place until then) — 3 real projects for now; the contents page says "More projects coming soon!" (owner, 2026-11-04)
 - [x] Content check test: required fields present, media within size limits (WebP ≤ 300 KB, clips ≤ 3 MB)
 - [x] Contents spread listing all projects; clicking an entry jumps to its spread
 - [x] Project spreads: left page title, dates, image or muted looping clip; right page summary, tags, links

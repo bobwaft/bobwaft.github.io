@@ -36,7 +36,8 @@ function contents(projects: readonly Project[]): SpreadHtml {
     right:
       '<h1 class="nb-heading">Projects</h1>' +
       '<p class="nb-hint">Pick a project, or turn the page.</p>' +
-      `<ol class="nb-contents">${entries}</ol>`,
+      `<ol class="nb-contents">${entries}</ol>` +
+      '<p class="nb-more">More projects coming soon!</p>',
   };
 }
 

@@ -54,6 +54,11 @@ describe('spreadHtml', () => {
     expect(right.indexOf('Project 1')).toBeLessThan(right.indexOf('Project 2'));
   });
 
+  it('contents ends with the coming-soon note after the list', () => {
+    const { right } = spreadHtml(PROJECTS, 0);
+    expect(right).toMatch(/<\/ol><p class="nb-more">More projects coming soon!<\/p>$/);
+  });
+
   it('contents loads no media', () => {
     const { left, right } = spreadHtml(PROJECTS, 0);
     expect(left + right).not.toMatch(/\/projects\//);
