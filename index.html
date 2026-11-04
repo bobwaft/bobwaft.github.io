@@ -3,7 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>bobwaft</title>
+    <title>Donovan · Software developer</title>
+    <meta
+      name="description"
+      content="Explore Donovan's desk in 3D: about, resume and projects from a software developer studying Computer Science at UBC in Vancouver."
+    />
+    <meta property="og:title" content="Donovan · Software developer" />
+    <meta
+      property="og:description"
+      content="Explore Donovan's desk in 3D: about, resume and projects from a software developer studying Computer Science at UBC in Vancouver."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://bobwaft.github.io/" />
+    <meta property="og:image" content="https://bobwaft.github.io/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Donovan's desk in 3D: a laptop, notebook and resume under a warm lamp."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
     <style>
       html,
       body {
@@ -16,11 +35,107 @@
         display: none !important;
       }
       #fallback {
-        padding: 2rem;
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        overflow-y: auto;
+        box-sizing: border-box;
+        padding: 2rem 1.25rem 4rem;
+        background: #111;
         color: #ddd;
         font:
-          1rem system-ui,
+          1rem/1.6 system-ui,
           sans-serif;
+      }
+      #fallback > * {
+        max-width: 40rem;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      #fallback h1,
+      #fallback h2,
+      #fallback h3 {
+        color: #fff;
+        line-height: 1.25;
+      }
+      #fallback h2 {
+        margin-top: 2.5rem;
+        padding-bottom: 0.25rem;
+        border-bottom: 1px solid #333;
+      }
+      #fallback a {
+        color: #8ec5ff;
+      }
+      #fallback :focus-visible,
+      #skip-3d:focus-visible {
+        outline: 2px solid #ffd479;
+        outline-offset: 2px;
+      }
+      #fallback img,
+      #fallback video {
+        display: block;
+        max-width: 100%;
+        height: auto;
+        border-radius: 6px;
+      }
+      #fallback .photo {
+        max-width: 14rem;
+        margin-bottom: 1rem;
+      }
+      #fallback article {
+        margin: 1.5rem 0;
+        padding: 1rem 1.25rem;
+        border: 1px solid #2a2a2a;
+        border-radius: 8px;
+      }
+      #fallback article h3 {
+        margin: 0;
+      }
+      #fallback .dates {
+        margin: 0.25rem 0;
+        color: #aaa;
+      }
+      #fallback ul.tags,
+      #fallback ul.links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem 0.9rem;
+        margin: 0.5rem 0;
+        padding: 0;
+        list-style: none;
+      }
+      #fallback ul.tags li {
+        padding: 0 0.5rem;
+        border: 1px solid #444;
+        border-radius: 999px;
+        font-size: 0.85rem;
+      }
+      #fallback button {
+        margin: 2rem auto 0;
+        padding: 0.5rem 0.9rem;
+        border: 1px solid #555;
+        border-radius: 6px;
+        background: #222;
+        color: #eee;
+        font: inherit;
+        cursor: pointer;
+      }
+      #skip-3d {
+        position: fixed;
+        right: 1rem;
+        bottom: 1rem;
+        z-index: 30;
+        padding: 0.25rem 0.6rem;
+        border-radius: 6px;
+        background: rgba(17, 17, 17, 0.6);
+        color: #aaa;
+        font:
+          0.75rem system-ui,
+          sans-serif;
+        text-decoration: none;
+      }
+      #skip-3d:hover {
+        color: #fff;
       }
       #scene {
         position: fixed;
@@ -171,17 +286,27 @@
         }
       }
     </style>
+    <noscript>
+      <style>
+        #fallback {
+          display: block !important;
+        }
+        #app,
+        #loading,
+        #skip-3d {
+          display: none !important;
+        }
+      </style>
+    </noscript>
   </head>
   <body>
+    <a id="skip-3d" href="#fallback">Skip the 3D</a>
     <div id="app"><canvas id="scene"></canvas></div>
     <div id="loading" role="status" aria-live="polite">
       <div id="loading-bar"><div id="loading-fill"></div></div>
       <div id="loading-pct">0%</div>
     </div>
-    <main id="fallback" hidden>
-      <h1>bobwaft</h1>
-      <p>A simpler version of this site is coming.</p>
-    </main>
+    <main id="fallback" hidden><!--fallback:start--><!--fallback:end--></main>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

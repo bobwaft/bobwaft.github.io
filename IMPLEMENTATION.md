@@ -193,8 +193,8 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 
 ## Phase 9 — Accessibility, fallback, mobile
 
-- [ ] Vite plugin pre-renders about + projects + resume link into `<main id="fallback">` in `index.html`; hidden when 3D runs
-- [ ] "Skip the 3D" link always available
+- [x] Vite plugin pre-renders about + projects + resume link into `<main id="fallback">` in `index.html`; hidden when 3D runs
+- [x] "Skip the 3D" link always available
 - [ ] Keyboard: Tab cycles interactables (with visible focus label), Enter activates, Esc goes back
 - [ ] Screen reader: interactables exposed as buttons with names; content views are real DOM
 - [ ] Mobile layout: focus views readable in portrait; Back button reachable with a thumb

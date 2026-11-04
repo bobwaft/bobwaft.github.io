@@ -68,6 +68,19 @@ import { createNotebookBook, type NotebookBook } from './objects/notebookBook';
 import { COVER_SECONDS } from './notebook/cover';
 import { Quaternion, Vector2, Vector3, type Mesh, type Object3D, type Texture } from 'three';
 
+// "Skip the 3D": set once the visitor asks for the simple site. A running scene is torn down
+// through stopScene; a boot still loading checks `skipped` after each await and bails out.
+let skipped = false;
+let stopScene: (() => void) | null = null;
+
+document.getElementById('skip-3d')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  if (skipped) return;
+  skipped = true;
+  stopScene?.();
+  showFallback('skipped');
+});
+
 async function boot(): Promise<void> {
   const canvas = document.getElementById('scene') as HTMLCanvasElement;
   // createRenderer requests the WebGL2 context itself and throws when it's missing.
@@ -84,9 +97,15 @@ async function boot(): Promise<void> {
     loaded = await loadScene();
   } catch (err) {
     renderer.dispose();
+    if (skipped) return;
     return showFallback(fallbackReason(true, err) ?? 'load-failed', err);
   }
   const { scene, camera } = loaded;
+  if (skipped) {
+    disposeScene(loaded.scene);
+    renderer.dispose();
+    return;
+  }
   if (camera.name !== MAIN_CAMERA_NAME) {
     console.error(`Missing expected camera ${MAIN_CAMERA_NAME}; using ${camera.name || 'unnamed'}`);
   }
@@ -95,6 +114,11 @@ async function boot(): Promise<void> {
   }
   loading.markSceneResolved();
   await loading.whenReady;
+  if (skipped) {
+    disposeScene(scene);
+    renderer.dispose();
+    return;
+  }
 
   const poses = {
     landscape: { position: camera.position.clone(), quaternion: camera.quaternion.clone() },
@@ -292,6 +316,7 @@ async function boot(): Promise<void> {
     renderer.forceContextLoss();
     renderer.dispose();
   };
+  stopScene = teardown;
   try {
     onResize();
     window.addEventListener('resize', onResize);
@@ -438,10 +463,12 @@ async function boot(): Promise<void> {
     // The loading screen stays up until the resume is drawn on the sheet (A-15). load() settles
     // on failure too; the timeout keeps a stalled PDF from holding the site behind it.
     if (papersSheet) await Promise.race([papersSheet.load(), wait(RESUME_LOAD_TIMEOUT_MS)]);
+    if (skipped) return;
     showHint(touchSeen);
     loading.fadeOut();
   } catch (err) {
     teardown();
+    if (skipped) return;
     return showFallback('load-failed', err);
   }
 }
