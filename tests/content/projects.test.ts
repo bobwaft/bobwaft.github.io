@@ -166,3 +166,31 @@ describe('content check: src/content/projects/*.md', () => {
     }
   });
 });
+
+describe('parseProject note', () => {
+  it('reads an optional note for the left page', () => {
+    const p = parseProject(
+      doc(`${BASE}
+note: Look around`),
+      'thing',
+    );
+    expect(p.note).toBe('Look around');
+  });
+  it('has no note by default and rejects an empty one', () => {
+    expect(parseProject(doc(BASE), 'thing').note).toBeUndefined();
+    expect(() =>
+      parseProject(
+        doc(`${BASE}
+note: `),
+        'thing',
+      ),
+    ).not.toThrow();
+    expect(
+      parseProject(
+        doc(`${BASE}
+note: `),
+        'thing',
+      ).note,
+    ).toBeUndefined();
+  });
+});

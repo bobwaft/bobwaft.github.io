@@ -74,6 +74,13 @@
   color: var(--pencil-light);
 }
 
+.nb-note {
+  margin: 0;
+  font-size: 34px;
+  line-height: 1.2;
+  color: var(--pencil-light);
+}
+
 .nb-contents {
   margin: 0;
   padding: 0 0 0 1.2em;

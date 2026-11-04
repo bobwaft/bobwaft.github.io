@@ -35,6 +35,7 @@ Rules the parser enforces (break one and the site build or tests fail):
 - `order`: integer ≥ 1, unique across all projects (ascending = order in the contents).
 - `links` (optional): comma-separated `Label=https://url`. Only `https://`. No commas in labels or URLs, no `=` in labels.
 - `media` (optional): a path under `/projects/` ending `.webp` (image) or `.mp4` / `.webm` (looping clip), or a YouTube link (`https://youtu.be/<id>`, `youtube.com/watch?v=<id>` or `youtube.com/embed/<id>`), shown as a privacy-enhanced player. Several images make a scrolling gallery: comma-separated `.webp` paths (`/projects/<slug>-1.webp, /projects/<slug>-2.webp`), numbered in the order given, one `alt` for the set. Size limits (per file): image ≤ 300 KB, clip ≤ 3 MB. `alt` is required when `media` is set (for YouTube it becomes the player's title). If the owner pastes a YouTube `<iframe>` embed code, take the video id from its `src`.
+- `note` (optional): one line of handwriting shown on the left page where the image would go (for a project with no media, e.g. `note: If you want to see the site, look around`).
 - Never add `phone` or `address` fields (privacy rule; the parser rejects them).
 - 1–12 projects in total.
 

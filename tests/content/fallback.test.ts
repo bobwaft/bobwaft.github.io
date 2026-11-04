@@ -67,6 +67,11 @@ describe('fallbackHtml', () => {
     expect(html.indexOf('</article>')).toBeLessThan(html.indexOf('More projects coming soon!'));
   });
 
+  it('renders a project note after the dates, escaped', () => {
+    const out = fallbackHtml(about, [project({ note: 'Look <around>' })], '/r.pdf');
+    expect(out).toContain('<p class="fb-note">Look &lt;around&gt;</p>');
+  });
+
   it('renders media by kind', () => {
     const f = (media: Project['media']) => fallbackHtml(about, [project({ media })], '/r.pdf');
     expect(f({ kind: 'image', src: '/projects/a.webp', alt: 'A' })).toContain(

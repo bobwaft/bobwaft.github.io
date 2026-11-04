@@ -1,5 +1,6 @@
 // Opening animation (owner, 2026-11-04): the site wakes up. Two eyelids part over a blurred
-// scene while the camera, tilted down at the desk, pans up to the usual view. The timeline is
+// scene while the camera, tilted down at the desk, pans up to the usual view. It plays once the
+// visitor clicks "Click to start" and is not skippable. The timeline is
 // pure (introFrame); createIntro drives the DOM and returns the camera pitch each frame.
 
 /** Radians the camera starts below its level pose (negative pitch looks down). */
@@ -52,8 +53,6 @@ export interface Intro {
   readonly active: boolean;
   /** Advances the animation by dt seconds; returns the pitch to add to the camera. */
   update(dt: number): number;
-  /** Jumps to the end (a tap or key press). */
-  skip(): void;
   dispose(): void;
 }
 
@@ -75,10 +74,6 @@ export function createIntro(opts: IntroOptions): Intro {
 
   let elapsed = 0;
   let active = true;
-  const onKey = (e: KeyboardEvent) => {
-    if (e.key !== 'Shift' && e.key !== 'Control' && e.key !== 'Alt' && e.key !== 'Meta') finish();
-  };
-  window.addEventListener('keydown', onKey);
 
   const draw = (f: IntroFrame) => {
     // Each lid moves its own height plus the soft edge's reach (see #intro in index.html).
@@ -90,7 +85,6 @@ export function createIntro(opts: IntroOptions): Intro {
   function finish(): void {
     if (!active) return;
     active = false;
-    window.removeEventListener('keydown', onKey);
     opts.canvas.style.filter = '';
     root.remove();
     opts.onDone();
@@ -112,11 +106,9 @@ export function createIntro(opts: IntroOptions): Intro {
       draw(f);
       return f.pitch;
     },
-    skip: finish,
     dispose() {
       if (active) {
         active = false;
-        window.removeEventListener('keydown', onKey);
         opts.canvas.style.filter = '';
         root.remove();
       }

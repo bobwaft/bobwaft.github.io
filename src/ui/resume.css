@@ -84,6 +84,22 @@
   background: rgba(0, 0, 255, 0.25);
   color: transparent;
 }
+/* The PDF's links (pdf.ts renderText): boxes over the text, above the selectable spans. */
+.textLayer > .resume-links {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+.resume-links a {
+  position: absolute;
+  display: block;
+  cursor: pointer;
+}
+.resume-links a:hover,
+.resume-links a:focus-visible {
+  background: rgba(184, 115, 61, 0.18);
+  outline: 1px solid rgba(184, 115, 61, 0.6);
+}
 /* Ends a selection cleanly when dragging past the last line (pdf.js adds it). */
 .textLayer .endOfContent {
   display: block;

@@ -125,3 +125,16 @@ describe('spreadHtml', () => {
     expect(spreadHtml(PROJECTS, 9)).toEqual(spreadHtml(PROJECTS, 5));
   });
 });
+
+describe('project note', () => {
+  it('shows the note on the left page, where media would go, escaped', () => {
+    const { left, right } = spreadHtml([project(1, { note: 'Look <around>' })], 1);
+    expect(left).toContain('class="nb-note"');
+    expect(left).toContain('Look &lt;around&gt;');
+    expect(left.indexOf('nb-dates')).toBeLessThan(left.indexOf('nb-note'));
+    expect(right).not.toContain('nb-note');
+  });
+  it('has no note markup without a note', () => {
+    expect(spreadHtml([project(1)], 1).left).not.toContain('nb-note');
+  });
+});

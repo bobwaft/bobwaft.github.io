@@ -6,6 +6,8 @@ export interface LoadingScreen {
   markSceneResolved(): void;
   /** Resolves when the scene has resolved and no loader items are pending. */
   whenReady: Promise<void>;
+  /** Swaps the progress bar for a "Click to start" button; resolves on the click (a gesture). */
+  promptStart(): Promise<void>;
   /** Fades the screen out (instantly under prefers-reduced-motion), then removes it. */
   fadeOut(): void;
   /** Removes the screen immediately (e.g. when switching to the fallback). */
@@ -56,6 +58,21 @@ export function createLoadingScreen(): LoadingScreen {
       update();
     },
     whenReady,
+    promptStart() {
+      if (!root) return Promise.resolve();
+      document.getElementById('loading-bar')?.remove();
+      label?.remove();
+      const button = document.createElement('button');
+      button.id = 'start-button';
+      button.type = 'button';
+      button.textContent = 'Click to start';
+      root.appendChild(button);
+      button.focus();
+      // The whole screen is the target, so a tap anywhere works; Enter/Space click the button.
+      return new Promise((resolve) =>
+        root.addEventListener('click', () => resolve(), { once: true }),
+      );
+    },
     fadeOut() {
       if (!root) return;
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;

@@ -223,13 +223,14 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 
 ## Post-launch tweaks (2026-11-04)
 
-- [x] Music on by default: starts at the first click, tap or key press (`src/audio/autoStart.ts`)
-- [x] Opening animation: eyelids part over a blurred scene while the camera pans up from the desk; a tap or key skips it; reduced motion gets a quick fade (`src/ui/intro.ts`)
+- [x] Loading ends in a "Click to start" button; that click starts the music (on by default) and the opening animation (`src/ui/loading.ts`)
+- [x] Opening animation: eyelids part over a blurred scene while the camera pans up from the desk; not skippable; reduced motion gets a quick fade (`src/ui/intro.ts`). The scene becomes interactive once it has played
 - [x] Resume replaced with the Canada version without the phone number (`public/resume.pdf`)
 - [x] Added Kiru, Microwave AI, QR Code CLI and Personal Website to the notebook (orders 4–7), from the owner's own text
 
 ### You test
-- [ ] Reload: the lids part over a blurred desk and the camera tilts up to the usual view in about 3 s; a click or key press skips it; the hint appears afterwards
+- [ ] Reload: loading ends in "Click to start"; clicking it starts the music and the lids part over a blurred desk while the camera tilts up (about 3 s); the hint appears afterwards
 - [ ] With "reduce motion" on, the intro is a short fade only
 - [ ] Music starts at your first click/key press and the speaker pulses; clicking the speaker first starts it too; clicking the speaker again stops it
-- [ ] The papers on the desk show the new resume, and Download PDF gives the new file
+- [ ] The papers show the new resume; in the papers view the LinkedIn, GitHub and Personal Website links are clickable (open in a new tab); Download PDF gives the new file
+- [ ] The Personal Website spread shows "If you want to see the site, look around" on the left page where an image would go

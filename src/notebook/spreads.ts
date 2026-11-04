@@ -99,7 +99,8 @@ function projectSpread(p: Project): SpreadHtml {
   return {
     left:
       `<h2 class="nb-title">${e(p.title)}</h2>` +
-      `<p class="nb-dates">${e(p.dates)}</p>${media(p)}`,
+      `<p class="nb-dates">${e(p.dates)}</p>${media(p)}` +
+      (p.note ? `<p class="nb-note">${e(p.note)}</p>` : ''),
     right:
       `<ul class="nb-tags" aria-label="Tags">${tags}</ul>` +
       `<div class="nb-summary">${p.summaryHtml}</div>` +

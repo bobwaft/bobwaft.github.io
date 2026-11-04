@@ -52,6 +52,7 @@ function article(p: Project): string {
   return (
     '<article class="fb-card">' +
     `<h3>${e(p.title)}</h3><p class="dates">${e(p.dates)}</p>` +
+    (p.note ? `<p class="fb-note">${e(p.note)}</p>` : '') +
     `<ul class="tags" aria-label="Tags">${tags}</ul>` +
     media(p.media) +
     p.summaryHtml +

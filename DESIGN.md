@@ -48,12 +48,12 @@ Sequence: camera move → short pause → cover swings open → contents spread.
 **Why:** the opening is the payoff; it should be seen from the focus view rather than happening mid-flight.
 
 ### D-7. Audio starts on the first gesture, shuffled, and polite
-- Music is on by default (owner, 2026-11-04). Browsers block audio until the visitor interacts, so it starts at their first click, tap or key press (not Esc); clicking the speaker first turns it on directly. Until then the speaker shows as off.
+- Music is on by default (owner, 2026-11-04). Browsers block audio until the visitor interacts, so the loading screen ends in a "Click to start" button; that click starts the music and the opening animation. The speaker still turns it off.
 - The playlist is shuffled without repeats until every track has played.
 - Music pauses when the tab is hidden, so it never plays from a background tab.
 - Clicking the speaker only toggles on/off; there is no skip or volume control in v1.
 
-**Why:** autoplay is blocked by browsers, so the first gesture is the earliest it can start; the speaker still turns it off, and audio from a hidden tab is annoying.
+**Why:** autoplay is blocked by browsers, so a click is needed first; the speaker still turns it off, and audio from a hidden tab is annoying.
 
 ### D-8. The lamp starts on and toggles with a fade
 The lamp is on when the site loads, so the desk is well lit from the first frame. Toggling fades over ~400 ms, with a slight flicker on turn-on (optional), and the cord bobs down and springs back. State is not remembered between visits.

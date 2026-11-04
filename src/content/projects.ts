@@ -21,6 +21,8 @@ export interface Project {
   tags: string[];
   links: ProjectLink[];
   media?: ProjectMedia;
+  /** A line of handwriting on the left page, in the media slot (e.g. for a project with no image). */
+  note?: string;
   order: number;
   summaryHtml: string;
 }
@@ -101,6 +103,7 @@ export function parseProject(source: string, slug: string): Project {
     tags,
     links,
     media,
+    note: data.note || undefined,
     order: Number(data.order),
     summaryHtml: markdownToHtml(body),
   };

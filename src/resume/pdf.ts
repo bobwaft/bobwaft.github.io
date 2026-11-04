@@ -2,6 +2,7 @@
 // so pdf.js and its worker stay out of the initial bundle.
 import { getDocument, GlobalWorkerOptions, TextLayer } from 'pdfjs-dist';
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import { linkBoxes } from './links';
 
 GlobalWorkerOptions.workerSrc = workerUrl;
 
@@ -38,12 +39,33 @@ export async function openResume(url: string): Promise<ResumeDocument> {
       const container = document.createElement('div');
       container.className = 'textLayer';
       container.style.setProperty('--total-scale-factor', String(scale));
+      const viewport = page.getViewport({ scale });
       const layer = new TextLayer({
         textContentSource: page.streamTextContent(),
         container,
-        viewport: page.getViewport({ scale }),
+        viewport,
       });
       await layer.render();
+      // The PDF's links (LinkedIn, GitHub...) as clickable boxes over their text.
+      const links = document.createElement('div');
+      links.className = 'resume-links';
+      const boxes = linkBoxes(
+        await page.getAnnotations({ intent: 'display' }),
+        ([x1, y1, x2, y2]) => [
+          ...viewport.convertToViewportPoint(x1, y1),
+          ...viewport.convertToViewportPoint(x2, y2),
+        ],
+      );
+      for (const box of boxes) {
+        const a = document.createElement('a');
+        a.href = box.href;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.setAttribute('aria-label', box.href);
+        a.style.cssText = `left:${box.left}px;top:${box.top}px;width:${box.width}px;height:${box.height}px`;
+        links.appendChild(a);
+      }
+      if (boxes.length) container.appendChild(links);
       return container;
     },
     destroy: () => void task.destroy(), // also ends the worker
