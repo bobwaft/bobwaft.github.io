@@ -71,7 +71,8 @@ import { Quaternion, Vector2, Vector3, type Mesh, type Object3D, type Texture } 
 
 // "Skip the 3D": set once the visitor asks for the simple site. A running scene is torn down
 // through stopScene; a boot still loading checks `skipped` after each await and bails out.
-let skipped = false;
+// A click before this script ran followed the plain link, leaving #fallback in the URL.
+let skipped = window.location.hash === '#fallback';
 let stopScene: (() => void) | null = null;
 
 document.getElementById('skip-3d')?.addEventListener('click', (e) => {
@@ -533,4 +534,5 @@ function wait(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-boot().catch((err) => showFallback('load-failed', err));
+if (skipped) showFallback('skipped');
+else boot().catch((err) => showFallback('load-failed', err));

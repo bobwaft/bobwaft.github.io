@@ -34,6 +34,13 @@
       [hidden] {
         display: none !important;
       }
+      /* "Skip the 3D" works as a plain link before the script has loaded. */
+      #fallback:target {
+        display: block !important;
+      }
+      body:has(#fallback:target) #skip-3d {
+        display: none;
+      }
       #fallback {
         position: fixed;
         inset: 0;

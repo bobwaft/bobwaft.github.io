@@ -17,6 +17,8 @@ export function showFallback(reason: FallbackReason, error?: unknown): void {
     button.textContent = offer.label;
     button.addEventListener('click', () => {
       if (offer.force3d) setForce3d();
+      // Drop a #fallback hash, or the reload would skip the 3D again.
+      window.history.replaceState(null, '', window.location.pathname + window.location.search);
       window.location.reload();
     });
     fallback.appendChild(button);
