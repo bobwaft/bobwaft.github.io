@@ -365,6 +365,34 @@
         transition: opacity 0.5s ease;
         z-index: 10;
       }
+      /* Opening animation (src/ui/intro.ts): shut eyelids under the loading screen, same colour so
+         the hand-off has no seam. Each lid's inner edge is curved and feathered; the heights
+         overlap so they meet with no gap when shut. */
+      #intro {
+        position: fixed;
+        inset: 0;
+        z-index: 9;
+        overflow: hidden;
+        pointer-events: none;
+      }
+      #intro .lid {
+        position: absolute;
+        left: -10%;
+        right: -10%;
+        height: calc(50% + 14vh + 1px);
+        background: #111;
+        will-change: transform;
+      }
+      #intro .lid-top {
+        top: 0;
+        border-radius: 0 0 50% 50% / 0 0 14vh 14vh;
+        box-shadow: 0 14px 50px 24px #111;
+      }
+      #intro .lid-bottom {
+        bottom: 0;
+        border-radius: 50% 50% 0 0 / 14vh 14vh 0 0;
+        box-shadow: 0 -14px 50px 24px #111;
+      }
       #loading.done {
         opacity: 0;
         pointer-events: none;

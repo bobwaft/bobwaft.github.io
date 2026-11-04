@@ -84,7 +84,7 @@ A personal website presented as an explorable 3D room. Visitors see a desk from 
 ### 5.6 Speaker → Music
 
 - **FR-20.** Clicking `Click_Speaker` toggles background music on/off. The camera does not move.
-- **FR-21.** Music is off on every visit (browsers block autoplay).
+- **FR-21.** Music is on by default: it starts at the visitor's first click, tap or key press, since browsers block autoplay before that (changed 2026-11-04).
 - **FR-21a.** Music plays from a playlist in shuffled order, without repeats until every track has played, then reshuffles.
 - **FR-21b.** Music pauses when the browser tab is hidden and resumes when it is visible again (if it was on).
 - **FR-22.** The speaker gives visual feedback of its state (a subtle pulse while playing).

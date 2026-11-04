@@ -47,6 +47,7 @@ import { createBackButton } from './ui/backButton';
 import { createInteractableButtons } from './ui/interactableButtons';
 import { createTouchDots, isTouchPointerType } from './ui/touchDots';
 import { showHint } from './ui/hint';
+import { createIntro, type Intro } from './ui/intro';
 import { createLoadingScreen } from './ui/loading';
 import { lighting, setTimeOfDay } from './scene/scene-lighting.js';
 import { createLamp } from './objects/lamp';
@@ -54,6 +55,7 @@ import { pullcord } from './objects/pullcord';
 import { speaker } from './objects/speaker';
 import { timeFromClock } from './scene/timeOfDay';
 import { createPlayer } from './audio/player';
+import { createAutoStart } from './audio/autoStart';
 import playlist from './content/playlist.json';
 import { createNowPlaying } from './ui/nowPlaying';
 import aboutSource from './content/about.md?raw';
@@ -220,6 +222,11 @@ async function boot(): Promise<void> {
     onChange: (playing) => nowPlaying.setVisible(playing),
     onTrack: (src) => nowPlaying.setTrack(src),
   });
+  // Music is on by default: it starts at the visitor's first click, tap or key press.
+  const autoStart = createAutoStart(window, {
+    shouldStart: () => !player.isPlaying(),
+    start: () => player.toggle(),
+  });
   const speakerObject = [...registered].find(([, m]) => m === speaker)?.[0];
   speaker.bind({
     toggle: () => player.toggle(),
@@ -303,6 +310,7 @@ async function boot(): Promise<void> {
   let disposeClicks = () => {};
   const onVisibility = () => monitor?.reset();
   let monitor: ReturnType<typeof createFpsMonitor> | null = null;
+  let intro: Intro | null = null;
   let tornDown = false;
   // Single teardown for both failure paths; the animation loop stops first.
   const teardown = () => {
@@ -317,6 +325,8 @@ async function boot(): Promise<void> {
     backButton.dispose();
     touchDots.dispose();
     buttons.dispose();
+    autoStart.dispose();
+    intro?.dispose();
     player.dispose();
     nowPlaying.dispose();
     document.getElementById('debug-fps')?.remove();
@@ -344,6 +354,8 @@ async function boot(): Promise<void> {
     look.setEnabled(!debugCamera);
     if (!debugCamera) {
       disposeClicks = createClickInput(canvas, (x, y) => {
+        // A tap during the opening animation skips it rather than clicking through.
+        if (intro?.active) return intro.skip();
         const module = picker.pick(x, y, TAP_SLOP_PX);
         dispatch({
           type: 'click',
@@ -430,7 +442,8 @@ async function boot(): Promise<void> {
             )
           : base;
         // Parallax shrinks as the view zooms, so it moves the page the same on screen.
-        applyLook(camera, view, yaw / zoomShown.zoom, pitch / zoomShown.zoom);
+        const introPitch = intro?.update(dt) ?? 0;
+        applyLook(camera, view, yaw / zoomShown.zoom, pitch / zoomShown.zoom + introPitch);
       }
       lamp.update(dt);
       const tint = surfaceTint({
@@ -471,15 +484,26 @@ async function boot(): Promise<void> {
       papersSheet?.render(camera);
       notebookBook?.render(camera);
       debugFps?.();
-      const next = adaptive?.frame(time, hidden);
+      // Frames are not judged while the intro plays: its blur costs fps on weaker GPUs.
+      const settling = hidden || (intro?.active ?? false);
+      const next = adaptive?.frame(time, settling);
       if (next != null) pendingRatio = next;
-      monitor?.frame(time, hidden);
+      monitor?.frame(time, settling);
     });
     // The loading screen stays up until the resume is drawn on the sheet (A-15). load() settles
     // on failure too; the timeout keeps a stalled PDF from holding the site behind it.
     if (papersSheet) await Promise.race([papersSheet.load(), wait(RESUME_LOAD_TIMEOUT_MS)]);
     if (skipped) return;
-    showHint(touchSeen);
+    if (debugCamera) {
+      showHint(touchSeen);
+    } else {
+      // Lids shut under the loading screen; they part as it fades out (src/ui/intro.ts).
+      intro = createIntro({
+        canvas,
+        reduced: reducedMotion.matches,
+        onDone: () => showHint(touchSeen),
+      });
+    }
     loading.fadeOut();
   } catch (err) {
     teardown();
