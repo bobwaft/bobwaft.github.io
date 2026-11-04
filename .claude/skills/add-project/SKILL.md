@@ -34,7 +34,7 @@ Rules the parser enforces (break one and the site build or tests fail):
 - `tags`: comma-separated, at least one, so a tag can't contain a comma.
 - `order`: integer ≥ 1, unique across all projects (ascending = order in the contents).
 - `links` (optional): comma-separated `Label=https://url`. Only `https://`. No commas in labels or URLs, no `=` in labels.
-- `media` (optional): a path under `/projects/` ending `.webp` (image) or `.mp4` / `.webm` (looping clip). Size limits: image ≤ 300 KB, clip ≤ 3 MB. `alt` is required when `media` is set.
+- `media` (optional): a path under `/projects/` ending `.webp` (image) or `.mp4` / `.webm` (looping clip), or a YouTube link (`https://youtu.be/<id>`, `youtube.com/watch?v=<id>` or `youtube.com/embed/<id>`), shown as a privacy-enhanced player. Several images make a scrolling gallery: comma-separated `.webp` paths (`/projects/<slug>-1.webp, /projects/<slug>-2.webp`), numbered in the order given, one `alt` for the set. Size limits (per file): image ≤ 300 KB, clip ≤ 3 MB. `alt` is required when `media` is set (for YouTube it becomes the player's title). If the owner pastes a YouTube `<iframe>` embed code, take the video id from its `src`.
 - Never add `phone` or `address` fields (privacy rule; the parser rejects them).
 - 1–12 projects in total.
 
@@ -54,10 +54,10 @@ Use `AskUserQuestion`, at most 4 questions per call, in this order. Each questio
 
 **Call 2: links and media**
 5. **Links:** label and https URL pairs, e.g. `Source=https://github.com/...`, `Live=https://...`, `Demo video=https://...`. Offer "No links" as an option.
-6. **Media:** offer "An image (I'll give a file path)", "A short looping video clip (I'll give a file path)", "No media". If they choose image or clip, ask in a follow-up call for the **file path** on their computer and the **alt text** (one sentence describing what's in it, for screen readers).
+6. **Media:** offer "An image, or several for a gallery (I'll give file paths)", "A short looping video clip (I'll give a file path)", "A YouTube video (I'll give the link)", "No media" (four options, the maximum). If they choose one, ask in a follow-up call for the **file path** on their computer or the **YouTube link**, and the **alt text** (one sentence describing what's in it, for screen readers).
 
 **Call 3: the write-up**
-7. **Summary:** the body text, 1–3 short paragraphs (the right page holds about 120–180 words before it scrolls). Offer options "I'll write it (pick Other)" and "Draft it from what I tell you". If they want a draft, ask what it does, why they built it and what came of it (one question each), then write it in their plain first-person voice and show it back in an `AskUserQuestion` with "Use this", "Shorter", "Let me edit (Other)".
+7. **Summary:** the body text, 1–3 short paragraphs (the right page holds about 120–180 words; it doesn't scroll, so longer text is cut off at the page's bottom edge). Offer options "I'll write it (pick Other)" and "Draft it from what I tell you". If they want a draft, ask what it does, why they built it and what came of it (one question each), then write it in their plain first-person voice and show it back in an `AskUserQuestion` with "Use this", "Shorter", "Let me edit (Other)".
 
 Validate each answer against the rules above as it comes in. If one breaks a rule (an `http://` link, a comma in a tag, a duplicate order), explain the problem in one line and ask that question again; don't silently fix it, except for trimming whitespace.
 
@@ -68,6 +68,7 @@ Copy the owner's file into `public/projects/<slug>.<ext>`, converting when neede
 - **Image** (any format) → WebP, max 1200 px on the long side:
   `ffmpeg -y -i "<src>" -vf "scale='min(1200,iw)':-2" -c:v libwebp -quality 80 public/projects/<slug>.webp`
   If it's over 300 KB, retry with `-quality 65`, then with width 900.
+- **Gallery**: convert each image the same way, to `<slug>-1.webp`, `<slug>-2.webp`, …
 - **Clip** → MP4, H.264, no audio, ≤ 720 px wide, so it autoplays muted on every browser:
   `ffmpeg -y -i "<src>" -an -vf "scale='min(720,iw)':-2" -c:v libx264 -preset slow -crf 28 -pix_fmt yuv420p -movflags +faststart public/projects/<slug>.mp4`
   If it's over 3 MB, raise `-crf` by 3 and retry; if that's not enough, ask the owner whether to trim it (`-t <seconds>`) or drop the frame rate (`-r 24`).
@@ -87,6 +88,6 @@ Run `npx vitest run tests/content/projects.test.ts`. It parses every project, ch
 
 - the file written and the media path and size,
 - any other projects whose `order` changed or that were removed,
-- to run `npm run dev`, click the notebook and check the new spread. The summary scrolls if it's too long for the page; suggest trimming if it does.
+- to run `npm run dev`, click the notebook and check the new spread. If the summary runs off the bottom of the page (or pushes the links off it), suggest trimming it.
 
 Don't commit unless they ask.

@@ -5,11 +5,15 @@ export interface ProjectLink {
   label: string;
   href: string;
 }
-export interface ProjectMedia {
-  kind: 'image' | 'clip';
-  src: string;
-  alt: string;
-}
+export type ProjectMedia =
+  | {
+      /** youtube: src is a youtube-nocookie embed URL, not a file in public/. */
+      kind: 'image' | 'clip' | 'youtube';
+      src: string;
+      alt: string;
+    }
+  /** Several images in a scrolling strip, from a comma-separated `media` list. */
+  | { kind: 'gallery'; srcs: string[]; alt: string };
 export interface Project {
   slug: string;
   title: string;
@@ -25,6 +29,9 @@ export interface Project {
 export const MEDIA_LIMITS = { image: 300 * 1024, clip: 3 * 1024 * 1024 };
 
 const REQUIRED = ['title', 'dates', 'tags', 'order'] as const;
+/** The video id from a youtube.com/watch?v=, youtube.com/embed/ or youtu.be/ link. */
+const YOUTUBE =
+  /^https:\/\/(?:(?:www\.)?youtube\.com\/(?:watch\?(?:.*&)?v=|embed\/)|youtu\.be\/)([\w-]{6,})/;
 /** Privacy rule (PRD 5.3): never published. */
 const FORBIDDEN = ['phone', 'address'];
 
@@ -60,14 +67,31 @@ export function parseProject(source: string, slug: string): Project {
     links.push({ label, href });
   }
   let media: ProjectMedia | undefined;
-  if (data.media) {
-    const src = data.media;
-    if (!src.startsWith('/projects/')) fail('"media" must start with /projects/');
-    const ext = /\.([a-z0-9]+)$/i.exec(src)?.[1].toLowerCase();
-    const kind = ext === 'webp' ? 'image' : ext === 'mp4' || ext === 'webm' ? 'clip' : undefined;
-    if (!kind) fail('"media" must be .webp, .mp4 or .webm');
+  if (data.media && /^https?:\/\//.test(data.media)) {
+    const id = YOUTUBE.exec(data.media)?.[1];
+    if (!id) fail('"media" link must be a YouTube video (https://youtu.be/<id> or youtube.com)');
     if (!data.alt) fail('missing required field "alt" (needed when media is set)');
-    media = { kind: kind as ProjectMedia['kind'], src, alt: data.alt };
+    // Privacy-enhanced mode: no YouTube cookies until the visitor plays the video.
+    media = { kind: 'youtube', src: `https://www.youtube-nocookie.com/embed/${id}`, alt: data.alt };
+  } else if (data.media) {
+    const srcs = data.media
+      .split(',')
+      .map((m) => m.trim())
+      .filter(Boolean);
+    const kinds = srcs.map((src) => {
+      if (!src.startsWith('/projects/')) fail('"media" must start with /projects/');
+      const ext = /\.([a-z0-9]+)$/i.exec(src)?.[1].toLowerCase();
+      const kind = ext === 'webp' ? 'image' : ext === 'mp4' || ext === 'webm' ? 'clip' : undefined;
+      if (!kind) fail('"media" must be .webp, .mp4 or .webm');
+      return kind as 'image' | 'clip';
+    });
+    if (srcs.length > 1 && kinds.includes('clip'))
+      fail('a "media" gallery must be all .webp images');
+    if (!data.alt) fail('missing required field "alt" (needed when media is set)');
+    media =
+      srcs.length > 1
+        ? { kind: 'gallery', srcs, alt: data.alt }
+        : { kind: kinds[0], src: srcs[0], alt: data.alt };
   }
   if (!body.trim()) fail('body must not be empty');
   return {

@@ -13,8 +13,8 @@ import '../ui/notebook.css';
 
 /** CSS width of one page element (A5 portrait). */
 export const PAGE_PX_WIDTH = 600;
-/** Each half of the page turn: content out, then the next spread in. */
-const TURN_MS = 160;
+/** The page turn's cross-fade: the old spread out while the next one comes in. */
+const TURN_MS = 260;
 
 export interface NotebookBook {
   /** Camera up for the focus view: along the spine, so the pages sit left and right. */
@@ -39,6 +39,8 @@ function createPage(side: 'left' | 'right', frame: ScreenFrame) {
     `<div class="nb-content"></div>` +
     `<button type="button" class="nb-edge nb-edge-${edge}" aria-label="${label}"></button>`;
   return {
+    element,
+    /** Replaced by a fresh element on each turn, while the old one fades out (turnTo). */
     content: element.querySelector<HTMLElement>('.nb-content')!,
     edge: element.querySelector<HTMLButtonElement>('.nb-edge')!,
     layer: createScreenLayer(element, frame, PAGE_PX_WIDTH),
@@ -81,8 +83,6 @@ export function createNotebookBook(
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let index = 0;
   let visible = false;
-  /** Bumped by every turn and by hiding; a turn only swaps content if it is still current. */
-  let generation = 0;
 
   const fill = () => {
     const html = spreadHtml(projects, index);
@@ -99,50 +99,59 @@ export function createNotebookBook(
     right.edge.disabled = index === count - 1;
     controls.setSpread(index, count);
   };
+  /** Ends a running cross-fade at once: the new spread shows fully, the old one goes. */
   const stopAnimations = () => {
-    for (const p of pages) for (const a of p.content.getAnimations()) a.cancel();
+    for (const p of pages) {
+      for (const a of p.content.getAnimations()) a.cancel();
+      for (const old of p.element.querySelectorAll('.nb-content-old')) old.remove();
+    }
   };
-  /** True while the old spread fades out; a turn then only moves the target. */
-  let fadingOut = false;
   const turnTo = (target: number) => {
     const next = stepSpread(target, 0, count);
     if (!visible || next === index) return;
-    const dir = Math.sign(next - index);
     index = next;
     setNav();
-    if (fadingOut) return; // the running fade-out swaps in the latest target
-    const current = ++generation;
     stopAnimations();
     if (reducedMotion.matches) return fill();
-    fadingOut = true;
-    const out = pages.map((p) =>
-      p.content.animate([{ opacity: 1 }, { opacity: 0, transform: `translateX(${-dir * 4}%)` }], {
-        duration: TURN_MS,
-        easing: 'ease-in',
-        fill: 'forwards',
-      }),
-    );
-    Promise.all(out.map((a) => a.finished))
-      .finally(() => {
-        if (current === generation) fadingOut = false;
-      })
-      .then(() => {
-        if (current !== generation) return;
-        stopAnimations();
-        fill();
-        for (const p of pages) {
-          p.content.animate(
-            [{ opacity: 0, transform: `translateX(${dir * 4}%)` }, { opacity: 1 }],
-            { duration: TURN_MS, easing: 'ease-out' },
-          );
-        }
-      })
-      .catch(() => {}); // cancelled by a newer turn or by hiding
+    // Cross-fade: the old spread stays in its own element (media and gallery scroll as they
+    // were) on top, fading out over the new one, and is removed when it's gone.
+    const olds = pages.map((p) => {
+      const old = p.content;
+      p.content = old.cloneNode(false) as HTMLElement;
+      old.before(p.content);
+      old.classList.add('nb-content-old');
+      old.inert = true;
+      return old;
+    });
+    fill();
+    const timing = { duration: TURN_MS, easing: 'ease-in-out' };
+    pages.forEach((p, i) => {
+      const opacity = getComputedStyle(olds[i]).opacity; // the graphite's own, below 1
+      olds[i]
+        .animate({ opacity: [opacity, '0'] }, timing)
+        .finished.then(() => olds[i].remove())
+        .catch(() => {}); // cancelled by a newer turn or by hiding, which remove it themselves
+      p.content.animate({ opacity: ['0', opacity] }, timing);
+    });
   };
   const controls = createNotebookControls((delta) => turnTo(index + delta));
   left.edge.addEventListener('click', () => turnTo(index - 1));
   right.edge.addEventListener('click', () => turnTo(index + 1));
-  right.content.addEventListener('click', (e) => {
+  // On the pages, not their content elements: those are replaced on every turn.
+  left.element.addEventListener('click', (e) => {
+    const step = e.target instanceof Element ? e.target.closest('[data-gallery-step]') : null;
+    const track = step?.parentElement?.querySelector('.nb-gallery-track');
+    if (!step || !track) return;
+    const dir = Number(step.getAttribute('data-gallery-step'));
+    // Past either end, wrap around to the other.
+    const atEnd = dir > 0 && track.scrollLeft + track.clientWidth >= track.scrollWidth - 1;
+    const atStart = dir < 0 && track.scrollLeft <= 0;
+    track.scrollTo({
+      left: atEnd ? 0 : atStart ? track.scrollWidth : track.scrollLeft + dir * track.clientWidth,
+      behavior: reducedMotion.matches ? 'auto' : 'smooth',
+    });
+  });
+  right.element.addEventListener('click', (e) => {
     const entry = e.target instanceof Element ? e.target.closest('[data-spread]') : null;
     if (entry) turnTo(Number(entry.getAttribute('data-spread')));
   });
@@ -164,8 +173,6 @@ export function createNotebookBook(
       visible = v;
       for (const p of pages) p.layer.setVisible(v);
       controls.setVisible(v);
-      generation++;
-      fadingOut = false;
       stopAnimations();
       index = 0; // every visit opens on the contents
       setNav();
@@ -181,7 +188,7 @@ export function createNotebookBook(
       for (const p of pages) p.layer.setSize(w, h);
     },
     dispose() {
-      generation++;
+      stopAnimations();
       controls.dispose();
       for (const p of pages) p.layer.dispose();
     },

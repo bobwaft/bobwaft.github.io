@@ -17,11 +17,17 @@ const PROJECTS = [
   project(1, { media: { kind: 'image', src: '/projects/p1.webp', alt: 'Shot of one' } }),
   project(2, { media: { kind: 'clip', src: '/projects/p2.mp4', alt: 'Clip of two' } }),
   project(3, { title: 'A <b> & "c"' }),
+  project(4, {
+    media: { kind: 'youtube', src: 'https://www.youtube-nocookie.com/embed/abc', alt: 'Trailer' },
+  }),
+  project(5, {
+    media: { kind: 'gallery', srcs: ['/projects/a.webp', '/projects/b.webp'], alt: 'Screens' },
+  }),
 ];
 
 describe('spreadCount / stepSpread / spreadLabel', () => {
   it('has a contents spread plus one per project', () => {
-    expect(spreadCount(PROJECTS)).toBe(4);
+    expect(spreadCount(PROJECTS)).toBe(6);
     expect(spreadCount([])).toBe(1);
   });
 
@@ -44,7 +50,7 @@ describe('spreadHtml', () => {
     expect(left).toBe('');
     expect(right).toContain('<h1 class="nb-heading">Projects</h1>');
     const targets = [...right.matchAll(/data-spread="(\d+)"/g)].map((m) => m[1]);
-    expect(targets).toEqual(['1', '2', '3']);
+    expect(targets).toEqual(['1', '2', '3', '4', '5']);
     expect(right.indexOf('Project 1')).toBeLessThan(right.indexOf('Project 2'));
   });
 
@@ -63,6 +69,12 @@ describe('spreadHtml', () => {
     expect(right).toMatch(/<a [^>]*href="https:\/\/github\.com\/x\/p1"[^>]*target="_blank"/);
   });
 
+  it('puts the tags above the summary and a link icon in each link', () => {
+    const { right } = spreadHtml(PROJECTS, 1);
+    expect(right.indexOf('nb-tags')).toBeLessThan(right.indexOf('nb-summary'));
+    expect(right).toMatch(/<a [^>]*class="nb-link"[^>]*><svg [^>]*aria-hidden="true"/);
+  });
+
   it("only loads its own project's media", () => {
     const { left, right } = spreadHtml(PROJECTS, 1);
     expect(left + right).not.toContain('p2.mp4');
@@ -76,6 +88,28 @@ describe('spreadHtml', () => {
     expect(video).toContain('aria-label="Clip of two"');
   });
 
+  it('a YouTube video is a titled, full-screen-capable player', () => {
+    const { left } = spreadHtml(PROJECTS, 4);
+    const frame = /<iframe [^>]*>/.exec(left)?.[0] ?? '';
+    expect(frame).toContain('src="https://www.youtube-nocookie.com/embed/abc"');
+    expect(frame).toContain('title="Trailer"');
+    expect(frame).toContain('allowfullscreen');
+  });
+
+  it('a gallery is a labelled strip of numbered images with step buttons', () => {
+    const { left } = spreadHtml(PROJECTS, 5);
+    expect(left).toMatch(/class="nb-media nb-gallery" role="group" aria-label="Screens"/);
+    const imgs = [...left.matchAll(/<img [^>]*>/g)].map((m) => m[0]);
+    expect(imgs).toHaveLength(2);
+    expect(imgs[0]).toContain('src="/projects/a.webp"');
+    expect(imgs[0]).toContain('alt="Screens (1 of 2)"');
+    expect(imgs[0]).not.toContain('loading="lazy"');
+    expect(imgs[1]).toContain('alt="Screens (2 of 2)"');
+    expect(imgs[1]).toContain('loading="lazy"');
+    expect(left).toContain('data-gallery-step="-1"');
+    expect(left).toContain('data-gallery-step="1"');
+  });
+
   it('escapes titles and leaves media out when there is none', () => {
     const { left } = spreadHtml(PROJECTS, 3);
     expect(left).toContain('A &lt;b&gt; &amp; &quot;c&quot;');
@@ -83,6 +117,6 @@ describe('spreadHtml', () => {
   });
 
   it('clamps an out-of-range index', () => {
-    expect(spreadHtml(PROJECTS, 9)).toEqual(spreadHtml(PROJECTS, 3));
+    expect(spreadHtml(PROJECTS, 9)).toEqual(spreadHtml(PROJECTS, 5));
   });
 });

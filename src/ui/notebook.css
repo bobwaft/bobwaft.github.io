@@ -32,6 +32,10 @@
   /* Wider margin on the spine side. */
   padding: 56px 64px 48px 48px;
 }
+/* The previous spread while it cross-fades out (notebookBook.ts turnTo). */
+.nb-content-old {
+  pointer-events: none;
+}
 .nb-page-left .nb-content {
   /* More top margin: the baked page's top edge sits lower than the panel's (BUG-007). */
   padding-top: 104px;
@@ -110,13 +114,63 @@
   max-height: 55%;
   object-fit: contain;
 }
+.nb-video {
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border: 0;
+}
+.nb-gallery {
+  position: relative;
+}
+.nb-gallery-track {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  /* Still scrolls (swipe, shift+wheel, the ‹ › buttons), just without a bar. */
+  scrollbar-width: none;
+}
+.nb-gallery-track::-webkit-scrollbar {
+  display: none;
+}
+.nb-gallery-track img {
+  flex: 0 0 100%;
+  width: 100%;
+  object-fit: contain;
+  scroll-snap-align: center;
+}
+.nb-gallery-step {
+  position: absolute;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--pencil);
+  font: inherit;
+  font-size: 36px;
+  line-height: 40px;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+.nb-gallery-step[data-gallery-step='-1'] {
+  left: 8px;
+}
+.nb-gallery-step[data-gallery-step='1'] {
+  right: 8px;
+}
+.nb-gallery-step:hover,
+.nb-gallery-step:focus-visible {
+  background: rgba(255, 255, 255, 0.95);
+}
 
 .nb-summary {
-  /* A whole number of rules, so the tags and links below stay on the lines; 20 rules leaves
-     room for them above the page's last rule. Scrolled text moves off the lines. */
+  /* Not scrollable: as tall as its text (whole rules), with the links right below it. A summary
+     past about 20 rules pushes the links toward the page's bottom edge. */
   flex: none;
-  max-height: calc(20 * var(--rule));
-  overflow-y: auto;
 }
 .nb-summary :is(p, ul, ol, blockquote, h1, h2, h3, h4) {
   margin: 0 0 var(--rule);
@@ -149,11 +203,18 @@
   flex-wrap: wrap;
   gap: 0 20px;
 }
+/* Links are in blue pencil. */
 .nb-link,
 .nb-summary a {
-  color: inherit;
+  color: #1f4fa3;
   text-decoration-thickness: 1.5px;
   text-underline-offset: 3px;
+}
+.nb-link-icon {
+  width: 0.8em;
+  height: 0.8em;
+  margin-right: 0.25em;
+  vertical-align: -0.05em;
 }
 
 /* Page edges turn the page: the outer 40px strip of each page. */

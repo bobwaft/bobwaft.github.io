@@ -50,6 +50,36 @@ describe('parseProject', () => {
     }
   });
 
+  it('makes a comma-separated list of images a gallery', () => {
+    const p = parseProject(
+      doc(`${BASE}
+media: /projects/a.webp, /projects/b.webp
+alt: Screens`),
+      't',
+    );
+    expect(p.media).toEqual({
+      kind: 'gallery',
+      srcs: ['/projects/a.webp', '/projects/b.webp'],
+      alt: 'Screens',
+    });
+  });
+
+  it('maps YouTube links to a privacy-enhanced embed', () => {
+    for (const url of [
+      'https://www.youtube.com/embed/UNWZ7mEGopM?si=3KdFohELD--juklR',
+      'https://www.youtube.com/watch?v=UNWZ7mEGopM&t=10',
+      'https://youtu.be/UNWZ7mEGopM',
+      'https://youtube.com/embed/UNWZ7mEGopM',
+    ]) {
+      const p = parseProject(doc(`${BASE}\nmedia: ${url}\nalt: Trailer`), 't');
+      expect(p.media).toEqual({
+        kind: 'youtube',
+        src: 'https://www.youtube-nocookie.com/embed/UNWZ7mEGopM',
+        alt: 'Trailer',
+      });
+    }
+  });
+
   it.each([
     ['title', BASE.replace('title: Thing\n', ''), 'title'],
     ['dates', BASE.replace('dates: 2024 – 2025\n', ''), 'dates'],
@@ -62,7 +92,30 @@ describe('parseProject', () => {
     ['link without label', `${BASE}\nlinks: https://x.io`, 'links'],
     ['bad media dir', `${BASE}\nmedia: /other/t.webp\nalt: x`, 'media'],
     ['bad media ext', `${BASE}\nmedia: /projects/t.png\nalt: x`, 'media'],
+    [
+      'clip in a gallery',
+      `${BASE}
+media: /projects/a.webp, /projects/b.mp4
+alt: x`,
+      'media',
+    ],
+    [
+      'bad gallery dir',
+      `${BASE}
+media: /projects/a.webp, /b.webp
+alt: x`,
+      'media',
+    ],
+    [
+      'gallery missing alt',
+      `${BASE}
+media: /projects/a.webp, /projects/b.webp`,
+      'alt',
+    ],
     ['missing alt', `${BASE}\nmedia: /projects/t.webp`, 'alt'],
+    ['YouTube without id', `${BASE}\nmedia: https://www.youtube.com/watch?v=\nalt: x`, 'media'],
+    ['other video host', `${BASE}\nmedia: https://vimeo.com/123\nalt: x`, 'media'],
+    ['YouTube missing alt', `${BASE}\nmedia: https://youtu.be/UNWZ7mEGopM`, 'alt'],
     ['phone', `${BASE}\nphone: 555`, 'phone'],
     ['address', `${BASE}\naddress: 1 Main St`, 'address'],
   ])('throws naming the field: %s', (_name, front, field) => {
@@ -104,9 +157,12 @@ describe('content check: src/content/projects/*.md', () => {
 
   it('has media files that exist and are within size limits', () => {
     for (const p of projects) {
-      if (!p.media) continue;
-      const size = statSync(join(root, 'public', p.media.src)).size;
-      expect(size, `${p.slug} media`).toBeLessThanOrEqual(MEDIA_LIMITS[p.media.kind]);
+      if (!p.media || p.media.kind === 'youtube') continue;
+      const kind = p.media.kind === 'gallery' ? 'image' : p.media.kind;
+      for (const src of p.media.kind === 'gallery' ? p.media.srcs : [p.media.src]) {
+        const size = statSync(join(root, 'public', src)).size;
+        expect(size, `${p.slug} media ${src}`).toBeLessThanOrEqual(MEDIA_LIMITS[kind]);
+      }
     }
   });
 });
