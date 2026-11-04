@@ -6,7 +6,7 @@ export interface LoadingScreen {
   markSceneResolved(): void;
   /** Resolves when the scene has resolved and no loader items are pending. */
   whenReady: Promise<void>;
-  /** Swaps the progress bar for a "Click to start" button; resolves on the click (a gesture). */
+  /** Swaps the progress bar for "Click to start"; resolves on a click or Enter/Space (a gesture). */
   promptStart(): Promise<void>;
   /** Fades the screen out (instantly under prefers-reduced-motion), then removes it. */
   fadeOut(): void;
@@ -62,17 +62,24 @@ export function createLoadingScreen(): LoadingScreen {
       if (!root) return Promise.resolve();
       document.getElementById('loading-bar')?.remove();
       label?.remove();
-      const button = document.createElement('button');
-      button.id = 'start-button';
-      button.type = 'button';
-      button.textContent = 'Click to start';
+      const prompt = document.createElement('p');
+      prompt.id = 'start-prompt';
+      prompt.textContent = 'Click to start';
       root.classList.add('ready');
-      root.appendChild(button);
-      button.focus();
-      // The whole screen is the target, so a tap anywhere works; Enter/Space click the button.
-      return new Promise((resolve) =>
-        root.addEventListener('click', () => resolve(), { once: true }),
-      );
+      root.appendChild(prompt);
+      // The whole screen is the target; Enter or Space also start it, for keyboard users.
+      return new Promise((resolve) => {
+        const go = () => {
+          root.removeEventListener('click', go);
+          window.removeEventListener('keydown', onKey);
+          resolve();
+        };
+        const onKey = (e: KeyboardEvent) => {
+          if (e.key === 'Enter' || e.key === ' ') go();
+        };
+        root.addEventListener('click', go);
+        window.addEventListener('keydown', onKey);
+      });
     },
     fadeOut() {
       if (!root) return;

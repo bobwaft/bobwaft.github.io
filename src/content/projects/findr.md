@@ -2,7 +2,7 @@
 title: Findr
 dates: Fall 2026
 tags: typescript, webscraper, hackathon
-order: 1
+order: 3
 links: Devpost=https://devpost.com/software/findr-ebl63c
 media: /projects/findr-1.webp, /projects/findr-2.webp, /projects/findr-3.webp, /projects/findr-4.webp, /projects/findr-5.webp, /projects/findr-6.webp
 alt: Screenshots of Findr showing UBC events as cards, in a weekly calendar and in a club directory

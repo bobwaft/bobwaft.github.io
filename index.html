@@ -398,35 +398,19 @@
         border-radius: 50% 50% 0 0 / 14vh 14vh 0 0;
         box-shadow: 0 -14px 50px 24px #111;
       }
-      /* "Click to start" replaces the loading bar once everything has loaded; the whole screen is
-         the click target, so the button is only plain text. */
+      /* "Click to start" replaces the loading bar once everything has loaded: plain text, and the
+         whole screen is the click target. */
       #loading.ready {
         cursor: pointer;
       }
-      #start-button {
-        padding: 12px 20px;
-        border: 0;
-        background: none;
-        color: #ddd;
+      #start-prompt {
+        margin: 0;
+        color: #bbb;
         font:
           400 20px/28px 'DM Sans Variable',
           system-ui,
           sans-serif;
         letter-spacing: 0.04em;
-        cursor: pointer;
-        animation: start-pulse 2.2s ease-in-out infinite;
-      }
-      #start-button:hover {
-        color: #fff;
-      }
-      #start-button:focus-visible {
-        outline: 1px solid #888;
-        outline-offset: 4px;
-      }
-      @keyframes start-pulse {
-        50% {
-          opacity: 0.45;
-        }
       }
       #loading.done {
         opacity: 0;
@@ -569,9 +553,6 @@
         }
         #loading {
           transition: none;
-        }
-        #start-button {
-          animation: none;
         }
       }
     </style>
