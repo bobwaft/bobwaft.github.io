@@ -4,8 +4,8 @@ import { canBrighten, createHoverMaterial } from '../scene/hoverMaterial';
 import type { InteractableModule } from '../objects/types';
 
 export interface HoverView {
-  /** Highlights a module (or clears with null); x,y position the label. */
-  show(module: InteractableModule | null, x?: number, y?: number): void;
+  /** Highlights a module (or clears with null); x,y position the label (centred on it if asked). */
+  show(module: InteractableModule | null, x?: number, y?: number, centred?: boolean): void;
   dispose(): void;
 }
 
@@ -16,6 +16,7 @@ export function createHoverView(
   const label = document.createElement('div');
   label.id = 'hover-label';
   label.hidden = true;
+  label.setAttribute('aria-hidden', 'true');
   document.body.appendChild(label);
   const variants = new Map<Material, ShaderMaterial>();
   let swapped: { mesh: Mesh; material: Material | Material[] }[] = [];
@@ -46,9 +47,12 @@ export function createHoverView(
     }
   };
   return {
-    show(module, x = 0, y = 0) {
+    show(module, x = 0, y = 0, centred = false) {
       if (module) {
-        label.style.transform = `translate(${x + 14}px, ${y + 14}px)`;
+        label.style.transform = centred
+          ? `translate(${x}px, ${y}px) translate(-50%, -50%)`
+          : `translate(${x + 14}px, ${y + 14}px)`;
+        label.classList.toggle('keyboard', centred);
         if (module.id !== current) {
           restore();
           brighten(module.id);

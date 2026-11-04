@@ -15,7 +15,7 @@ describe('index.html', () => {
       'og:description',
       'og:type" content="website',
       'og:url" content="https://bobwaft.github.io/',
-      'og:image" content="https://bobwaft.github.io/og-image.png',
+      'og:image" content="https://bobwaft.github.io/og-image.jpg',
       'og:image:width" content="1200',
       'og:image:height" content="630',
       'og:image:alt',

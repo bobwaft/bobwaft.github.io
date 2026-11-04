@@ -195,10 +195,10 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 
 - [x] Vite plugin pre-renders about + projects + resume link into `<main id="fallback">` in `index.html`; hidden when 3D runs
 - [x] "Skip the 3D" link always available
-- [ ] Keyboard: Tab cycles interactables (with visible focus label), Enter activates, Esc goes back
-- [ ] Screen reader: interactables exposed as buttons with names; content views are real DOM
-- [ ] Mobile layout: focus views readable in portrait; Back button reachable with a thumb
-- [ ] Page title, meta description, Open Graph image
+- [x] Keyboard: Tab cycles interactables (with visible focus label), Enter activates, Esc goes back
+- [x] Screen reader: interactables exposed as buttons with names; content views are real DOM
+- [x] Mobile layout: focus views readable in portrait; Back button reachable with a thumb — owner kept Back top-left (2026-11-04); portrait readability checked in Phases 5–7
+- [x] Page title, meta description, Open Graph image (`public/og-image.jpg`, captured from the idle view)
 
 ### You test
 - [ ] View page source: about and project text is present in the HTML

@@ -35,6 +35,19 @@ export function ndcToScreen(
   };
 }
 
+/** World-space centre per module id, over the union of its registered objects' bounds. */
+export function moduleCentres(
+  registered: ReadonlyMap<Object3D, InteractableModule>,
+): Map<string, Vector3> {
+  const boxes = new Map<string, Box3>();
+  for (const [obj, mod] of registered) {
+    const box = new Box3().setFromObject(obj);
+    const existing = boxes.get(mod.id);
+    boxes.set(mod.id, existing ? existing.union(box) : box);
+  }
+  return new Map([...boxes].map(([id, box]) => [id, box.getCenter(new Vector3())] as const));
+}
+
 export interface TouchDots {
   /** Per frame: positions dots and applies the visibility rule. */
   update(state: AppState): void;
@@ -50,20 +63,14 @@ export function createTouchDots(
   isEnabled: () => boolean,
 ): TouchDots {
   const used = createUsedSet();
-  const boxes = new Map<string, Box3>();
-  for (const [obj, mod] of registered) {
-    const box = new Box3().setFromObject(obj);
-    const existing = boxes.get(mod.id);
-    boxes.set(mod.id, existing ? existing.union(box) : box);
-  }
   const dots = new Map<string, { el: HTMLElement; centre: Vector3 }>();
-  for (const [id, box] of boxes) {
+  for (const [id, centre] of moduleCentres(registered)) {
     const el = document.createElement('div');
     el.className = 'touch-dot';
     el.setAttribute('aria-hidden', 'true');
     el.style.opacity = '0';
     document.body.appendChild(el);
-    dots.set(id, { el, centre: box.getCenter(new Vector3()) });
+    dots.set(id, { el, centre });
   }
   const tmp = new Vector3();
   return {

@@ -44,6 +44,7 @@ import { createDebugFps } from './ui/debugFps';
 import { showFallback } from './ui/fallback';
 import { fallbackReason } from './ui/fallbackReason';
 import { createBackButton } from './ui/backButton';
+import { createInteractableButtons } from './ui/interactableButtons';
 import { createTouchDots, isTouchPointerType } from './ui/touchDots';
 import { showHint } from './ui/hint';
 import { createLoadingScreen } from './ui/loading';
@@ -232,8 +233,19 @@ async function boot(): Promise<void> {
   }
   laptop.bind({ setContentVisible: (v) => screenLayer?.setVisible(v) });
   const updatable = [...new Set(registered.values())].filter((m) => m.update);
+  const buttons = createInteractableButtons({
+    modules,
+    registered,
+    camera,
+    hoverView,
+    backButton: () => document.getElementById('back-button'),
+    onActivate: (m) => dispatch({ type: 'click', hit: { id: m.id, hasFocus: !!m.focus } }),
+    pressed: (id) =>
+      id === 'speaker' ? player.isPlaying() : id === 'pullcord' ? lamp.isOn : undefined,
+  });
   let app = initialState();
   const dispatch = (event: AppEvent) => {
+    const before = app;
     const result = transition(app, event);
     const hooks = lifecycleHooks(app, result);
     app = result.state;
@@ -254,6 +266,7 @@ async function boot(): Promise<void> {
     hoverView.show(null); // hover only exists in idle; a state change clears it
     applyLookRange();
     backButton.setVisible(backButtonVisible(app));
+    buttons.update(before, app);
   };
   // Slight parallax while a focus view is open (D-3); the full idle range otherwise.
   const applyLookRange = () =>
@@ -302,6 +315,7 @@ async function boot(): Promise<void> {
     disposeClicks();
     backButton.dispose();
     touchDots.dispose();
+    buttons.dispose();
     player.dispose();
     nowPlaying.dispose();
     document.getElementById('debug-fps')?.remove();
