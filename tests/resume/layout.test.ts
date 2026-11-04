@@ -8,6 +8,7 @@ import {
   renderWidth,
   stepPage,
   stepZoom,
+  textLayerStretch,
   ZOOM_LEVELS,
   zoomKeyDelta,
   zoomLabel,
@@ -126,5 +127,20 @@ describe('page backgrounds (BUG-005)', () => {
   });
   it('idle paper is white so the multiply leaves the baked paper unchanged', () => {
     expect(IDLE_PAPER.toLowerCase()).toBe('#ffffff');
+  });
+});
+
+describe('textLayerStretch (a Letter PDF on the A4 sheet)', () => {
+  it('is 1 when the page already has the shape of the element', () => {
+    expect(textLayerStretch(595, 842, 794, (842 / 595) * 794)).toBeCloseTo(1, 6);
+  });
+  it('stretches a US Letter page to fill an A4-shaped element', () => {
+    // The canvas fills the element; the text layer is uniformly scaled, so it is this much short.
+    expect(textLayerStretch(612, 792, 794, 1123)).toBeCloseTo(1123 / ((792 * 794) / 612), 6);
+    expect(textLayerStretch(612, 792, 794, 1123)).toBeGreaterThan(1.09);
+  });
+  it('squashes a page taller than the element, and ignores a missing element height', () => {
+    expect(textLayerStretch(500, 1000, 500, 800)).toBeCloseTo(0.8, 6);
+    expect(textLayerStretch(612, 792, 794, 0)).toBe(1);
   });
 });

@@ -2,7 +2,7 @@
 title: Microwave AI
 dates: Fall 2025
 tags: Machine Learning, Tensorflow, Python
-order: 5
+order: 6
 links: Source=https://github.com/bobwaft/Microwave-AI
 ---
 

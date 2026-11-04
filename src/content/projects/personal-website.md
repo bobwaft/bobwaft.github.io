@@ -2,7 +2,7 @@
 title: Personal Website
 dates: Fall 2026
 tags: three.js, blender, Claude, Figma
-order: 7
+order: 3
 note: If you want to see the site, look around
 links: Source=https://github.com/bobwaft/bobwaft.github.io, Live=https://bobwaft.github.io
 ---

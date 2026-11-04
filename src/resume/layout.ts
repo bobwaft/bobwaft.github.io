@@ -73,3 +73,19 @@ export function needsRender(
  */
 export const IDLE_PAPER = '#ffffff';
 export const FOCUS_PAPER = '#ffffff';
+
+/**
+ * Vertical factor that makes the text layer match the canvas. The canvas fills the page element
+ * (CSS height 100%), while the text layer is scaled uniformly from the page's width; a PDF whose
+ * shape differs from the element's (US Letter on the A4 sheet) would otherwise drift out of line.
+ * 1 when the element height is unknown.
+ */
+export function textLayerStretch(
+  pageWidth: number,
+  pageHeight: number,
+  cssWidth: number,
+  cssHeight: number,
+): number {
+  if (!(cssHeight > 0)) return 1;
+  return cssHeight / (pageHeight * (cssWidth / pageWidth));
+}

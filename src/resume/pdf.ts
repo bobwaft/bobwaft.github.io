@@ -3,6 +3,7 @@
 import { getDocument, GlobalWorkerOptions, TextLayer } from 'pdfjs-dist';
 import workerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { linkBoxes } from './links';
+import { textLayerStretch } from './layout';
 
 GlobalWorkerOptions.workerSrc = workerUrl;
 
@@ -14,8 +15,11 @@ export interface ResumeDocument {
    * colour). Never transparent: a transparent texel is black when multiplied over the paper mesh.
    */
   renderPage(page: number, widthPx: number, background: string): Promise<HTMLCanvasElement>;
-  /** A new .textLayer element with the page's selectable text, cssWidth CSS pixels wide. */
-  renderText(page: number, cssWidth: number): Promise<HTMLElement>;
+  /**
+   * A new .textLayer element with the page's selectable text and links, cssWidth CSS pixels wide;
+   * stretched vertically to cssHeight when the page element's shape differs from the PDF's.
+   */
+  renderText(page: number, cssWidth: number, cssHeight?: number): Promise<HTMLElement>;
   destroy(): void;
 }
 
@@ -33,12 +37,15 @@ export async function openResume(url: string): Promise<ResumeDocument> {
       await page.render({ canvas, viewport, background }).promise;
       return canvas;
     },
-    async renderText(n, cssWidth) {
+    async renderText(n, cssWidth, cssHeight = 0) {
       const page = await doc.getPage(n);
-      const scale = cssWidth / page.getViewport({ scale: 1 }).width;
+      const natural = page.getViewport({ scale: 1 });
+      const scale = cssWidth / natural.width;
       const container = document.createElement('div');
       container.className = 'textLayer';
       container.style.setProperty('--total-scale-factor', String(scale));
+      const stretch = textLayerStretch(natural.width, natural.height, cssWidth, cssHeight);
+      if (Math.abs(stretch - 1) > 0.001) container.style.transform = `scaleY(${stretch})`;
       const viewport = page.getViewport({ scale });
       const layer = new TextLayer({
         textContentSource: page.streamTextContent(),

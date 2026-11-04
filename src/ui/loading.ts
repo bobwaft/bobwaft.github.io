@@ -66,6 +66,7 @@ export function createLoadingScreen(): LoadingScreen {
       button.id = 'start-button';
       button.type = 'button';
       button.textContent = 'Click to start';
+      root.classList.add('ready');
       root.appendChild(button);
       button.focus();
       // The whole screen is the target, so a tap anywhere works; Enter/Space click the button.

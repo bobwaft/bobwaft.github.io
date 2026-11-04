@@ -176,7 +176,9 @@ export function createPapersSheet(
     try {
       const [bitmap, textLayer] = await Promise.all([
         doc.renderPage(target.page, target.width, FOCUS_PAPER),
-        shown.page === target.page ? null : doc.renderText(target.page, PAGE_PX_WIDTH),
+        shown.page === target.page
+          ? null
+          : doc.renderText(target.page, PAGE_PX_WIDTH, parseFloat(element.style.height)),
       ]);
       if (current !== generation) return; // replaced by a newer draw, or hidden
       canvas.width = bitmap.width;

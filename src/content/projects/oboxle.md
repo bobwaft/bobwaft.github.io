@@ -1,8 +1,8 @@
 ---
 title: Oboxle
-dates: 2026
+dates: Fall 2026
 tags: three.js, blender, typescript, hackathon
-order: 3
+order: 2
 links: Devpost=https://devpost.com/software/oboxle
 media: https://www.youtube.com/embed/XUz410EL1nU
 alt: Oboxle demo video

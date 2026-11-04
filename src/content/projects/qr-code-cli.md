@@ -1,8 +1,8 @@
 ---
 title: QR Code CLI
-dates: 2026
+dates: Summer 2026
 tags: Python, CLI, pip
-order: 6
+order: 4
 links: Source=https://github.com/bobwaft/qr-code-cli
 ---
 

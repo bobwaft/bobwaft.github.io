@@ -2,7 +2,7 @@
 title: Kiru
 dates: Spring 2026
 tags: Blender, Tensorflow, Unity, C#
-order: 4
+order: 5
 links: Source=https://github.com/bobwaft/Kiru-Cut-Detection-Model
 media: /projects/kiru-1.webp, /projects/kiru-2.webp
 alt: Screenshots of Kiru
