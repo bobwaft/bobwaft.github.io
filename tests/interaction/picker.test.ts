@@ -1,6 +1,6 @@
 import { Object3D } from 'three';
 import { describe, expect, it } from 'vitest';
-import { resolveRegistered } from '../../src/interaction/picker';
+import { nearestWithin, resolveRegistered } from '../../src/interaction/picker';
 import type { InteractableModule } from '../../src/objects/types';
 
 const mod = (id: string): InteractableModule => ({ id, label: id });
@@ -31,5 +31,23 @@ describe('resolveRegistered', () => {
   it('returns null for unregistered objects and null input', () => {
     expect(resolveRegistered(stray, map)).toBeNull();
     expect(resolveRegistered(null, map)).toBeNull();
+  });
+});
+
+describe('nearestWithin (tap slop, BUG-013)', () => {
+  const points = [
+    { id: 'cord', x: 100, y: 100 },
+    { id: 'speaker', x: 160, y: 100 },
+  ];
+  it('picks the nearest point inside the radius', () => {
+    expect(nearestWithin(points, 110, 104, 28)).toBe('cord');
+    expect(nearestWithin(points, 140, 100, 28)).toBe('speaker');
+  });
+  it('returns null when nothing is within the radius', () => {
+    expect(nearestWithin(points, 100, 140, 28)).toBeNull();
+    expect(nearestWithin([], 0, 0, 28)).toBeNull();
+  });
+  it('a radius of 0 never matches off the exact point', () => {
+    expect(nearestWithin(points, 101, 100, 0)).toBeNull();
   });
 });

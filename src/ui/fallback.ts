@@ -1,5 +1,7 @@
 import { retryOffer, type FallbackReason } from './fallbackReason';
 import { setForce3d } from './fpsMonitor';
+import '@fontsource-variable/dm-sans/opsz.css';
+import './fallback.css';
 
 /** Hides the 3D UI and shows the pre-rendered HTML site, moving focus to its heading. */
 export function showFallback(reason: FallbackReason, error?: unknown): void {

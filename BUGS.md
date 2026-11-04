@@ -139,7 +139,8 @@ Number bugs sequentially and never reuse a number.
 - Expected: "Back to the 3D" is an overlay button (fixed on screen, always visible) styled like the about page (Mocha About Me look)
 - Actual: a default browser button appended after the fallback content
 - Severity: low
-- Status: open
+- Fix 2026-11-04: `#try-3d` is a fixed pill at the bottom-right over the simple site, in the about page's Mocha look (foam background, latte border, espresso text, DM Sans, caramel arrow; espresso on hover/focus), styled in src/ui/fallback.css. Not verified in a browser
+- Status: fixed, awaiting re-test
 
 ### BUG-013 — Pull cord doesn't toggle the light on touch
 - Phase: 9 (found in the phone check; DevTools device mode, portrait, touch)
@@ -147,7 +148,8 @@ Number bugs sequentially and never reuse a number.
 - Expected: the cord animates and the lamp fades off/on (FR-24), as with a mouse
 - Actual: the light doesn't change; speaker, laptop, papers and notebook taps all work
 - Severity: med
-- Status: open
+- Likely cause (2026-11-04, static): the touch dot sits at the centre of the cord's bounding box, and the cord is a thin string, so a finger on the dot raycasts into empty space. Fix: a click that misses every mesh falls back to the interactable whose projected centre is within 28 px (`nearestWithin` in src/interaction/picker.ts, `TAP_SLOP_PX` in main.ts; hover is unchanged). Tests in tests/interaction/picker.test.ts. Not verified in a browser; if taps still fail, check whether the cord is in view in the portrait pose
+- Status: fixed, awaiting re-test
 
 ### BUG-014 — Resume controls are squished on a phone
 - Phase: 9 (found in the phone check; DevTools device mode, portrait)
@@ -155,4 +157,5 @@ Number bugs sequentially and never reuse a number.
 - Expected: page, zoom and Download PDF controls fit and stay tappable (NFR-6)
 - Actual: the buttons in the top-right control bar are squished
 - Severity: low
-- Status: open
+- Fix 2026-11-04: at ≤ 600 px wide the controls become a wrapped, centred bar at the bottom (translucent backing, 2.5rem buttons that no longer shrink, safe-area aware); desktop layout unchanged (src/ui/resume.css). Not verified in a browser
+- Status: fixed, awaiting re-test

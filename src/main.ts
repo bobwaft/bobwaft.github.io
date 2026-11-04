@@ -344,7 +344,7 @@ async function boot(): Promise<void> {
     look.setEnabled(!debugCamera);
     if (!debugCamera) {
       disposeClicks = createClickInput(canvas, (x, y) => {
-        const module = picker.pick(x, y);
+        const module = picker.pick(x, y, TAP_SLOP_PX);
         dispatch({
           type: 'click',
           hit: module ? { id: module.id, hasFocus: !!module.focus } : null,
@@ -524,6 +524,8 @@ function loadProjects(): Project[] {
 }
 
 const DEG = Math.PI / 180;
+/** A click this close to an interactable's centre still hits it (thin pull cord, BUG-013). */
+const TAP_SLOP_PX = 28;
 /** Rate (1/s) the camera eases to a new zoom or pan; quicker than the look damping. */
 const ZOOM_DAMPING = 12;
 
