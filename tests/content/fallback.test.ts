@@ -31,7 +31,7 @@ describe('fallbackHtml', () => {
   const html = fallbackHtml(about, [project()], '/resume.pdf');
 
   it('has the name as a focusable h1 with the location, escaped', () => {
-    expect(html).toContain('<h1 tabindex="-1">Don &lt;b&gt;</h1>');
+    expect(html).toContain('<h1 class="fb-title" tabindex="-1">Don &lt;b&gt;</h1>');
     expect(html).toContain('Van &amp; City');
   });
 
@@ -39,12 +39,22 @@ describe('fallbackHtml', () => {
     expect(html).toContain('<p>Bio text</p>');
     expect(html).toContain('href="mailto:a@b.c"');
     expect(html).toContain('href="https://github.com/x" target="_blank" rel="noopener noreferrer"');
-    expect(html).toContain('<img class="photo" src="/about/p.png" alt="Me &quot;smiling&quot;"');
+    expect(html).toContain('aria-label="GitHub"');
+    expect(html).toContain('<img class="fb-photo" src="/about/p.png" alt="Me &quot;smiling&quot;"');
     expect(html).toContain('loading="lazy" decoding="async"');
   });
 
+  it('styles the title like the about page: *x* italic, **x** accent', () => {
+    const titled = fallbackHtml({ ...about, title: 'Hi, **Don** *here*' }, [], '/r.pdf');
+    expect(titled).toContain(
+      '<h1 class="fb-title" tabindex="-1">Hi, <span class="fb-accent">Don</span> <span class="fb-em">here</span></h1>',
+    );
+  });
+
   it('links the resume for download', () => {
-    expect(html).toMatch(/<a href="\/resume\.pdf" download[^>]*>Download resume \(PDF\)<\/a>/);
+    expect(html).toMatch(
+      /<a class="fb-pill" href="\/resume\.pdf" download>.*Download resume \(PDF\)<\/a>/,
+    );
   });
 
   it('renders projects as escaped articles, then the coming-soon line', () => {

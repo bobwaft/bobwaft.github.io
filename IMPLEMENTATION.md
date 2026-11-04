@@ -205,7 +205,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [ ] With WebGL disabled, the fallback shows all content and the PDF link; Lighthouse performance ≥ 90
 - [x] "Skip the 3D" switches to the fallback
 - [x] The whole site is usable with only the keyboard
-- [ ] On a phone, every interaction works and all content is readable
+- [x] On a phone, every interaction works and all content is readable (DevTools device mode, 2026-11-04; real devices in Phase 10)
 - [ ] Shared link previews show the title, description, and image
 
 ---

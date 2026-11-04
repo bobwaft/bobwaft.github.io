@@ -140,6 +140,8 @@ Number bugs sequentially and never reuse a number.
 - Actual: a default browser button appended after the fallback content
 - Severity: low
 - Fix 2026-11-04: `#try-3d` is a fixed pill at the bottom-right over the simple site, in the about page's Mocha look (foam background, latte border, espresso text, DM Sans, caramel arrow; espresso on hover/focus), styled in src/ui/fallback.css. Not verified in a browser
+- Re-test 2026-11-04: the owner wants the WHOLE simple site in the about page's look, and the button at the top, a little left of the corner
+- Fix 2026-11-04: src/content/fallback.ts now renders the about hero (Fraunces title with the caramel accent, uppercase location, bio with the latte rule, "Come say hello —", email and resume pills, icon socials, the arched photo with the handwritten note) and projects as cream cards with pill tags; index.html styles it with the Mocha tokens (fonts from the bundled stylesheet, so they load without JS). `#try-3d` is fixed at the top, 3rem from the right (1.5rem on phones). Checked in headless Edge screenshots at 1280 and 520 px
 - Status: fixed, awaiting re-test
 
 ### BUG-013 — Pull cord doesn't toggle the light on touch
@@ -149,7 +151,7 @@ Number bugs sequentially and never reuse a number.
 - Actual: the light doesn't change; speaker, laptop, papers and notebook taps all work
 - Severity: med
 - Likely cause (2026-11-04, static): the touch dot sits at the centre of the cord's bounding box, and the cord is a thin string, so a finger on the dot raycasts into empty space. Fix: a click that misses every mesh falls back to the interactable whose projected centre is within 28 px (`nearestWithin` in src/interaction/picker.ts, `TAP_SLOP_PX` in main.ts; hover is unchanged). Tests in tests/interaction/picker.test.ts. Not verified in a browser; if taps still fail, check whether the cord is in view in the portrait pose
-- Status: fixed, awaiting re-test
+- Status: closed (re-tested 2026-11-04: pass)
 
 ### BUG-014 — Resume controls are squished on a phone
 - Phase: 9 (found in the phone check; DevTools device mode, portrait)
@@ -158,4 +160,4 @@ Number bugs sequentially and never reuse a number.
 - Actual: the buttons in the top-right control bar are squished
 - Severity: low
 - Fix 2026-11-04: at ≤ 600 px wide the controls become a wrapped, centred bar at the bottom (translucent backing, 2.5rem buttons that no longer shrink, safe-area aware); desktop layout unchanged (src/ui/resume.css). Not verified in a browser
-- Status: fixed, awaiting re-test
+- Status: closed (re-tested 2026-11-04: pass)

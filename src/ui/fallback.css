@@ -1,9 +1,9 @@
-/* "Back to the 3D" / "Try 3D anyway" (BUG-012): an overlay pill over the simple site, in the
+/* "Back to the 3D" / "Try 3D anyway" (BUG-012): an overlay pill at the top of the simple site, in the
    about page's Mocha look (see .about-email in about.css). */
 #try-3d {
   position: fixed;
-  right: max(1rem, env(safe-area-inset-right));
-  bottom: max(1rem, env(safe-area-inset-bottom));
+  top: max(1rem, env(safe-area-inset-top));
+  right: max(3rem, env(safe-area-inset-right));
   z-index: 30;
   display: inline-flex;
   align-items: center;
@@ -42,6 +42,11 @@
 #try-3d:focus-visible {
   outline: 2px solid #c4a283;
   outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  #try-3d {
+    right: max(1.5rem, env(safe-area-inset-right));
+  }
 }
 @media (prefers-reduced-motion: reduce) {
   #try-3d,
