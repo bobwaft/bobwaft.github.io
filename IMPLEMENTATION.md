@@ -226,7 +226,7 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] Music on by default: starts at the first click, tap or key press (`src/audio/autoStart.ts`)
 - [x] Opening animation: eyelids part over a blurred scene while the camera pans up from the desk; a tap or key skips it; reduced motion gets a quick fade (`src/ui/intro.ts`)
 - [x] Resume replaced with the Canada version without the phone number (`public/resume.pdf`)
-- [ ] Add the resume's other projects to the notebook (summaries from the owner, via the add-project skill)
+- [x] Added Kiru, Microwave AI, QR Code CLI and Personal Website to the notebook (orders 4–7), from the owner's own text
 
 ### You test
 - [ ] Reload: the lids part over a blurred desk and the camera tilts up to the usual view in about 3 s; a click or key press skips it; the hint appears afterwards
