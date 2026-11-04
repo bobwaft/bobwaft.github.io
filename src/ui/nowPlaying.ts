@@ -17,23 +17,22 @@ export function findTrack<T extends TrackCredit>(tracks: readonly T[], src: stri
   return tracks.find((t) => t.src === src || src.endsWith(t.src));
 }
 
-/** Speed of the scroll and the share of each pass spent moving (the rest pauses at the ends). */
-const SCROLL_PX_PER_S = 30;
-const SCROLL_TRAVEL_SHARE = 0.7;
-const SCROLL_MIN_SECONDS = 4;
+/** Ticker speed, and the space between the end of the credit and its repeat. */
+const TICKER_PX_PER_S = 30;
+export const MARQUEE_GAP_PX = 48;
 
 /**
- * How a credit wider than its capped box scrolls: by the overflow, back and forth, one pass every
- * `seconds`. Null when it fits (within a pixel of rounding).
+ * How a credit wider than its capped box rotates: a second copy follows the first after a gap,
+ * and the pair moves left by one copy plus the gap per loop, so the loop is seamless. Null when
+ * the credit fits (within a pixel of rounding).
  */
 export function marquee(
   textWidth: number,
   boxWidth: number,
 ): { shift: number; seconds: number } | null {
-  const shift = textWidth - boxWidth;
-  if (shift <= 1) return null;
-  const seconds = shift / SCROLL_PX_PER_S / SCROLL_TRAVEL_SHARE;
-  return { shift, seconds: Math.max(SCROLL_MIN_SECONDS, seconds) };
+  if (textWidth - boxWidth <= 1) return null;
+  const shift = textWidth + MARQUEE_GAP_PX;
+  return { shift, seconds: shift / TICKER_PX_PER_S };
 }
 
 export interface NowPlaying {
@@ -46,13 +45,15 @@ export function createNowPlaying(tracks: readonly TrackCredit[]): NowPlaying {
   const el = document.createElement('div');
   el.id = 'now-playing';
   el.setAttribute('aria-live', 'polite');
-  el.innerHTML = '<span class="np-window"><span class="np-text"></span></span>';
+  el.innerHTML =
+    '<span class="np-window"><span class="np-track"><span class="np-text"></span>' +
+    '<span class="np-text np-copy" aria-hidden="true"></span></span></span>';
   const box = el.querySelector<HTMLElement>('.np-window')!;
-  const text = el.querySelector<HTMLElement>('.np-text')!;
+  const [text, copy] = el.querySelectorAll<HTMLElement>('.np-text');
   document.body.appendChild(el);
-  // The caption is width-capped (index.html) so it clears "Skip the 3D"; a longer credit scrolls.
+  // The caption is width-capped (index.html) so it clears "Skip the 3D"; a longer credit rotates.
   const fit = () => {
-    const m = marquee(text.scrollWidth, box.clientWidth);
+    const m = marquee(text.offsetWidth, box.clientWidth);
     el.classList.toggle('scroll', !!m);
     if (m) {
       el.style.setProperty('--np-shift', `${-m.shift}px`);
@@ -63,7 +64,7 @@ export function createNowPlaying(tracks: readonly TrackCredit[]): NowPlaying {
   return {
     setTrack(src) {
       const t = findTrack(tracks, src);
-      text.textContent = t ? creditLine(t) : '';
+      text.textContent = copy.textContent = t ? creditLine(t) : '';
       fit();
     },
     setVisible(visible) {

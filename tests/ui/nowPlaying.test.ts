@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { creditLine, findTrack, marquee } from '../../src/ui/nowPlaying';
+import { creditLine, findTrack, MARQUEE_GAP_PX, marquee } from '../../src/ui/nowPlaying';
 import playlist from '../../src/content/playlist.json';
 
 const track = {
@@ -36,21 +36,18 @@ describe('playlist.json', () => {
   });
 });
 
-describe('marquee (a credit too long for the capped caption scrolls)', () => {
-  it('does not scroll text that fits', () => {
+describe('marquee (a credit too long for the capped caption rotates like a ticker)', () => {
+  it('does not move text that fits', () => {
     expect(marquee(200, 240)).toBeNull();
     expect(marquee(240, 240)).toBeNull();
     expect(marquee(240.5, 240)).toBeNull(); // sub-pixel rounding is not overflow
   });
-  it('scrolls by exactly the overflow', () => {
-    expect(marquee(400, 240)?.shift).toBe(160);
+  it('loops by one copy of the text plus the gap, so the second copy lands where the first began', () => {
+    expect(marquee(400, 240)?.shift).toBe(400 + MARQUEE_GAP_PX);
   });
-  it('takes longer for more overflow, at a readable speed, with a floor', () => {
-    const short = marquee(260, 240)!;
-    const long = marquee(800, 240)!;
-    expect(long.seconds).toBeGreaterThan(short.seconds);
-    expect(short.seconds).toBeGreaterThanOrEqual(4);
-    // The travel part (70% of the cycle) moves at 30 px/s.
-    expect(long.seconds * 0.7).toBeCloseTo(560 / 30, 6);
+  it('moves at a steady 30 px/s, so a longer credit takes longer per loop', () => {
+    const m = marquee(400, 240)!;
+    expect(m.seconds).toBeCloseTo((400 + MARQUEE_GAP_PX) / 30, 6);
+    expect(marquee(800, 240)!.seconds).toBeGreaterThan(m.seconds);
   });
 });

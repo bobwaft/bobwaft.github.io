@@ -402,6 +402,8 @@
          whole screen is the click target. */
       #loading.ready {
         cursor: pointer;
+        -webkit-tap-highlight-color: transparent; /* no blue flash on a phone tap */
+        user-select: none;
       }
       #start-prompt {
         margin: 0;
@@ -503,7 +505,7 @@
       #hint {
         position: fixed;
         left: 50%;
-        bottom: 1.5rem;
+        bottom: 3.5rem; /* above the caption and Skip the 3D on the bottom row */
         z-index: 4;
         transform: translateX(-50%);
         max-width: 90vw;
@@ -549,23 +551,31 @@
         overflow: hidden;
         white-space: nowrap;
       }
-      #now-playing .np-text {
-        display: inline-block;
+      #now-playing .np-track {
+        display: inline-flex;
+        gap: 48px; /* MARQUEE_GAP_PX in nowPlaying.ts */
+      }
+      #now-playing .np-copy {
+        display: none;
+      }
+      /* A credit too long for the cap rotates like a ticker: the copy follows the original. */
+      #now-playing.scroll .np-copy {
+        display: inline;
       }
       #now-playing.scroll .np-window {
-        mask-image: linear-gradient(90deg, #000 calc(100% - 1rem), transparent);
+        mask-image: linear-gradient(
+          90deg,
+          transparent,
+          #000 0.75rem,
+          #000 calc(100% - 0.75rem),
+          transparent
+        );
       }
-      #now-playing.scroll .np-text {
-        animation: np-scroll var(--np-seconds, 8s) ease-in-out infinite alternate;
+      #now-playing.scroll .np-track {
+        animation: np-ticker var(--np-seconds, 10s) linear infinite;
       }
-      /* Pause at each end (15% of a pass), move in between. */
-      @keyframes np-scroll {
-        0%,
-        15% {
-          transform: translateX(0);
-        }
-        85%,
-        100% {
+      @keyframes np-ticker {
+        to {
           transform: translateX(var(--np-shift, 0));
         }
       }
@@ -574,10 +584,13 @@
         #now-playing {
           transition: none;
         }
-        /* No scroll: inline text, so the overflow ends in an ellipsis instead. */
-        #now-playing.scroll .np-text {
+        /* No ticker: inline text, so the overflow ends in an ellipsis instead. */
+        #now-playing.scroll .np-track {
           display: inline;
           animation: none;
+        }
+        #now-playing.scroll .np-copy {
+          display: none;
         }
         #now-playing .np-window {
           text-overflow: ellipsis;
