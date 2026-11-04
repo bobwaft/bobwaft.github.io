@@ -201,10 +201,10 @@ Work through phases in order. Each phase ends with a **You test** checklist for 
 - [x] Page title, meta description, Open Graph image (`public/og-image.jpg`, captured from the idle view)
 
 ### You test
-- [ ] View page source: about and project text is present in the HTML
+- [x] View page source: about and project text is present in the HTML
 - [ ] With WebGL disabled, the fallback shows all content and the PDF link; Lighthouse performance ≥ 90
-- [ ] "Skip the 3D" switches to the fallback
-- [ ] The whole site is usable with only the keyboard
+- [x] "Skip the 3D" switches to the fallback
+- [x] The whole site is usable with only the keyboard
 - [ ] On a phone, every interaction works and all content is readable
 - [ ] Shared link previews show the title, description, and image
 

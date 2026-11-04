@@ -132,3 +132,27 @@ Number bugs sequentially and never reuse a number.
 - Root cause (2026-10-29): `sheetFrame` took the page's orientation from the minimum-area rectangle around the top sheet's vertices; the re-exported sheet isn't a perfect flat rectangle (curl/bent corners), so that rectangle sat a few degrees off the paper's real edges. Both the idle overlay (via the frame-to-UV transform) and the focus view use the frame, so both were turned. Likely also made the BUG-009 paper-colour samples (92% out to the corners) land partly off the sheet (owner screenshot: page browner than the paper). Fix: `sheetFrameFromUvs` fits position = origin + U·u + V·v over the sheet's vertices and uses the UV axes (an axis-aligned A4 island in the atlas) as the page edges; the old bounding-rectangle `sheetFrame` is removed
 - Re-test 2026-10-29 (UV-based frame): same angle. Decoding the GLB showed the real cause: `topSheetTriangles` picked the wrong sheet. The stack has a flat two-triangle top sheet (u 0.014–0.084, y ≈ 0.0006) over three curled sheets; one curled sheet's corner rises to y ≈ 0.0028, and the code ranked sheets by their highest vertex. Fix: rank by median height (regression test with a curled lower sheet). The UV-based frame stays
 - Status: closed (re-tested 2026-10-29: pass)
+
+### BUG-012 — "Back to the 3D" is an unstyled button at the end of the simple site
+- Phase: 9
+- Steps: click "Skip the 3D"; look for the way back
+- Expected: "Back to the 3D" is an overlay button (fixed on screen, always visible) styled like the about page (Mocha About Me look)
+- Actual: a default browser button appended after the fallback content
+- Severity: low
+- Status: open
+
+### BUG-013 — Pull cord doesn't toggle the light on touch
+- Phase: 9 (found in the phone check; DevTools device mode, portrait, touch)
+- Steps: open the site in a phone preset with touch; tap the pull cord
+- Expected: the cord animates and the lamp fades off/on (FR-24), as with a mouse
+- Actual: the light doesn't change; speaker, laptop, papers and notebook taps all work
+- Severity: med
+- Status: open
+
+### BUG-014 — Resume controls are squished on a phone
+- Phase: 9 (found in the phone check; DevTools device mode, portrait)
+- Steps: open the papers focus view on a narrow portrait screen
+- Expected: page, zoom and Download PDF controls fit and stay tappable (NFR-6)
+- Actual: the buttons in the top-right control bar are squished
+- Severity: low
+- Status: open
