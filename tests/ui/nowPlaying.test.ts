@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { creditLine, findTrack } from '../../src/ui/nowPlaying';
+import { creditLine, findTrack, marquee } from '../../src/ui/nowPlaying';
 import playlist from '../../src/content/playlist.json';
 
 const track = {
@@ -33,5 +33,24 @@ describe('playlist.json', () => {
         expect(t[key], `${t.src} ${key}`).toMatch(/\S/);
       }
     }
+  });
+});
+
+describe('marquee (a credit too long for the capped caption scrolls)', () => {
+  it('does not scroll text that fits', () => {
+    expect(marquee(200, 240)).toBeNull();
+    expect(marquee(240, 240)).toBeNull();
+    expect(marquee(240.5, 240)).toBeNull(); // sub-pixel rounding is not overflow
+  });
+  it('scrolls by exactly the overflow', () => {
+    expect(marquee(400, 240)?.shift).toBe(160);
+  });
+  it('takes longer for more overflow, at a readable speed, with a floor', () => {
+    const short = marquee(260, 240)!;
+    const long = marquee(800, 240)!;
+    expect(long.seconds).toBeGreaterThan(short.seconds);
+    expect(short.seconds).toBeGreaterThanOrEqual(4);
+    // The travel part (70% of the cycle) moves at 30 px/s.
+    expect(long.seconds * 0.7).toBeCloseTo(560 / 30, 6);
   });
 });
