@@ -1,0 +1,67 @@
+/* The focus views' controls (zoomControls.ts): the view's own controls, then zoom, in one row
+   at the top-right. */
+#focus-toolbar {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 5;
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  color: #eee;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+  font:
+    0.9rem system-ui,
+    sans-serif;
+}
+#focus-toolbar:not(:has(> :not([hidden]))) {
+  display: none;
+}
+#zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+#zoom-controls[hidden] {
+  display: none;
+}
+#zoom-controls button {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1.4rem;
+  text-shadow: inherit;
+  cursor: pointer;
+}
+#zoom-controls button:hover:not(:disabled),
+#zoom-controls button:focus-visible {
+  text-decoration: underline;
+}
+#zoom-controls button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.zoom-label {
+  min-width: 3.2em;
+  text-align: center;
+  white-space: nowrap;
+}
+/* Phones (BUG-014): the row doesn't fit beside Back, so the controls stack in the top-right
+   corner, each group on its own line, with no panel behind them to cover the view. */
+@media (max-width: 600px) {
+  #focus-toolbar {
+    top: 0.75rem;
+    right: 0.5rem;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0;
+  }
+  /* Bigger targets for a thumb; specific enough to beat each row's own button size. */
+  #focus-toolbar > div button {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+}

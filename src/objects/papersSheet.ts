@@ -17,7 +17,7 @@ import {
 import { marginPoints } from '../scene/paperSample';
 import { uvTransform } from '../scene/screenFrame';
 import { createScreenLayer } from '../ui/screenLayer';
-import { createResumeControls, type ScreenPoint } from '../ui/resumeControls';
+import { createResumeControls } from '../ui/resumeControls';
 import { FOCUS_PAPER, IDLE_PAPER, needsRender, renderWidth, stepPage } from '../resume/layout';
 import { sheetFrameFromUvs, topSheetTriangles } from '../resume/sheet';
 import type { ResumeDocument } from '../resume/pdf';
@@ -28,14 +28,6 @@ export const PAGE_PX_WIDTH = 794;
 /** Idle texture width; the sheet is small and oblique in the idle view. */
 const IDLE_PX_WIDTH = 1024;
 const RERENDER_DELAY_MS = 250;
-
-/** The focus view's camera zoom (focusZoom.ts), driven by the resume controls. */
-export interface SheetZoom {
-  /** Zooms a step about anchor (screen NDC, default the centre); returns the new zoom. */
-  step(delta: number, anchor?: ScreenPoint): number;
-  pan(dx: number, dy: number): void;
-  reset(): void;
-}
 
 export interface PapersSheet {
   /** Camera up for the focus view: the page's own up, so it reads upright. */
@@ -122,7 +114,6 @@ export function createPapersSheet(
   scene: Object3D,
   viewer: Vector3,
   pdfUrl: string,
-  zoom: SheetZoom,
 ): PapersSheet | null {
   const { points, uvs, index } = meshTriangles(mesh);
   const tris = topSheetTriangles(points, index);
@@ -194,17 +185,11 @@ export function createPapersSheet(
       if (pending === target) pending = null;
     }
   };
-  const controls = createResumeControls(
-    pdfUrl,
-    (delta) => {
-      page = stepPage(page, delta, doc?.numPages ?? 1);
-      controls.setPage(page, doc?.numPages ?? 1); // render() draws the new page next frame
-    },
-    // render() redraws the page sharper once the zoom settles.
-    (delta, anchor) => controls.setZoom(zoom.step(delta, anchor)),
-    (dx, dy) => zoom.pan(dx, dy),
-  );
-  controls.setZoom(1);
+  // render() also redraws the page sharper once a zoom (main.ts) settles.
+  const controls = createResumeControls(pdfUrl, (delta) => {
+    page = stepPage(page, delta, doc?.numPages ?? 1);
+    controls.setPage(page, doc?.numPages ?? 1); // render() draws the new page next frame
+  });
 
   // Edges of the page's horizontal midline, for its on-screen width.
   const left = frame.center.clone().addScaledVector(frame.right, -frame.width / 2);
@@ -232,8 +217,6 @@ export function createPapersSheet(
       generation++; // drop any draw still in flight
       page = 1; // the idle sheet shows page 1, so the next visit starts there
       controls.setPage(page, doc?.numPages ?? 1);
-      zoom.reset();
-      controls.setZoom(1);
       if (shown.page !== page) {
         // Don't flash the old page on the next visit.
         canvas.width = 0;

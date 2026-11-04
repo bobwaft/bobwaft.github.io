@@ -8,20 +8,27 @@ export interface TapTracker {
   cancel(id: number): void;
 }
 
-/** Tracks one pointer at a time; extra pointers (pinch) are ignored until it lifts. */
+/**
+ * Tracks one pointer at a time. A second pointer (a pinch) cancels the press, so lifting the
+ * fingers isn't a tap; further pointers are ignored until all lift.
+ */
 export function createTapTracker(): TapTracker {
   let press: { id: number; x: number; y: number } | null = null;
+  const down = new Set<number>();
   return {
     down(id, x, y) {
-      if (!press) press = { id, x, y };
+      down.add(id);
+      press = down.size === 1 ? { id, x, y } : null;
     },
     up(id, x, y) {
+      down.delete(id);
       if (!press || press.id !== id) return false;
       const p = press;
       press = null;
       return isTap(x - p.x, y - p.y);
     },
     cancel(id) {
+      down.delete(id);
       if (press?.id === id) press = null;
     },
   };

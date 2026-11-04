@@ -21,6 +21,8 @@ export interface NotebookBook {
   up: Vector3;
   /** The open spread's corners, for framing the focus view. */
   points: Vector3[];
+  /** Centre of the open spread, for the focus zoom's dolly distance. */
+  center: Vector3;
   open(done: () => void): void;
   close(done: () => void): void;
   setContentVisible(visible: boolean): void;
@@ -159,6 +161,9 @@ export function createNotebookBook(
   return {
     up: frames.up,
     points: frames.points,
+    center: frames.points
+      .reduce((sum, p) => sum.add(p), new Vector3())
+      .divideScalar(frames.points.length),
     open(done) {
       if (band) band.visible = false;
       animator.open(done);

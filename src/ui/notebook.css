@@ -260,19 +260,11 @@
   cursor: default;
 }
 
+/* In the focus toolbar (toolbar.css), which places it and sets its type. */
 #notebook-controls {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  z-index: 5;
   display: flex;
   align-items: center;
   gap: 0.25rem;
-  color: #eee;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-  font:
-    0.9rem system-ui,
-    sans-serif;
 }
 #notebook-controls[hidden] {
   display: none;

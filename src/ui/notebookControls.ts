@@ -1,7 +1,8 @@
-// Notebook controls (FR-18): previous/next buttons and arrow keys. DOM, fixed in the top-right
-// corner, shown only while the notebook is open.
+// Notebook controls (FR-18): previous/next buttons and arrow keys. DOM, in the focus toolbar,
+// shown only while the notebook is open.
 import { keyDelta } from '../resume/layout';
 import { spreadLabel } from '../notebook/spreads';
+import { focusToolbar } from './zoomControls';
 
 export interface NotebookControls {
   setVisible(visible: boolean): void;
@@ -31,7 +32,7 @@ export function createNotebookControls(onStep: (delta: number) => void): Noteboo
     onStep(delta);
   };
   window.addEventListener('keydown', onKey);
-  document.body.appendChild(root);
+  focusToolbar().prepend(root);
   return {
     setVisible(visible) {
       root.hidden = !visible;

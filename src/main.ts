@@ -21,7 +21,7 @@ import { applyLook, createLookControls, lookSettings } from './camera/lookContro
 import { createFocusController } from './camera/focusController';
 import { createPoseTween } from './camera/focusTween';
 import { dampZoom, NO_ZOOM, panBy, zoomAt, zoomedPose } from './camera/focusZoom';
-import { stepZoom } from './resume/layout';
+import { scaleZoom, stepZoom } from './resume/layout';
 import { createClickInput } from './interaction/clickInput';
 import { createFocusPoseResolver } from './interaction/focusPoses';
 import { hoverTarget } from './interaction/hover';
@@ -49,6 +49,7 @@ import { createTouchDots, isTouchPointerType } from './ui/touchDots';
 import { showHint } from './ui/hint';
 import { createIntro, type Intro } from './ui/intro';
 import { createLoadingScreen } from './ui/loading';
+import { createZoomControls } from './ui/zoomControls';
 import { lighting, setTimeOfDay } from './scene/scene-lighting.js';
 import { createLamp } from './objects/lamp';
 import { pullcord } from './objects/pullcord';
@@ -135,28 +136,44 @@ async function boot(): Promise<void> {
   const registered = collectRegistered(scene);
   const picker = createPicker(camera, canvas, registered);
   let papersSheet: PapersSheet | null = null;
-  // Camera zoom in the papers view: the target set by the controls, and the eased one shown.
+  // Camera zoom in a focus view: the target set by the controls, and the eased one shown. The
+  // surface is the shown view's centre, kept after it hides so the zoom eases out on exit.
   let zoomTarget = NO_ZOOM;
   let zoomShown = NO_ZOOM;
-  const sheetZoom = {
-    step(delta: number, anchor?: { x: number; y: number }) {
+  let zoomSurface: Vector3 | null = null;
+  const zoomControls = createZoomControls({
+    step(delta, anchor) {
       zoomTarget = zoomAt(zoomTarget, stepZoom(zoomTarget.zoom, delta), anchor?.x, anchor?.y);
-      return zoomTarget.zoom;
+      zoomControls.setZoom(zoomTarget.zoom);
     },
-    pan(dx: number, dy: number) {
+    scale(factor, anchor) {
+      zoomTarget = zoomAt(zoomTarget, scaleZoom(zoomTarget.zoom, factor), anchor.x, anchor.y);
+      zoomControls.setZoom(zoomTarget.zoom);
+    },
+    pan(dx, dy) {
       zoomTarget = panBy(zoomTarget, dx, dy);
     },
-    reset() {
-      zoomTarget = NO_ZOOM;
-    },
+    zoomed: () => zoomTarget.zoom > 1,
+  });
+  /** Shows or hides the zoom with a focus view's content; each visit starts unzoomed. */
+  const zoomView = (visible: boolean, surface: Vector3 | undefined) => {
+    if (surface) zoomSurface = surface;
+    zoomTarget = NO_ZOOM;
+    zoomControls.setZoom(1);
+    zoomControls.setVisible(visible && !!surface);
   };
   const papersMesh = scene.getObjectByName(FOCUS_SURFACE_NAMES.papers) as Mesh | undefined;
   if (papersMesh?.isMesh) {
     const pdfUrl = `${import.meta.env.BASE_URL}resume.pdf`;
-    papersSheet = createPapersSheet(papersMesh, scene, poses.landscape.position, pdfUrl, sheetZoom);
+    papersSheet = createPapersSheet(papersMesh, scene, poses.landscape.position, pdfUrl);
     papersSheet?.setSize(window.innerWidth, window.innerHeight);
   }
-  papers.bind({ setContentVisible: (v) => papersSheet?.setContentVisible(v) });
+  papers.bind({
+    setContentVisible: (v) => {
+      papersSheet?.setContentVisible(v);
+      zoomView(v, papersSheet?.center);
+    },
+  });
   let notebookBook: NotebookBook | null = null;
   const coverMesh = scene.getObjectByName(NOTEBOOK_COVER_NAME) as Mesh | undefined;
   if (coverMesh?.isMesh) {
@@ -172,7 +189,10 @@ async function boot(): Promise<void> {
     notebook.bind({
       open: (done) => book.open(done),
       close: (done) => book.close(done),
-      setContentVisible: (v) => book.setContentVisible(v),
+      setContentVisible: (v) => {
+        book.setContentVisible(v);
+        zoomView(v, book.center);
+      },
     });
   }
   const focusPose = createFocusPoseResolver(
@@ -233,7 +253,12 @@ async function boot(): Promise<void> {
     screenLayer = createLaptopScreen(screenMesh, poses.landscape.position, parseAbout(aboutSource));
     screenLayer.setSize(window.innerWidth, window.innerHeight);
   }
-  laptop.bind({ setContentVisible: (v) => screenLayer?.setVisible(v) });
+  laptop.bind({
+    setContentVisible: (v) => {
+      screenLayer?.setVisible(v);
+      zoomView(v, screenLayer?.center);
+    },
+  });
   const updatable = [...new Set(registered.values())].filter((m) => m.update);
   const buttons = createInteractableButtons({
     modules,
@@ -328,6 +353,7 @@ async function boot(): Promise<void> {
     screenLayer?.dispose();
     papersSheet?.dispose();
     notebookBook?.dispose();
+    zoomControls.dispose();
     debugCamera?.dispose();
     postfx.dispose();
     disposeScene(scene);
@@ -421,15 +447,8 @@ async function boot(): Promise<void> {
           settings.poseTweenSeconds === 0
             ? zoomTarget
             : dampZoom(zoomShown, zoomTarget, ZOOM_DAMPING, dt);
-        const view = papersSheet
-          ? zoomedPose(
-              base,
-              zoomShown,
-              papersSheet.center,
-              camera.fov * DEG,
-              camera.aspect,
-              zoomPose,
-            )
+        const view = zoomSurface
+          ? zoomedPose(base, zoomShown, zoomSurface, camera.fov * DEG, camera.aspect, zoomPose)
           : base;
         // Parallax shrinks as the view zooms, so it moves the page the same on screen.
         const introPitch = intro?.update(dt) ?? 0;

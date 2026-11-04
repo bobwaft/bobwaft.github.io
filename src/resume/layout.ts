@@ -32,6 +32,11 @@ export function stepZoom(zoom: number, delta: number): number {
   return ZOOM_LEVELS[i];
 }
 
+/** Zoom scaled by factor (a pinch), kept within the ZOOM_LEVELS range. */
+export function scaleZoom(zoom: number, factor: number): number {
+  return Math.min(ZOOM_LEVELS[ZOOM_LEVELS.length - 1], Math.max(ZOOM_LEVELS[0], zoom * factor));
+}
+
 /** Zoom step for a key: + (or =) and -; 0 for anything else. */
 export function zoomKeyDelta(key: string): -1 | 0 | 1 {
   if (key === '+' || key === '=') return 1;

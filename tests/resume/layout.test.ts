@@ -6,6 +6,7 @@ import {
   needsRender,
   pageLabel,
   renderWidth,
+  scaleZoom,
   stepPage,
   stepZoom,
   textLayerStretch,
@@ -27,6 +28,18 @@ describe('stepZoom', () => {
 
   it('steps from the nearest level for an off-step zoom', () => {
     expect(stepZoom(1.4, 1)).toBe(2);
+  });
+});
+
+describe('scaleZoom', () => {
+  it('scales the zoom by the pinch factor', () => {
+    expect(scaleZoom(1.5, 2)).toBe(3);
+    expect(scaleZoom(2, 0.75)).toBe(1.5);
+  });
+
+  it('stays within the zoom levels', () => {
+    expect(scaleZoom(1.2, 0.5)).toBe(1);
+    expect(scaleZoom(2, 4)).toBe(ZOOM_LEVELS.at(-1));
   });
 });
 

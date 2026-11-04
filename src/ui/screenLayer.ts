@@ -1,10 +1,12 @@
 // HTML laid over a 3D surface with CSS3DRenderer (A-4). The layer ignores the pointer except
 // on the element itself, so clicks beside it still reach the canvas (and exit the focus view).
-import { PerspectiveCamera, Scene, type Camera } from 'three';
+import { PerspectiveCamera, Scene, type Camera, type Vector3 } from 'three';
 import { CSS3DObject, CSS3DRenderer } from 'three/examples/jsm/renderers/CSS3DRenderer.js';
 import { cssPlacement, surfaceCameraMatrix, type ScreenFrame } from '../scene/screenFrame';
 
 export interface ScreenLayer {
+  /** Centre of the surface, for the focus zoom's dolly distance. */
+  center: Vector3;
   setVisible(visible: boolean): void;
   render(camera: Camera): void;
   setSize(width: number, height: number): void;
@@ -40,6 +42,7 @@ export function createScreenLayer(
 
   let visible = false;
   return {
+    center: frame.center.clone(),
     setVisible(v) {
       visible = v;
       root.hidden = !v;

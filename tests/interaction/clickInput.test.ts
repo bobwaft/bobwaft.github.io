@@ -16,10 +16,17 @@ describe('tap tracker', () => {
     const t = createTapTracker();
     expect(t.up(1, 0, 0)).toBe(false);
     t.down(1, 0, 0);
-    t.down(2, 50, 50); // second finger is ignored
-    expect(t.up(2, 50, 50)).toBe(false);
     expect(t.up(1, 0, 0)).toBe(true);
     expect(t.up(1, 0, 0)).toBe(false);
+  });
+  it('a second finger (a pinch) cancels the press until all fingers lift', () => {
+    const t = createTapTracker();
+    t.down(1, 0, 0);
+    t.down(2, 50, 50);
+    expect(t.up(2, 50, 50)).toBe(false);
+    expect(t.up(1, 0, 0)).toBe(false);
+    t.down(1, 0, 0);
+    expect(t.up(1, 0, 0)).toBe(true);
   });
   it('cancel forgets the press', () => {
     const t = createTapTracker();
