@@ -1,6 +1,19 @@
 import { DefaultLoadingManager } from 'three';
 import { isReady, monotonicProgress } from './loadingProgress';
 
+/**
+ * True when a key press should start the site from "Click to start": Enter or Space, not held
+ * down, without modifiers, and not aimed at a focused control (Enter on "Skip the 3D" is a skip).
+ */
+export function isStartKey(e: {
+  key: string;
+  repeat: boolean;
+  modified: boolean;
+  onControl: boolean;
+}): boolean {
+  return (e.key === 'Enter' || e.key === ' ') && !e.repeat && !e.modified && !e.onControl;
+}
+
 export interface LoadingScreen {
   /** Call once loadScene() has resolved (its texture loads are queued by then). */
   markSceneResolved(): void;
@@ -68,14 +81,26 @@ export function createLoadingScreen(): LoadingScreen {
       root.classList.add('ready');
       root.appendChild(prompt);
       // The whole screen is the target; Enter or Space also start it, for keyboard users.
+      // Never resolves if the screen is removed first (Skip the 3D); the listeners go with it.
       return new Promise((resolve) => {
-        const go = () => {
+        const off = () => {
           root.removeEventListener('click', go);
           window.removeEventListener('keydown', onKey);
-          resolve();
+        };
+        const go = () => {
+          off();
+          if (root.isConnected) resolve();
         };
         const onKey = (e: KeyboardEvent) => {
-          if (e.key === 'Enter' || e.key === ' ') go();
+          if (!root.isConnected) return off();
+          const target = e.target instanceof Element ? e.target : null;
+          const startKey = isStartKey({
+            key: e.key,
+            repeat: e.repeat,
+            modified: e.ctrlKey || e.altKey || e.metaKey,
+            onControl: !!target?.closest('a, button, input, select, textarea'),
+          });
+          if (startKey) go();
         };
         root.addEventListener('click', go);
         window.addEventListener('keydown', onKey);

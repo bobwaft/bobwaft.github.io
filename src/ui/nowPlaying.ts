@@ -50,6 +50,8 @@ export function createNowPlaying(tracks: readonly TrackCredit[]): NowPlaying {
     '<span class="np-text np-copy" aria-hidden="true"></span></span></span>';
   const box = el.querySelector<HTMLElement>('.np-window')!;
   const [text, copy] = el.querySelectorAll<HTMLElement>('.np-text');
+  // The gap is part of the loop distance, so it is set here rather than in the stylesheet.
+  el.querySelector<HTMLElement>('.np-track')!.style.gap = `${MARQUEE_GAP_PX}px`;
   document.body.appendChild(el);
   // The caption is width-capped (index.html) so it clears "Skip the 3D"; a longer credit rotates.
   const fit = () => {
