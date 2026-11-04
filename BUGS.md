@@ -142,6 +142,8 @@ Number bugs sequentially and never reuse a number.
 - Fix 2026-11-04: `#try-3d` is a fixed pill at the bottom-right over the simple site, in the about page's Mocha look (foam background, latte border, espresso text, DM Sans, caramel arrow; espresso on hover/focus), styled in src/ui/fallback.css. Not verified in a browser
 - Re-test 2026-11-04: the owner wants the WHOLE simple site in the about page's look, and the button at the top, a little left of the corner
 - Fix 2026-11-04: src/content/fallback.ts now renders the about hero (Fraunces title with the caramel accent, uppercase location, bio with the latte rule, "Come say hello —", email and resume pills, icon socials, the arched photo with the handwritten note) and projects as cream cards with pill tags; index.html styles it with the Mocha tokens (fonts from the bundled stylesheet, so they load without JS). `#try-3d` is fixed at the top, 3rem from the right (1.5rem on phones). Checked in headless Edge screenshots at 1280 and 520 px
+- Re-test 2026-11-04: look and button pass; project embeds don't show (YouTube was a plain link, galleries only their first image)
+- Fix 2026-11-04: YouTube is a lazy youtube-nocookie iframe (16:9) and a gallery is a scroll-snap strip of all its images, lazy-loaded (src/content/fallback.ts, index.html)
 - Status: fixed, awaiting re-test
 
 ### BUG-013 — Pull cord doesn't toggle the light on touch

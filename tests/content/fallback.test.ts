@@ -73,15 +73,18 @@ describe('fallbackHtml', () => {
       '<img src="/projects/a.webp" alt="A" loading="lazy"',
     );
     const gal = f({ kind: 'gallery', srcs: ['/projects/a.webp', '/projects/b.webp'], alt: 'G' });
-    expect(gal).toContain('/projects/a.webp');
-    expect(gal).not.toContain('/projects/b.webp');
+    expect(gal).toContain('class="fb-gallery"');
+    expect(gal).toContain('<img src="/projects/a.webp" alt="G (1 of 2)" loading="lazy"');
+    expect(gal).toContain('<img src="/projects/b.webp" alt="G (2 of 2)" loading="lazy"');
     expect(f({ kind: 'clip', src: '/projects/c.mp4', alt: 'C' })).toContain(
       '<video src="/projects/c.mp4" aria-label="C" muted loop playsinline controls preload="none"',
     );
     const yt = f({ kind: 'youtube', src: 'https://www.youtube-nocookie.com/embed/abc', alt: 'Y' });
-    expect(yt).not.toContain('<iframe');
-    expect(yt).toContain('href="https://www.youtube-nocookie.com/embed/abc"');
-    expect(yt).toContain('Watch the video');
+    expect(yt).toContain(
+      '<iframe class="fb-video" src="https://www.youtube-nocookie.com/embed/abc"',
+    );
+    expect(yt).toContain('title="Y"');
+    expect(yt).toContain('loading="lazy"');
   });
 
   it('never publishes a phone or address (real content)', () => {

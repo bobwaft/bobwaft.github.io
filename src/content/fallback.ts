@@ -17,7 +17,15 @@ const external = (href: string) => (/^https?:/i.test(href) ? EXTERNAL : '');
 function media(m: ProjectMedia | undefined): string {
   if (!m) return '';
   if (m.kind === 'gallery') {
-    return `<img src="${e(m.srcs[0])}" alt="${e(m.alt)}" loading="lazy" decoding="async">`;
+    // A strip that scrolls and snaps one image at a time; no script needed.
+    const images = m.srcs
+      .map(
+        (src, i) =>
+          `<img src="${e(src)}" alt="${e(`${m.alt} (${i + 1} of ${m.srcs.length})`)}" ` +
+          'loading="lazy" decoding="async">',
+      )
+      .join('');
+    return `<div class="fb-gallery" role="group" aria-label="${e(m.alt)}" tabindex="0">${images}</div>`;
   }
   if (m.kind === 'image') {
     return `<img src="${e(m.src)}" alt="${e(m.alt)}" loading="lazy" decoding="async">`;
@@ -28,8 +36,12 @@ function media(m: ProjectMedia | undefined): string {
       'preload="none"></video>'
     );
   }
-  // A plain link, not an iframe: the embed would cost the page load.
-  return `<p><a href="${e(m.src)}"${EXTERNAL}>Watch the video<span> (${e(m.alt)})</span></a></p>`;
+  // Lazy, so a video below the fold costs nothing on load (Lighthouse, NFR-4).
+  return (
+    `<iframe class="fb-video" src="${e(m.src)}" title="${e(m.alt)}" loading="lazy" ` +
+    'allow="encrypted-media; picture-in-picture; fullscreen" ' +
+    'referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>'
+  );
 }
 
 function article(p: Project): string {
