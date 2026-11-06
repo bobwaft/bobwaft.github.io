@@ -23,7 +23,7 @@ export function createResumeControls(
     `<span class="resume-label" aria-live="polite"></span>` +
     `<button type="button" class="resume-next" aria-label="Next page">›</button>` +
     `</div>` +
-    `<a class="resume-download" download>Download PDF</a>`;
+    `<a class="resume-download" download="Donovan_Hu_Resume_2026.pdf">Download PDF</a>`;
   root.querySelector<HTMLAnchorElement>('.resume-download')!.href = pdfUrl;
   const pager = root.querySelector<HTMLElement>('.resume-pager')!;
   const prev = root.querySelector<HTMLButtonElement>('.resume-prev')!;

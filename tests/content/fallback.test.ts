@@ -53,7 +53,7 @@ describe('fallbackHtml', () => {
 
   it('links the resume for download', () => {
     expect(html).toMatch(
-      /<a class="fb-pill" href="\/resume\.pdf" download>.*Download resume \(PDF\)<\/a>/,
+      /<a class="fb-pill" href="\/resume\.pdf" download="Donovan_Hu_Resume_2026\.pdf">.*Download resume \(PDF\)<\/a>/,
     );
   });
 

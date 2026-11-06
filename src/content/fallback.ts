@@ -99,7 +99,7 @@ export function fallbackHtml(
     '<nav class="fb-contact" aria-label="Contact">',
     `<a class="fb-pill" href="mailto:${e(about.email)}">${iconSvg('mail', 'fb-icon')}`,
     `<span class="fb-pill-label">Email</span><span class="fb-pill-detail">· ${e(about.email)}</span></a>`,
-    `<a class="fb-pill" href="${e(resumeHref)}" download>Download resume (PDF)</a>`,
+    `<a class="fb-pill" href="${e(resumeHref)}" download="Donovan_Hu_Resume_2026.pdf">Download resume (PDF)</a>`,
     `<ul class="fb-socials">${socials}</ul></nav></div></div>`,
     portrait,
     '</header>',
